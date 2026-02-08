@@ -6,7 +6,7 @@ import {
   useReactFlow,
   useConnection,
 } from "@xyflow/react";
-import { ArrowBigRight, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Reactions from "../ui/Reactions";
 
 const ResizeHandle = () => {
@@ -34,11 +34,7 @@ const CustomNode = ({ id, data, selected, dragging }) => {
   const [isVisible, setIsVisible] = React.useState(false);
   const isConnecting = connection.inProgress;
 
-  const outline = data.outline ?? {
-    name: "Jack",
-    color: "#5e5c06ff",
-    enabled: false,
-  };
+  const outline = data.outline || { enabled: false };
 
   React.useEffect(() => {
     requestAnimationFrame(() => setIsVisible(true));

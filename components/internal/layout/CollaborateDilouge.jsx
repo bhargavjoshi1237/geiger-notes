@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -22,53 +24,91 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 
-export default function CollaborateDilouge({ id, open, onOpenChange }) {
+export default function CollaborateDilouge({
+  id,
+  open,
+  onOpenChange,
+  nodes,
+  edges,
+  sessionData,
+  role,
+  onAcceptRequest,
+}) {
+  const router = useRouter();
+  const supabase = createClient();
+  const [currentUser, setCurrentUser] = useState(null);
+
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("host");
-  const [isHosting, setIsHosting] = useState(!!id);
-  const [sessionCode, setSessionCode] = useState("GEIGER-7X2P-9Y8Q" || "");
-
-  // Mock data for members
-  const [members, setMembers] = useState([
-    { id: 1, name: "You", status: "online", role: "Owner", isMe: true },
-    {
-      id: 2,
-      name: "Sarah Chen",
-      status: "online",
-      role: "Editor",
-      isMe: false,
-      type: "joined",
-    },
-
-    // Requested users (only visible to host)
-    {
-      id: 4,
-      name: "Mike Ross",
-      status: "pending",
-      role: "Viewer",
-      isMe: false,
-      type: "requested",
-    },
-    {
-      id: 5,
-      name: "Rachel Zane",
-      status: "pending",
-      role: "Editor",
-      isMe: false,
-      type: "requested",
-    },
-  ]);
-
   const [isStarting, setIsStarting] = useState(false);
-  const isHost = true;
-  const startSession = () => {
+  const [sessionCodeInput, setSessionCodeInput] = useState("");
+
+  useEffect(() => {
+    async function getUser() {
+      const { data } = await supabase.auth.getUser();
+      setCurrentUser(data.user);
+    }
+    getUser();
+  }, [supabase]);
+
+  const isSessionActive = !!sessionData;
+  const isHost = role === "host";
+  const sessionCode = sessionData?.code;
+
+  const members = useMemo(() => {
+    if (!sessionData) return [];
+    const list = [];
+    const joinersMap = sessionData.joiners || {};
+    Object.keys(joinersMap).forEach((uid) => {
+      const m = joinersMap[uid];
+      list.push({
+        id: uid,
+        name: m.name || m.email || "Unknown",
+        status: m.status === "joined" ? "online" : "pending",
+        role: m.status === "joined" ? "Editor" : "Viewer",
+        type: m.status === "joined" ? "joined" : "requested",
+        isMe: currentUser?.id === uid,
+      });
+    });
+
+    const hostId = sessionData.host;
+    if (!list.find((m) => m.id === hostId)) {
+      list.unshift({
+        id: hostId,
+        name: currentUser?.id === hostId ? "You (Host)" : "Host",
+        status: "online",
+        role: "Owner",
+        type: "joined",
+        isMe: currentUser?.id === hostId,
+      });
+    } else {
+      const m = list.find((m) => m.id === hostId);
+      if (m) m.role = "Owner";
+    }
+
+    return list;
+  }, [sessionData, currentUser]);
+
+  const joinedMembers = members.filter((m) => m.type !== "requested");
+  const requestedMembers = members.filter((m) => m.type === "requested");
+
+  const startSession = async () => {
     setIsStarting(true);
-    setTimeout(() => {
-      const newCode = "GEIGER-7X2P-9Y8Q";
-      setSessionCode(newCode);
-      setIsHosting(true);
-      setIsStarting(false);
-    }, 1500);
+    try {
+      const response = await fetch("/api/collab/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nodes, edges }),
+      });
+      const data = await response.json();
+      if (data.sessionId) {
+        router.push(`/colab/${data.sessionId}`);
+        onOpenChange(false);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setIsStarting(false);
   };
 
   const copyToClipboard = () => {
@@ -77,8 +117,35 @@ export default function CollaborateDilouge({ id, open, onOpenChange }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const joinedMembers = members.filter((m) => m.type !== "requested");
-  const requestedMembers = members.filter((m) => m.type === "requested");
+  const [isJoining, setIsJoining] = useState(false);
+  const [joinError, setJoinError] = useState("");
+
+  const joinByCode = async () => {
+    if (!sessionCodeInput.trim()) return;
+    setIsJoining(true);
+    setJoinError("");
+
+    try {
+      const response = await fetch("/api/collab/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: sessionCodeInput.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.sessionId) {
+        router.push(`/colab/${data.sessionId}`);
+        onOpenChange(false);
+      } else {
+        setJoinError(data.error || "Invalid session code");
+      }
+    } catch (e) {
+      setJoinError("Failed to join session");
+    } finally {
+      setIsJoining(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -98,48 +165,52 @@ export default function CollaborateDilouge({ id, open, onOpenChange }) {
             <div
               className={cn(
                 "flex items-center gap-1.5 px-2 py-1 rounded-full border text-[10px] font-medium tracking-wide uppercase transition-colors",
-                isHosting
+                isSessionActive
                   ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
-                  : "bg-red-500/10 border-red-500/20 text-red-500",
+                  : "bg-zinc-500/10 border-zinc-500/20 text-zinc-500",
               )}
             >
               <span
                 className={cn(
                   "w-1.5 h-1.5 rounded-full",
-                  isHosting ? "bg-emerald-500 animate-pulse" : "bg-red-500",
+                  isSessionActive
+                    ? "bg-emerald-500 animate-pulse"
+                    : "bg-zinc-500",
                 )}
               />
-              {isHosting ? "Live" : "Offline"}
+              {isSessionActive ? "Live" : "Offline"}
             </div>
           </div>
         </DialogHeader>
 
         <div className="flex border-b border-zinc-800 bg-[#1e1e1e]">
           {[
-            { id: "host", label: "Host" },
+            (!isSessionActive || isHost) && { id: "host", label: "Host" },
             { id: "members", label: "Members" },
-            { id: "join", label: "Join" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex-1 py-3 text-sm font-medium border-b-2 transition-colors",
-                activeTab === tab.id
-                  ? "border-zinc-100 text-zinc-100 bg-zinc-800/30"
-                  : "border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/20",
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
+            !isSessionActive && { id: "join", label: "Join" },
+          ]
+            .filter(Boolean)
+            .map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex-1 py-3 text-sm font-medium border-b-2 transition-colors",
+                  activeTab === tab.id
+                    ? "border-zinc-100 text-zinc-100 bg-zinc-800/30"
+                    : "border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/20",
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
         </div>
 
-        <div className="p-4 bg-[#1e1e1e] min-h-[300px]">
+        <div className="p-4 bg-[#1e1e1e] h-[300px]">
           {activeTab === "host" && (
-            <div className="flex flex-col items-center justify-center min-h-[320px] py-6 px-4">
-              {!isHosting ? (
-                <div className="text-center space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex flex-col items-center justify-center h-[320px] py-6 px-4">
+              {!isSessionActive ? (
+                <div className="text-center space-y-5 animate-in fade-in -mt-10">
                   <div className="w-14 h-14 bg-zinc-800 rounded-full flex items-center justify-center mx-auto">
                     <Play className="w-6 h-6 text-zinc-400 ml-0.5" />
                   </div>
@@ -169,21 +240,6 @@ export default function CollaborateDilouge({ id, open, onOpenChange }) {
                       <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
                         Session Active
                       </span>
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                        <span className="relative flex h-1.5 w-1.5">
-                          <span
-                            className={cn(
-                              "w-1.5 h-1.5 rounded-full",
-                              isHosting
-                                ? "bg-emerald-500 animate-pulse"
-                                : "bg-red-500",
-                            )}
-                          />
-                        </span>
-                        <span className="text-[10px] font-medium text-emerald-500 tracking-wide">
-                          ONLINE
-                        </span>
-                      </div>
                     </div>
 
                     <div className="relative group">
@@ -221,18 +277,19 @@ export default function CollaborateDilouge({ id, open, onOpenChange }) {
                   </div>
 
                   <div className="text-center space-y-1">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => {
-                        setIsHosting(false);
-                        setSessionCode("");
-                      }}
-                      className="h-8 text-xs"
-                    >
-                      <LucideDoorClosed className="w-5 h-5 mr-1 text-white" />
-                      <p className="-mt-0.5 text-white">End Session</p>
-                    </Button>
+                    {isHost && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          router.push("/");
+                        }}
+                        className="h-8 text-xs"
+                      >
+                        <LucideDoorClosed className="w-5 h-5 mr-1 text-white" />
+                        <p className="-mt-0.5 text-white">End Session</p>
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}
@@ -241,7 +298,7 @@ export default function CollaborateDilouge({ id, open, onOpenChange }) {
 
           {activeTab === "members" && (
             <div className="h-full flex flex-col">
-              {!isHosting ? (
+              {!isSessionActive ? (
                 <div className="flex flex-col items-center justify-center h-[200px] text-zinc-500 space-y-2">
                   <Users2 className="w-8 h-8 opacity-20" />
                   <p className="text-sm">No active session</p>
@@ -271,7 +328,7 @@ export default function CollaborateDilouge({ id, open, onOpenChange }) {
                             >
                               <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-400">
-                                  {user.name.charAt(0)}
+                                  {user.name.charAt(0).toUpperCase()}
                                 </div>
                                 <div>
                                   <div className="text-sm font-medium text-zinc-200">
@@ -293,6 +350,9 @@ export default function CollaborateDilouge({ id, open, onOpenChange }) {
                                 <Button
                                   size="sm"
                                   variant="ghost"
+                                  onClick={() =>
+                                    onAcceptRequest && onAcceptRequest(user.id)
+                                  }
                                   className="h-7 w-7 p-0 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/20"
                                 >
                                   <Check className="w-3.5 h-3.5" />
@@ -316,8 +376,18 @@ export default function CollaborateDilouge({ id, open, onOpenChange }) {
                           >
                             <div className="flex items-center gap-3">
                               <div className="relative">
-                                <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-300 border border-zinc-700">
-                                  {user.name.charAt(0)}
+                                <div
+                                  className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-300 border border-zinc-700"
+                                  style={
+                                    user.color
+                                      ? {
+                                          borderColor: user.color,
+                                          color: user.color,
+                                        }
+                                      : {}
+                                  }
+                                >
+                                  {user.name.charAt(0).toUpperCase()}
                                 </div>
                                 <div
                                   className={cn(
@@ -366,12 +436,24 @@ export default function CollaborateDilouge({ id, open, onOpenChange }) {
                   </ScrollArea>
                 </div>
               )}
+              {!isHost && isSessionActive && (
+                <div className="p-4 mt-auto">
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => router.push("/")}
+                  >
+                    <LucideDoorClosed className="w-4 h-4 mr-2" />
+                    Leave Session
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === "join" && (
             <div className="space-y-6 flex flex-col justify-center h-full pl-10 pr-10">
-              {isHosting ? (
+              {isSessionActive ? (
                 <div className="text-center space-y-2 py-8">
                   <p className="text-sm text-zinc-300">
                     You are currently in a session.
@@ -389,13 +471,27 @@ export default function CollaborateDilouge({ id, open, onOpenChange }) {
                     <input
                       type="text"
                       placeholder="GEIGER-XXXX-XXXX"
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors font-mono"
+                      value={sessionCodeInput}
+                      onChange={(e) => setSessionCodeInput(e.target.value)}
+                      className={cn(
+                        "w-full bg-zinc-900 border rounded-md px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors font-mono",
+                        joinError
+                          ? "border-red-500/50 focus:border-red-500"
+                          : "border-zinc-800",
+                      )}
                     />
+                    {joinError && (
+                      <p className="text-xs text-red-400">{joinError}</p>
+                    )}
                   </div>
                   <div className="space-y-4">
-                    <Button className="w-full bg-zinc-100 text-black hover:bg-zinc-200">
+                    <Button
+                      onClick={joinByCode}
+                      disabled={isJoining || !sessionCodeInput.trim()}
+                      className="w-full bg-zinc-100 text-black hover:bg-zinc-200"
+                    >
                       <LogIn className="w-4 h-4 mr-2" />
-                      Join Session
+                      {isJoining ? "Joining..." : "Join Session"}
                     </Button>
                   </div>
                 </>
