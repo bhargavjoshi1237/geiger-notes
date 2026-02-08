@@ -135,9 +135,18 @@ export default function Home({ params }) {
         setMounted(true)
     }, [])
 
+    const hasAnimated = React.useRef(false);
+
+    React.useEffect(() => {
+        if (isInitialized && rfInstance && !hasAnimated.current) {
+            rfInstance.setViewport(viewport, { duration: 1600 });
+            hasAnimated.current = true;
+        }
+    }, [isInitialized, rfInstance, viewport]);
+
     return (
         <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#232323] text-white">
-            <Topbar settings={settings} onSettingsChange={handleSettingsChange} />
+            <Topbar id={id} settings={settings} onSettingsChange={handleSettingsChange} />
             <div className="flex-1 flex h-full relative">
                 <Sidebar 
                     selectedEdge={selectedEdge} 
@@ -155,7 +164,7 @@ export default function Home({ params }) {
                          <CanvasSkeleton />
                     </div>
 
-                    <div className={`absolute inset-0 transition-opacity duration-1000 ${(!isInitialized || isLoading) ? 'opacity-0' : 'opacity-100'}`}>
+                    <div className={`absolute inset-0 transition-opacity duration-1000 ${(!isInitialized || isLoading) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                         <ReactFlow
                             nodes={nodes}
                             edges={edges}
@@ -192,7 +201,7 @@ export default function Home({ params }) {
                             />
                             <ZoomControls />
                         </ReactFlow>
-                    </div>
+                    </div>  
                 </main>
             </div>
         </div>

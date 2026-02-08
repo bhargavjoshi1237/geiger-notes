@@ -13,7 +13,7 @@ const CanvasSkeleton = () => {
 
       <div className="absolute inset-0 flex items-center -mt-20 justify-center pointer-events-none">
         <img
-          src="/logo.svg"
+          src="/logo1.svg"
           alt=""
           className="w-28 h-28 grayscale brightness-0 invert"
           style={{

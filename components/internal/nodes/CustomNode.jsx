@@ -34,6 +34,12 @@ const CustomNode = ({ id, data, selected, dragging }) => {
   const [isVisible, setIsVisible] = React.useState(false);
   const isConnecting = connection.inProgress;
 
+  const outline = data.outline ?? {
+    name: "Jack",
+    color: "#5e5c06ff",
+    enabled: false,
+  };
+
   React.useEffect(() => {
     requestAnimationFrame(() => setIsVisible(true));
   }, []);
@@ -72,6 +78,11 @@ const CustomNode = ({ id, data, selected, dragging }) => {
         `}
         style={{
           backgroundColor: data.backgroundColor || "#333333",
+          ...(outline.enabled
+            ? {
+                borderColor: outline.color,
+              }
+            : {}),
         }}
       >
         <NodeResizeControl
@@ -108,6 +119,15 @@ const CustomNode = ({ id, data, selected, dragging }) => {
             <ResizeHandle />
           </div>
         </NodeResizeControl>
+
+        {outline.enabled && (
+          <div
+            className="flex items-center gap-2 h-5 absolute left-4 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-black shadow-sm transform -translate-y-1/2 transition-all duration-300"
+            style={{ backgroundColor: outline.color }}
+          >
+            {outline.name}
+          </div>
+        )}
 
         <div className="flex-1 w-full h-full overflow-hidden flex items-center justify-center">
           {selected ? (
