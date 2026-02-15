@@ -1,7 +1,5 @@
-export default async function Home() {
+import { redirect } from "next/navigation";
 
-  return (
-    <div className="flex min-h-screen w-full flex-col bg-zinc-950 text-zinc-100 selection:bg-indigo-500/30 font-sans">
-    </div>
-  );
+export default async function Home() {
+  redirect("/login");
 }

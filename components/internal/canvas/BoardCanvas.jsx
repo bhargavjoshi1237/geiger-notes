@@ -15,6 +15,8 @@ import CommentNode from "@/components/internal/nodes/CommentNode";
 import LinkNode from "@/components/internal/nodes/LinkNode";
 import BoardNode from "@/components/internal/nodes/BoardNode";
 import DocumentNode from "@/components/internal/nodes/DocumentNode";
+import ImageNode from "@/components/internal/nodes/ImageNode";
+import FileNode from "@/components/internal/nodes/FileNode";
 import "@xyflow/react/dist/style.css";
 
 export default function BoardCanvas({
@@ -24,8 +26,6 @@ export default function BoardCanvas({
   breadcrumbs,
   onBreadcrumbClick,
 }) {
-  // We explicitly pass boardId to useHomeLogic.
-  // Since BoardCanvas is keyed by boardId in the parent, this component is fresh for each board.
   const {
     nodes,
     edges,
@@ -131,6 +131,40 @@ export default function BoardCanvas({
         return;
       }
 
+      if (type === "image") {
+        const newNode = {
+          id: `node-${Date.now()}`,
+          type: "image",
+          position,
+          data: {
+            label: "Image",
+            src: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?q=80&w=1000&auto=format&fit=crop", // Nice placeholder
+            alt: "Placeholder Image",
+          },
+          style: { width: 200, height: 250 },
+        };
+        setNodes((nds) => nds.concat(newNode));
+        return;
+      }
+
+      if (type === "file") {
+        const newNode = {
+          id: `node-${Date.now()}`,
+          type: "file",
+          position,
+          data: {
+            label: "File",
+            fileName: "No file selected",
+            fileSize: 0,
+            fileType: "",
+            src: null,
+          },
+          style: { width: 200, height: 80 },
+        };
+        setNodes((nds) => nds.concat(newNode));
+        return;
+      }
+
       const newNode = {
         id: `node-${Date.now()}`,
         type,
@@ -206,6 +240,8 @@ export default function BoardCanvas({
       link: LinkNode,
       board: BoardNode,
       document: DocumentNode,
+      image: ImageNode,
+      file: FileNode,
     }),
     [],
   );

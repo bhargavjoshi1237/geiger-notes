@@ -76,30 +76,32 @@ export function useCanvasState(userId, boardId) {
     return state;
 }
 
-/**
- * Save canvas state to database
- * @param {string} userId - The user ID
- * @param {Array} nodes - The nodes array
- * @param {Array} edges - The edges array
- * @param {Object} viewport - The viewport object
- * @param {string} boardId - Optional board ID
- */
 export async function saveCanvasState(userId, nodes, edges, viewport, boardId) {
     const isProd = process.env.NODE_ENV === 'production';
     const basePath = isProd ? (process.env.NEXT_PUBLIC_BASE_PATH || '/notes') : '';
     try {
-        await fetch(`${basePath}/api/save-state`, {
+        const payload = JSON.stringify({
+            userId,
+            nodes,
+            edges,
+            viewport,
+            boardId
+        });
+
+        // NOTE: Do NOT use `keepalive: true` here.
+        // keepalive limits the request body to 64 KB, which is easily
+        // exceeded when nodes contain base64 drawing data from ImageNode.
+        const response = await fetch(`${basePath}/api/save-state`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            keepalive: true,
-            body: JSON.stringify({
-                userId,
-                nodes,
-                edges,
-                viewport,
-                boardId
-            })
+            body: payload,
         });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.details || `HTTP ${response.status}`);
+        }
+
         console.log('State saved to DB');
     } catch (error) {
         console.error('Failed to save state:', error);

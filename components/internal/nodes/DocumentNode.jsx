@@ -74,8 +74,8 @@ const DocumentNode = ({ id, data, selected, dragging }) => {
         className={`
             relative flex flex-col w-full h-full min-h-[68px] min-w-[200px] group
             transition-all duration-300 ease-out
-            bg-[#1e1e1e] rounded-lg shadow-lg
-            ${selected ? "border-2 border-white" : "border-2 border-zinc-700 hover:border-zinc-500"}
+            bg-[#1e1e1e] shadow-lg
+            ${selected ? "border-2 border-white" : "border-2 border-transparent hover:border-zinc-500"}
             ${dragging ? "shadow-2xl shadow-black/50 z-50" : ""}
         `}
         style={{
@@ -148,8 +148,9 @@ const DocumentNode = ({ id, data, selected, dragging }) => {
           position={Position.Left}
           className={`
             !w-2 !h-2 !bg-zinc-400 !border-0 
-            absolute !top-1/2 !-translate-y-1/2 !-left-[1px]
-            ${isConnecting ? "pointer-events-auto" : "pointer-events-none"}
+            absolute !top-[52%] !-translate-y-[50%] !-left-[1px]
+            transition-opacity duration-200
+            ${selected ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
           `}
         />
       </div>

@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { MainSidebar } from "./sidebar/MainSidebar";
 import EdgeSettingsSidebar from "./sidebar/EdgeSettingsSidebar";
 import NodeSettingsSidebar from "./sidebar/NodeSettingsSidebar";
+import ImageSettingsSidebar from "@/components/internal/layout/sidebar/ImageSettingsSidebar";
+import FileSettingsSidebar from "@/components/internal/layout/sidebar/FileSettingsSidebar";
 
 export default function Sidebar({
   selectedEdge,
@@ -30,6 +32,8 @@ export default function Sidebar({
 
   let activePanel = "main";
   if (selectedEdge) activePanel = "edge";
+  else if (selectedNode?.type === "image") activePanel = "image";
+  else if (selectedNode?.type === "file") activePanel = "file";
   else if (selectedNode) activePanel = "node";
 
   const edgeToRender = selectedEdge || cachedSelectedEdge;
@@ -64,6 +68,32 @@ export default function Sidebar({
       >
         {nodeToRender && (
           <NodeSettingsSidebar
+            selectedNode={nodeToRender}
+            onUpdateNode={onUpdateNode}
+            onBack={onDeselectNode}
+          />
+        )}
+      </div>
+      <div
+        className={`absolute inset-0 flex flex-col py-4 w-full h-full transition-transform duration-300 ease-in-out bg-[#1e1e1e] ${
+          activePanel === "image" ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {nodeToRender && (
+          <ImageSettingsSidebar
+            selectedNode={nodeToRender}
+            onUpdateNode={onUpdateNode}
+            onBack={onDeselectNode}
+          />
+        )}
+      </div>
+      <div
+        className={`absolute inset-0 flex flex-col py-4 w-full h-full transition-transform duration-300 ease-in-out bg-[#1e1e1e] ${
+          activePanel === "file" ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {nodeToRender && (
+          <FileSettingsSidebar
             selectedNode={nodeToRender}
             onUpdateNode={onUpdateNode}
             onBack={onDeselectNode}
