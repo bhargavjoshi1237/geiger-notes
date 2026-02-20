@@ -2,8 +2,8 @@ import React, { memo } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
 import { ArrowRight, Send } from "lucide-react";
 import Reactions from "../ui/Reactions";
+import TextEditingTrait from "./traits/TextEditingTrait";
 
-// Avatar Component
 const Avatar = ({ initials, className }) => (
   <div
     className={`w-8 h-8 rounded-full bg-[#FACC15] text-black flex items-center justify-center text-xs font-bold ${className}`}
@@ -74,19 +74,22 @@ const CommentNode = ({ id, data, selected }) => {
         <Avatar initials="JJ" className="shrink-0" />
 
         <div className="flex-1 relative flex items-center">
-          <input
-            type="text"
-            className="w-full bg-[#3B4654] text-zinc-200 text-sm rounded px-3 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-zinc-500 placeholder:text-zinc-500"
-            placeholder="Write a comment..."
-            value={comment}
-            onChange={handleChange}
+          <TextEditingTrait
+            className="w-full"
             onKeyDown={(e) => {
-              e.stopPropagation();
               if (e.key === "Enter") {
                 handleSend();
               }
             }}
-          />
+          >
+            <input
+              type="text"
+              className="w-full bg-[#3B4654] text-zinc-200 text-sm rounded px-3 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-zinc-500 placeholder:text-zinc-500"
+              placeholder="Write a comment..."
+              value={comment}
+              onChange={handleChange}
+            />
+          </TextEditingTrait>
           <button
             onClick={handleSend}
             className="absolute right-2 text-blue-400 hover:text-blue-300 text-xs font-medium transition-colors"

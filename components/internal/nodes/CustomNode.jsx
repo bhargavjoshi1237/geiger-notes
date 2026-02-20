@@ -8,6 +8,7 @@ import {
 } from "@xyflow/react";
 import { ArrowRight } from "lucide-react";
 import Reactions from "../ui/Reactions";
+import TextEditingTrait from "./traits/TextEditingTrait";
 
 const ResizeHandle = () => {
   return (
@@ -127,33 +128,32 @@ const CustomNode = ({ id, data, selected, dragging }) => {
 
         <div className="flex-1 w-full h-full overflow-hidden flex items-center justify-center">
           {selected ? (
-            <textarea
-              className="w-full h-full p-4 text-start bg-transparent resize-none outline-none text-zinc-300 placeholder:text-zinc-600 placeholder:text-start font-sans block"
-              placeholder="Start typing..."
-              value={data.label || ""}
-              onChange={(evt) => {
-                setNodes((nodes) =>
-                  nodes.map((n) => {
-                    if (n.id === id) {
-                      return {
-                        ...n,
-                        data: {
-                          ...n.data,
-                          label: evt.target.value,
-                        },
-                      };
-                    }
-                    return n;
-                  }),
-                );
-              }}
-              onKeyDown={(e) => {
-                e.stopPropagation();
-              }}
-              data-gramm="false"
-              data-gramm_editor="false"
-              data-enable-grammarly="false"
-            />
+            <TextEditingTrait className="w-full h-full block">
+              <textarea
+                className="w-full h-full p-4 text-start bg-transparent resize-none outline-none text-zinc-300 placeholder:text-zinc-600 placeholder:text-start font-sans"
+                placeholder="Start typing..."
+                value={data.label || ""}
+                onChange={(evt) => {
+                  setNodes((nodes) =>
+                    nodes.map((n) => {
+                      if (n.id === id) {
+                        return {
+                          ...n,
+                          data: {
+                            ...n.data,
+                            label: evt.target.value,
+                          },
+                        };
+                      }
+                      return n;
+                    }),
+                  );
+                }}
+                data-gramm="false"
+                data-gramm_editor="false"
+                data-enable-grammarly="false"
+              />
+            </TextEditingTrait>
           ) : (
             <p
               className={`font-sans p-4 whitespace-pre-wrap text-start w-full ${

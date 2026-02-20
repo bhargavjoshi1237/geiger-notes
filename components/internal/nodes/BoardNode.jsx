@@ -6,7 +6,8 @@ import {
   useReactFlow,
   useConnection,
 } from "@xyflow/react";
-import { LayoutDashboard, ArrowRight } from "lucide-react";
+import * as LucideIcons from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const ResizeHandle = () => {
   return (
@@ -87,15 +88,26 @@ const BoardNode = ({ id, data, selected, dragging }) => {
         </NodeResizeControl>
 
         <div className="flex-1 w-full h-full overflow-hidden flex items-center px-4 gap-3">
-          <div className="p-2 bg-purple-500/10 rounded-md text-purple-400 shrink-0">
-            <LayoutDashboard className="w-5 h-5" />
+          <div
+            className="p-2 rounded-md shrink-0 flex items-center justify-center transition-colors"
+            style={{
+              backgroundColor:
+                data.iconLightAccent || "rgba(168, 85, 247, 0.1)", // default purple-500/10
+              color: data.iconDarkAccent || "#c084fc", // default purple-400
+            }}
+          >
+            {(() => {
+              const IconComp =
+                LucideIcons[data.iconName] || LucideIcons.LayoutDashboard;
+              return <IconComp className="w-5 h-5" />;
+            })()}
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-zinc-200 font-medium text-sm truncate">
               {data.label || "Untitled Board"}
             </span>
-            <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold">
-              Double click to open
+            <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold truncate">
+              {data.caption ? data.caption : "Double click to open"}
             </span>
           </div>
         </div>
