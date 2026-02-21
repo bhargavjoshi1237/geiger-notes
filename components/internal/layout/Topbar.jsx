@@ -62,7 +62,7 @@ export default function Topbar({
             onClick={() => onBreadcrumbClick && onBreadcrumbClick(null)}
             className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors cursor-pointer p-1 rounded hover:bg-zinc-800"
           >
-            <span className="text-sm font-medium text-white">Home</span>
+            <span className="text-sm font-medium text-white">Notes</span>
           </div>
           {breadcrumbs &&
             breadcrumbs.map((crumb) => (
