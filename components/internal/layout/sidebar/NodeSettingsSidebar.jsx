@@ -7,9 +7,11 @@ import { EditBoardNamePlug } from "./plugs/EditBoardNamePlug";
 import { BoardIconPlug } from "./plugs/BoardIconPlug";
 import { EditClockThemePlug } from "./plugs/clock/EditClockThemePlug";
 import { TextFormattingPlug } from "./plugs/TextFormattingPlug";
+import { DownloadBoardPlug } from "./plugs/DownloadBoardPlug";
 import EditBoardNameDialog from "./dialogs/EditBoardNameDialog";
 import EditBoardIconDialog from "./dialogs/EditBoardIconDialog";
 import EditClockThemeDialog from "./dialogs/clock/EditClockThemeDialog";
+import DownloadBoardDialog from "./dialogs/DownloadBoardDialog";
 import { toast } from "sonner";
 
 export default function NodeSettingsSidebar({
@@ -20,6 +22,7 @@ export default function NodeSettingsSidebar({
   const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const [isEditIconOpen, setIsEditIconOpen] = useState(false);
   const [isEditClockThemeOpen, setIsEditClockThemeOpen] = useState(false);
+  const [isDownloadOpen, setIsDownloadOpen] = useState(false);
 
   if (!selectedNode) return null;
 
@@ -86,6 +89,9 @@ export default function NodeSettingsSidebar({
         {selectedNode.type === "board" && (
           <BoardIconPlug onEdit={() => setIsEditIconOpen(true)} />
         )}
+        {selectedNode.type === "board" && (
+          <DownloadBoardPlug onDownload={() => setIsDownloadOpen(true)} />
+        )}
 
         {selectedNode.type === "clock" ? (
           <EditClockThemePlug onEdit={() => setIsEditClockThemeOpen(true)} />
@@ -121,6 +127,12 @@ export default function NodeSettingsSidebar({
             initialLightAccent={selectedNode.data.iconLightAccent}
             initialDarkAccent={selectedNode.data.iconDarkAccent}
             onSave={handleSaveBoardIcon}
+          />
+          <DownloadBoardDialog
+            open={isDownloadOpen}
+            onOpenChange={setIsDownloadOpen}
+            boardId={selectedNode.data.boardId}
+            boardName={selectedNode.data.label || selectedNode.data.name}
           />
         </>
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 export function useImageModal({ isDrawing }) {
   const [isFullResOpen, setIsFullResOpen] = useState(false);
@@ -13,7 +13,12 @@ export function useImageModal({ isDrawing }) {
     setMounted(true);
   }, []);
 
+  const isInitialMount = useRef(true);
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     if (isDrawing) {
       setIsFullResOpen(true);
     }
