@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Geiger Notes - Home",
-  description: "Geiger Notes - Home",
+  title: "Geiger Studio - Notes",
+  description: "Geiger Studio - Notes",
 };
 
 export default function RootLayout({ children }) {
