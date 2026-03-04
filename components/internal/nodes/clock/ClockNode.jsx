@@ -96,6 +96,10 @@ const ClockNode = ({ id, data, selected, dragging }) => {
 
   const digitalTextColor = data.digitalTextColor || "#ffffff";
   const digitalDateColor = data.digitalDateColor || "#a1a1aa";
+  const digitalShowDate = data.digitalShowDate !== false;
+  const digitalShowSeconds = data.digitalShowSeconds !== false;
+  const circularSeconds = data.circularSeconds || false;
+  const digitalFontSize = data.digitalFontSize || "medium";
 
   const hours = time.getHours();
   const minutes = time.getMinutes();
@@ -112,6 +116,68 @@ const ClockNode = ({ id, data, selected, dragging }) => {
     minute: "2-digit",
     second: "2-digit",
   });
+
+  const hourMarkers = data.hourMarkers || "none";
+  const numbers = data.numbers || "none";
+
+  const renderMarkers = () => {
+    if (hourMarkers === "none") return null;
+    const showAll = hourMarkers === "all";
+    const markers = [];
+    for (let i = 1; i <= 12; i++) {
+      if (!showAll && i % 3 !== 0) continue;
+      markers.push(
+        <div
+          key={`marker-${i}`}
+          className="absolute left-1/2 top-1/2 origin-center"
+          style={{
+            width: i % 3 === 0 ? "4px" : "2px",
+            height: "100%",
+            transform: `translate(-50%, -50%) rotate(${i * 30}deg)`,
+          }}
+        >
+          <div
+            className="mx-auto rounded-full"
+            style={{
+              width: "100%",
+              height: i % 3 === 0 ? "8px" : "4px",
+              backgroundColor: hourHandColor,
+              marginTop: "2px",
+            }}
+          />
+        </div>,
+      );
+    }
+    return markers;
+  };
+
+  const renderNumbers = () => {
+    if (numbers === "none") return null;
+    const showAll = numbers === "all";
+    const nums = [];
+    for (let i = 1; i <= 12; i++) {
+      if (!showAll && i % 3 !== 0) continue;
+      const angle = i * 30 * (Math.PI / 180);
+      const radius = 38;
+      const x = 50 + radius * Math.sin(angle);
+      const y = 50 - radius * Math.cos(angle);
+      nums.push(
+        <div
+          key={`num-${i}`}
+          className="absolute font-semibold text-center transform -translate-x-1/2 -translate-y-1/2 leading-none"
+          style={{
+            left: `${x}%`,
+            top: `${y}%`,
+            color: hourHandColor,
+            fontSize: "12px",
+          }}
+        >
+          {i}
+        </div>,
+      );
+    }
+    return nums;
+  };
 
   return (
     <>
@@ -183,6 +249,8 @@ const ClockNode = ({ id, data, selected, dragging }) => {
                   borderColor: borderColor,
                 }}
               >
+                {renderMarkers()}
+                {renderNumbers()}
                 <div
                   className="absolute left-1/2 bottom-1/2 w-[6px] rounded-full origin-bottom"
                   style={{
@@ -220,23 +288,69 @@ const ClockNode = ({ id, data, selected, dragging }) => {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-center">
+            <div
+              className={`relative flex flex-col items-center justify-center text-center w-full h-full ${circularSeconds ? "p-4" : ""}`}
+            >
+              {circularSeconds && (
+                <>
+                  <div
+                    className={`absolute inset-[8px] pointer-events-none ${showBackground ? "rounded-[12px]" : "rounded-full"}`}
+                    style={{
+                      padding: "4px",
+                      background: "rgba(255,255,255,0.06)",
+                      WebkitMask:
+                        "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                      WebkitMaskComposite: "xor",
+                      maskComposite: "exclude",
+                    }}
+                  />
+                  <div
+                    className={`absolute inset-[8px] pointer-events-none ${showBackground ? "rounded-[12px]" : "rounded-full"}`}
+                    style={{
+                      padding: "4px",
+                      background: `conic-gradient(from 0deg, ${secondHandColor || "#ff8da1"} ${((seconds + milliseconds / 1000) / 60) * 360}deg, transparent 0deg)`,
+                      WebkitMask:
+                        "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                      WebkitMaskComposite: "xor",
+                      maskComposite: "exclude",
+                    }}
+                  />
+                </>
+              )}
               <div
-                className="text-4xl md:text-5xl lg:text-6xl font-black tracking-wider drop-shadow-lg tabular-nums"
+                className={`font-black tracking-wider drop-shadow-lg tabular-nums ${
+                  digitalFontSize === "small"
+                    ? "text-3xl md:text-4xl lg:text-5xl"
+                    : digitalFontSize === "large"
+                      ? "text-5xl md:text-6xl lg:text-7xl"
+                      : "text-4xl md:text-5xl lg:text-6xl"
+                }`}
                 style={{ color: digitalTextColor }}
               >
-                {formattedTime}
-              </div>
-              <div
-                className="text-sm mt-2 uppercase tracking-widest font-semibold"
-                style={{ color: digitalDateColor }}
-              >
-                {time.toLocaleDateString(undefined, {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
+                {time.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  ...(digitalShowSeconds ? { second: "2-digit" } : {}),
                 })}
               </div>
+              {digitalShowDate && (
+                <div
+                  className={`mt-2 uppercase tracking-widest font-semibold ${
+                    digitalFontSize === "small"
+                      ? "text-[10px]"
+                      : digitalFontSize === "large"
+                        ? "text-base"
+                        : "text-sm"
+                  }`}
+                  style={{ color: digitalDateColor }}
+                >
+                  {time.toLocaleDateString(undefined, {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>

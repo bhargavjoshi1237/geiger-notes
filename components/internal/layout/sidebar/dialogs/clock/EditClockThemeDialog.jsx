@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import ColorPicker from "../../../../edges/ColorePicker";
 import { Settings2, Clock, Monitor, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const ColorField = ({ label, value, onChange }) => (
   <div className="flex items-center justify-between py-1.5 group/color">
@@ -24,15 +25,6 @@ const ColorField = ({ label, value, onChange }) => (
         style={{ backgroundColor: value }}
       />
     </ColorPicker>
-  </div>
-);
-
-const SectionLabel = ({ icon: Icon, children }) => (
-  <div className="flex items-center gap-1.5 mb-2">
-    {Icon && <Icon className="w-3 h-3 text-zinc-500" />}
-    <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-[0.08em]">
-      {children}
-    </span>
   </div>
 );
 
@@ -64,11 +56,15 @@ export default function EditClockThemeDialog({
         centerDotColor: initialData?.centerDotColor || "#333",
         movement: initialData?.movement || "smooth",
         showSeconds: initialData?.showSeconds !== false,
+        hourMarkers: initialData?.hourMarkers || "none",
+        numbers: initialData?.numbers || "none",
 
         digitalBackgroundColor:
           initialData?.digitalBackgroundColor || "#232323",
         digitalTextColor: initialData?.digitalTextColor || "#ffffff",
         digitalDateColor: initialData?.digitalDateColor || "#a1a1aa",
+        digitalShowDate: initialData?.digitalShowDate !== false,
+        digitalShowSeconds: initialData?.digitalShowSeconds !== false,
         showBackground: initialData?.showBackground !== false,
       });
     }
@@ -109,6 +105,65 @@ export default function EditClockThemeDialog({
   const minuteDeg = (minutes + seconds / 60) * 6;
   const hourDeg = ((hours % 12) + minutes / 60) * 30;
   const activeTab = data.clockType || "analog";
+
+  const renderMarkers = () => {
+    if (!data.hourMarkers || data.hourMarkers === "none") return null;
+    const showAll = data.hourMarkers === "all";
+    const markers = [];
+    for (let i = 1; i <= 12; i++) {
+      if (!showAll && i % 3 !== 0) continue;
+      markers.push(
+        <div
+          key={`marker-${i}`}
+          className="absolute left-1/2 top-1/2 origin-center"
+          style={{
+            width: i % 3 === 0 ? "4px" : "2px",
+            height: "100%",
+            transform: `translate(-50%, -50%) rotate(${i * 30}deg)`,
+          }}
+        >
+          <div
+            className="mx-auto rounded-full"
+            style={{
+              width: "100%",
+              height: i % 3 === 0 ? "8px" : "4px",
+              backgroundColor: data.hourHandColor,
+              marginTop: "2px",
+            }}
+          />
+        </div>,
+      );
+    }
+    return markers;
+  };
+
+  const renderNumbers = () => {
+    if (!data.numbers || data.numbers === "none") return null;
+    const showAll = data.numbers === "all";
+    const nums = [];
+    for (let i = 1; i <= 12; i++) {
+      if (!showAll && i % 3 !== 0) continue;
+      const angle = i * 30 * (Math.PI / 180);
+      const radius = 38;
+      const x = 50 + radius * Math.sin(angle);
+      const y = 50 - radius * Math.cos(angle);
+      nums.push(
+        <div
+          key={`num-${i}`}
+          className="absolute font-semibold text-center transform -translate-x-1/2 -translate-y-1/2 leading-none"
+          style={{
+            left: `${x}%`,
+            top: `${y}%`,
+            color: data.hourHandColor,
+            fontSize: "12px",
+          }}
+        >
+          {i}
+        </div>,
+      );
+    }
+    return nums;
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -155,8 +210,7 @@ export default function EditClockThemeDialog({
         </div>
 
         <div className="p-4 bg-[#1e1e1e] h-[450px] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800">
-          <div className="mb-4">
-            <SectionLabel>Preview</SectionLabel>
+          <div className="mb-2">
             <div
               className="rounded-xl border border-zinc-800/60 bg-[#232323] p-5 flex items-center justify-center h-[180px]"
               style={{
@@ -183,6 +237,8 @@ export default function EditClockThemeDialog({
                         borderColor: data.borderColor,
                       }}
                     >
+                      {renderMarkers()}
+                      {renderNumbers()}
                       <div
                         className="absolute left-1/2 bottom-1/2 w-[6px] rounded-full origin-bottom"
                         style={{
@@ -219,25 +275,30 @@ export default function EditClockThemeDialog({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-center w-[110px] h-[110px]">
+                  <div className="relative flex flex-col items-center justify-center text-center w-full h-full p-2">
                     <div
-                      className="text-2xl font-black tracking-wider tabular-nums"
+                      className="font-black tracking-wider tabular-nums text-2xl"
                       style={{ color: data.digitalTextColor }}
                     >
                       {time.toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
+                        ...(data.digitalShowSeconds
+                          ? { second: "2-digit" }
+                          : {}),
                       })}
                     </div>
-                    <div
-                      className="text-[10px] mt-1.5 uppercase tracking-widest font-semibold"
-                      style={{ color: data.digitalDateColor }}
-                    >
-                      {time.toLocaleDateString(undefined, {
-                        weekday: "short",
-                        day: "numeric",
-                      })}
-                    </div>
+                    {data.digitalShowDate && (
+                      <div
+                        className="mt-1.5 uppercase tracking-widest font-semibold text-[10px]"
+                        style={{ color: data.digitalDateColor }}
+                      >
+                        {time.toLocaleDateString(undefined, {
+                          weekday: "short",
+                          day: "numeric",
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -245,7 +306,7 @@ export default function EditClockThemeDialog({
           </div>
 
           <div className="mb-4">
-            <div className="rounded-lg px-3.5 py-2 space-y-0.5">
+            <div className="rounded-lg px-1.5 py-2 space-y-0.5">
               <ToggleRow
                 label="Square Node"
                 checked={data.showBackground}
@@ -266,6 +327,91 @@ export default function EditClockThemeDialog({
                     label="Show Seconds"
                     checked={data.showSeconds}
                     onChange={(v) => handleChange("showSeconds", v)}
+                  />
+                  <div className="h-px my-2" />
+                  <div className="flex flex-col gap-1.5 pt-1 pb-1">
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] text-zinc-500 uppercase">
+                          Markers
+                        </span>
+                        <ToggleGroup
+                          type="single"
+                          value={data.hourMarkers || "none"}
+                          onValueChange={(v) => {
+                            if (v) handleChange("hourMarkers", v);
+                          }}
+                          className="w-full justify-start gap-0.5 p-0.5 bg-[#161616] border border-zinc-800/50 rounded-lg"
+                        >
+                          <ToggleGroupItem
+                            value="none"
+                            className="flex-1 h-6 text-[10px] rounded-md data-[state=on]:bg-[#2c2c2c] data-[state=on]:text-white text-zinc-400 hover:text-zinc-300 transition-all"
+                          >
+                            None
+                          </ToggleGroupItem>
+                          <ToggleGroupItem
+                            value="four"
+                            className="flex-1 h-6 text-[10px] rounded-md data-[state=on]:bg-[#2c2c2c] data-[state=on]:text-white text-zinc-400 hover:text-zinc-300 transition-all"
+                          >
+                            4
+                          </ToggleGroupItem>
+                          <ToggleGroupItem
+                            value="all"
+                            className="flex-1 h-6 text-[10px] rounded-md data-[state=on]:bg-[#2c2c2c] data-[state=on]:text-white text-zinc-400 hover:text-zinc-300 transition-all"
+                          >
+                            All
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] text-zinc-500 uppercase">
+                          Numbers
+                        </span>
+                        <ToggleGroup
+                          type="single"
+                          value={data.numbers || "none"}
+                          onValueChange={(v) => {
+                            if (v) handleChange("numbers", v);
+                          }}
+                          className="w-full justify-start gap-0.5 p-0.5 bg-[#141414] border border-zinc-800/50 rounded-lg"
+                        >
+                          <ToggleGroupItem
+                            value="none"
+                            className="flex-1 h-6 text-[10px] rounded-md data-[state=on]:bg-[#2c2c2c] data-[state=on]:text-white text-zinc-400 hover:text-zinc-300 transition-all"
+                          >
+                            None
+                          </ToggleGroupItem>
+                          <ToggleGroupItem
+                            value="four"
+                            className="flex-1 h-6 text-[10px] rounded-md data-[state=on]:bg-[#2c2c2c] data-[state=on]:text-white text-zinc-400 hover:text-zinc-300 transition-all"
+                          >
+                            4
+                          </ToggleGroupItem>
+                          <ToggleGroupItem
+                            value="all"
+                            className="flex-1 h-6 text-[10px] rounded-md data-[state=on]:bg-[#2c2c2c] data-[state=on]:text-white text-zinc-400 hover:text-zinc-300 transition-all"
+                          >
+                            All
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+              {activeTab === "digital" && (
+                <>
+                  <div className="h-px my-1" />
+                  <ToggleRow
+                    label="Show Date"
+                    checked={data.digitalShowDate}
+                    onChange={(v) => handleChange("digitalShowDate", v)}
+                  />
+                  <div className="h-px my-1" />
+                  <ToggleRow
+                    label="Show Seconds"
+                    checked={data.digitalShowSeconds}
+                    onChange={(v) => handleChange("digitalShowSeconds", v)}
                   />
                 </>
               )}
