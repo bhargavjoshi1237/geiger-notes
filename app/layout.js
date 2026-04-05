@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Geiger Studio - Notes",
+  title: "Notes - Geiger Studio",
   description: "Geiger Studio - Notes",
 };
 
