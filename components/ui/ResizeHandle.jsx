@@ -1,5 +1,4 @@
-// Re-export from shared location for backward compatibility
-export { default } from "@/components/ui/ResizeHandle";
+const ResizeHandle = () => {
   return (
     <div className="absolute bottom-1 right-1 p-1">
       <svg width="10" height="10" viewBox="0 0 10 10" className="opacity-50">

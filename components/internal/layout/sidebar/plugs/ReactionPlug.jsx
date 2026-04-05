@@ -1,7 +1,17 @@
 "use client";
 
 import React from "react";
-import { SmilePlus } from "lucide-react";
+import {
+  SmilePlus,
+  ThumbsUp,
+  Heart,
+  Laugh,
+  ScanEye,
+  Frown,
+  Angry,
+  PartyPopper,
+  Flame,
+} from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -9,17 +19,19 @@ import {
 } from "@/components/ui/popover";
 import { SidebarButton } from "../SidebarPrimitives";
 
-export const ReactionPlug = ({ onReaction, emojis }) => {
-  const commonEmojis = emojis || [
-    "👍",
-    "❤️",
-    "😂",
-    "😮",
-    "😢",
-    "😡",
-    "🎉",
-    "🔥",
-  ];
+const defaultReactions = [
+  { icon: ThumbsUp, label: "Like"},
+  { icon: Heart, label: "Love"},
+  { icon: Laugh, label: "Laugh"},
+  { icon: ScanEye, label: "Wow"},
+  { icon: Frown, label: "Sad"},
+  { icon: Angry, label: "Angry"},
+  { icon: PartyPopper, label: "Celebrate"},
+  { icon: Flame, label: "Fire"},
+];
+
+export const ReactionPlug = ({ onReaction, emojis, reactions }) => {
+  const items = reactions || defaultReactions;
 
   return (
     <Popover>
@@ -27,23 +39,28 @@ export const ReactionPlug = ({ onReaction, emojis }) => {
         <SidebarButton icon={SmilePlus} label="Add reaction" />
       </PopoverTrigger>
       <PopoverContent
-        className="w-auto p-2 bg-zinc-900/90 backdrop-blur-xl border-zinc-700/50 shadow-2xl rounded-xl"
+        className="w-auto p-1.5 bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 shadow-2xl rounded-2xl"
         side="right"
         align="start"
         sideOffset={12}
       >
-        <div className="grid grid-cols-4 gap-1.5 p-1">
-          {commonEmojis.map((emoji) => (
+        <div className="flex flex-wrap gap-0.5 p-0.5 max-w-[180px]">
+          {items.map(({ icon: Icon, label, color }) => (
             <button
-              key={emoji}
+              key={label}
+              title={label}
               className="
-                text-xl hover:bg-zinc-800 p-2.5 rounded-lg 
-                transition-all duration-200 hover:scale-110 
-                active:scale-95 flex items-center justify-center
+                group relative p-2 rounded-xl
+                transition-all duration-150
+                hover:bg-zinc-800/80
+                active:scale-90 flex items-center justify-center
               "
-              onClick={() => onReaction(emoji)}
+              onClick={() => onReaction(label)}
             >
-              <span className="drop-shadow-sm">{emoji}</span>
+              <Icon
+                className={`w-[18px] h-[18px] ${color} transition-transform duration-150 group-hover:scale-110`}
+                strokeWidth={1.8}
+              />
             </button>
           ))}
         </div>

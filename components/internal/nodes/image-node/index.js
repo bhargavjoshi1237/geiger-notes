@@ -1,5 +1,5 @@
 // Barrel exports for the image-node module
-export { default as ResizeHandle } from "./ResizeHandle";
+export { default as ResizeHandle } from "@/components/ui/ResizeHandle";
 export { default as DrawingToolbar } from "./DrawingToolbar";
 export { default as ImageFullscreenModal } from "./ImageFullscreenModal";
 export { useDrawing } from "./useDrawing";

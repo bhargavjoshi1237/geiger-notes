@@ -8,7 +8,6 @@ import Sidebar from "@/components/internal/layout/Sidebar";
 import Topbar from "@/components/internal/layout/Topbar";
 import CustomNode from "@/components/internal/nodes/CustomNode";
 import CenterEdge from "@/components/internal/edges/CenterEdge";
-import ZoomControls from "@/components/internal/canvas/zoom-controls";
 import { useHomeLogic } from "@/lib/wrapers/homepage/HomePage";
 import CanvasSkeleton from "@/components/internal/canvas/CanvasSkeleton";
 import CommentNode from "@/components/internal/nodes/CommentNode";
@@ -18,6 +17,7 @@ import DocumentNode from "@/components/internal/nodes/DocumentNode";
 import ImageNode from "@/components/internal/nodes/ImageNode";
 import FileNode from "@/components/internal/nodes/FileNode";
 import ClockNode from "@/components/internal/nodes/clock/ClockNode";
+import CalendarNode from "@/components/internal/nodes/calendar/CalendarNode";
 import "@xyflow/react/dist/style.css";
 
 export default function BoardCanvas({
@@ -38,6 +38,7 @@ export default function BoardCanvas({
     onMove,
     isInitialized,
     isLoading,
+    isSyncing,
     panOnDrag,
     selectionOnDrag,
     panOnScroll,
@@ -55,7 +56,9 @@ export default function BoardCanvas({
   };
 
   const [rfInstance, setRfInstance] = React.useState(null);
+  const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const lastPaneClick = React.useRef(0);
+  const toggleSidebar = React.useCallback(() => setSidebarOpen((v) => !v), []);
 
   const onDragOver = React.useCallback((event) => {
     event.preventDefault();
@@ -266,6 +269,7 @@ export default function BoardCanvas({
       image: ImageNode,
       file: FileNode,
       clock: ClockNode,
+      calendar: CalendarNode,
     }),
     [],
   );
@@ -276,6 +280,15 @@ export default function BoardCanvas({
     }),
     [],
   );
+
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const check = () => setIsMobile(window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const hasAnimated = React.useRef(false);
 
@@ -304,18 +317,69 @@ export default function BoardCanvas({
   );
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#232323] text-white">
-      <Topbar
-        id={id}
-        settings={settings}
-        onSettingsChange={handleSettingsChange}
-        nodes={nodes}
-        edges={edges}
-        onMerge={handleMerge}
-        breadcrumbs={breadcrumbs}
-        onBreadcrumbClick={onBreadcrumbClick}
-      />
-      <div className="flex-1 flex h-full relative">
+    <div className="relative h-screen w-screen overflow-hidden bg-[#161616] text-white">
+      <div
+        className={`absolute inset-0 z-10 bg-[#161616] transition-opacity duration-700 pointer-events-none ${
+          !isInitialized || isLoading ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <CanvasSkeleton />
+      </div>
+
+      <div
+        className={`absolute inset-0 transition-opacity duration-1000 ${
+          !isInitialized || isLoading ? "opacity-0 pointer-events-none" : "opacity-100"
+        }`}
+      >
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeDragStop={onNodeDragStop}
+          onMove={onMove}
+          onInit={setRfInstance}
+          onPaneClick={onPaneClick}
+          onDragOver={onDragOver}
+          onDrop={onDrop}
+          onNodeDoubleClick={onNodeDoubleClick}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          colorMode="dark"
+          defaultViewport={viewport}
+          className="bg-[#161616] touch-none"
+          proOptions={{ hideAttribution: true }}
+          minZoom={0.1}
+          maxZoom={2}
+          deleteKeyCode={["Backspace", "Delete"]}
+          panOnDrag={isMobile ? true : panOnDrag}
+          selectionOnDrag={isMobile ? false : selectionOnDrag}
+          panOnScroll={panOnScroll}
+          zoomOnScroll={zoomOnScroll}
+          zoomOnDoubleClick={false}
+          selectionMode={SelectionMode.Partial}
+        >
+          <Background color="#373737" gap={12} size={1} variant="dots" />
+        </ReactFlow>
+      </div>
+
+      <div className="absolute top-0 left-0 right-0 z-40">
+        <Topbar
+          id={id}
+          settings={settings}
+          onSettingsChange={handleSettingsChange}
+          nodes={nodes}
+          edges={edges}
+          onMerge={handleMerge}
+          breadcrumbs={breadcrumbs}
+          onBreadcrumbClick={onBreadcrumbClick}
+          isSyncing={isSyncing}
+          onToggleSidebar={toggleSidebar}
+        />
+      </div>
+
+      <div className={`absolute top-14 bottom-0 left-0 z-40 transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
         <Sidebar
           selectedEdge={selectedEdge}
           onUpdateEdge={updateEdge}
@@ -324,51 +388,30 @@ export default function BoardCanvas({
           onUpdateNode={updateNode}
           onDeselectNode={deselectNodes}
         />
-        <main className="flex-1 relative h-full bg-[#232323]">
-          <div
-            className={`absolute inset-0 z-10 bg-[#232323] transition-opacity duration-700 pointer-events-none 
-                        ${!isInitialized || isLoading ? "opacity-100" : "opacity-0"}`}
-          >
-            <CanvasSkeleton />
-          </div>
+      </div>
 
-          <div
-            className={`absolute inset-0 transition-opacity duration-1000 ${!isInitialized || isLoading ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+      <div className={`absolute bottom-4 z-50 transition-all duration-300 ${sidebarOpen ? "left-20" : "left-4"}`}>
+        <div className="flex flex-col bg-[#333333]/60 backdrop-blur-md rounded-lg shadow-xl border border-zinc-700/50 overflow-hidden">
+          <button
+            onClick={() => rfInstance?.zoomIn({ duration: 300 })}
+            className="p-2 hover:bg-zinc-700/60 text-zinc-400 hover:text-white transition-colors border-b border-zinc-700/50"
+            title="Zoom In"
           >
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onNodeDragStop={onNodeDragStop}
-              onMove={onMove}
-              onInit={setRfInstance}
-              onPaneClick={onPaneClick}
-              onDragOver={onDragOver}
-              onDrop={onDrop}
-              onNodeDoubleClick={onNodeDoubleClick}
-              nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
-              colorMode="dark"
-              defaultViewport={viewport}
-              className="bg-[#232323]"
-              proOptions={{ hideAttribution: true }}
-              minZoom={0.1}
-              maxZoom={2}
-              deleteKeyCode={["Backspace", "Delete"]}
-              panOnDrag={panOnDrag}
-              selectionOnDrag={selectionOnDrag}
-              panOnScroll={panOnScroll}
-              zoomOnScroll={zoomOnScroll}
-              zoomOnDoubleClick={false}
-              selectionMode={SelectionMode.Partial}
-            >
-              <Background color="#373737" gap={12} size={1} variant="dots" />
-              <ZoomControls />
-            </ReactFlow>
-          </div>
-        </main>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+          <button
+            onClick={() => rfInstance?.zoomOut({ duration: 300 })}
+            className="p-2 hover:bg-zinc-700/60 text-zinc-400 hover:text-white transition-colors"
+            title="Zoom Out"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );

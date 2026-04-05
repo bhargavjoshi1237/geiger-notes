@@ -5,10 +5,8 @@ import { ArrowLeft } from "lucide-react";
 
 /**
  * SidebarButton
- * Minimalist version.
- * - Removes bold borders and glows.
- * - Relies on subtle background shifts for hover.
- * - Tooltip is understated and precise.
+ * Minimalist version — geiger-flow color palette.
+ * Uses transparent bg with subtle #2a2a2a hover states.
  */
 export const SidebarButton = React.forwardRef(
   (
@@ -25,15 +23,12 @@ export const SidebarButton = React.forwardRef(
           transition-colors duration-200 ease-in-out
           outline-none
           
-          text-zinc-500 hover:text-zinc-900 
-          hover:bg-zinc-800 
-          
-          dark:text-zinc-400 dark:hover:text-zinc-100 
-          dark:hover:bg-zinc-800
+          text-[#a3a3a3] hover:text-[#e7e7e7]
+          hover:bg-[#2a2a2a]
           
           ${
             active
-              ? "bg-zinc-200/50 text-zinc-900 dark:bg-zinc-800/80 dark:text-zinc-50"
+              ? "bg-[#242424] text-white"
               : "bg-transparent"
           }
 
@@ -42,7 +37,7 @@ export const SidebarButton = React.forwardRef(
         {...props}
       >
         <div className="flex items-center justify-center relative z-10">
-          {children || (Icon && <Icon className="w-5 h-5" strokeWidth={1.5} />)}
+          {children || (Icon && <Icon className="w-5 h-5" strokeWidth={1.75} />)}
         </div>
       </button>
     );
@@ -58,7 +53,7 @@ export const SidebarHeader = ({ onBack, label = "Back" }) => (
         icon={ArrowLeft}
         label={label}
         onClick={onBack}
-        className="w-10 h-10 bg-zinc-800/40 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/60 border border-transparent hover:border-zinc-700"
+        className="w-10 h-10 bg-[#242424]/40 text-[#a3a3a3] hover:text-[#e7e7e7] hover:bg-[#2a2a2a] border border-transparent hover:border-[#333333]"
       />
     </div>
   </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo } from 'react';
+import { useSearchParams } from "next/navigation";
 import { ReactFlow, Background, SelectionMode } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import Sidebar from '@/components/internal/layout/Sidebar';
@@ -16,6 +17,14 @@ import UserDrawer from '@/components/internal/layout/UserDrawer';
 
 export default function CollabPage({ params }) {
     const { id } = React.use(params);
+    const searchParams = useSearchParams();
+    const debugBgLayers = searchParams.get("layerdebug") === "1";
+
+    const shellBgClass = debugBgLayers ? "bg-red-700/85" : "bg-[#161616]";
+    const mainBgClass = debugBgLayers ? "bg-emerald-700/55" : "";
+    const loadingBgClass = debugBgLayers ? "bg-yellow-500/70" : "bg-[#161616]";
+    const flowBgClass = debugBgLayers ? "bg-blue-700/45" : "bg-[#161616]";
+
     const {
         nodes,
         edges,
@@ -130,7 +139,7 @@ export default function CollabPage({ params }) {
     }, [settings.doubleClickToInsert, rfInstance, setNodes, role]);
 
     return (
-        <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#232323] text-white">
+        <div className={`flex flex-col h-screen w-screen overflow-hidden ${shellBgClass} text-white`}>
             <Topbar 
                 id={id} 
                 settings={settings} 
@@ -143,8 +152,16 @@ export default function CollabPage({ params }) {
                 onKickMember={kickMember}
                 onLeaveSession={leaveSession}
             />
+
+            {debugBgLayers && (
+                <div className="pointer-events-none fixed top-14 right-3 z-[120] rounded-md border border-white/30 bg-black/70 px-2 py-1 text-[10px] leading-4 text-white font-mono">
+                    shell: red | main: green | loading: yellow | flow: blue
+                </div>
+            )}
+
             <div className="flex-1 flex h-full relative">
                 <Sidebar 
+                    debugBgLayers={debugBgLayers}
                     selectedEdge={selectedEdge} 
                     onUpdateEdge={updateEdge} 
                     onDeselect={deselectEdges}
@@ -152,9 +169,9 @@ export default function CollabPage({ params }) {
                     onUpdateNode={updateNode}
                     onDeselectNode={deselectNodes}
                 />
-                <main className="flex-1 relative h-full bg-[#232323]">
+                <main className={`flex-1 relative h-full ${mainBgClass}`}>
                     <div 
-                        className={`absolute inset-0 z-10 bg-[#232323] transition-opacity duration-700 pointer-events-none 
+                        className={`absolute inset-0 z-10 ${loadingBgClass} transition-opacity duration-700 pointer-events-none 
                         ${!isLoaded ? 'opacity-100' : 'opacity-0'}`}
                     >
                          <CanvasSkeleton />
@@ -178,7 +195,7 @@ export default function CollabPage({ params }) {
                             nodeTypes={nodeTypes}
                             edgeTypes={edgeTypes}
                             colorMode="dark"
-                            className="bg-[#232323]"
+                            className={flowBgClass}
                             minZoom={0.1}
                             maxZoom={2}
                             deleteKeyCode={['Backspace', 'Delete']}

@@ -2,7 +2,7 @@ import React from "react";
 
 const CanvasSkeleton = () => {
   return (
-    <div className="flex-1 relative h-full w-full bg-[#232323] overflow-hidden">
+    <div className="flex-1 relative h-full w-full bg-transparent overflow-hidden">
       <div
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{

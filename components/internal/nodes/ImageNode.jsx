@@ -10,7 +10,6 @@ import {
 } from "@xyflow/react";
 import { ArrowRight } from "lucide-react";
 import {
-  ResizeHandle,
   ImageFullscreenModal,
   useDrawing,
   useImageModal,
@@ -18,6 +17,7 @@ import {
   DEFAULT_TRANSFORM,
   PLACEHOLDER_SRC,
 } from "./image-node";
+import ResizeHandle from "@/components/ui/ResizeHandle";
 
 const ImageNode = ({ id, data, selected, dragging }) => {
   const { setNodes } = useReactFlow();

@@ -6,11 +6,13 @@ import { ColorPlug } from "./plugs/ColorPlug";
 import { EditBoardNamePlug } from "./plugs/EditBoardNamePlug";
 import { BoardIconPlug } from "./plugs/BoardIconPlug";
 import { EditClockThemePlug } from "./plugs/clock/EditClockThemePlug";
+import { EditCalendarThemePlug } from "./plugs/calendar/EditCalendarThemePlug";
 import { TextFormattingPlug } from "./plugs/TextFormattingPlug";
 import { DownloadBoardPlug } from "./plugs/DownloadBoardPlug";
 import EditBoardNameDialog from "./dialogs/EditBoardNameDialog";
 import EditBoardIconDialog from "./dialogs/EditBoardIconDialog";
 import EditClockThemeDialog from "./dialogs/clock/EditClockThemeDialog";
+import EditCalendarThemeDialog from "./dialogs/calendar/EditCalendarThemeDialog";
 import DownloadBoardDialog from "./dialogs/DownloadBoardDialog";
 import { toast } from "sonner";
 
@@ -22,6 +24,7 @@ export default function NodeSettingsSidebar({
   const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const [isEditIconOpen, setIsEditIconOpen] = useState(false);
   const [isEditClockThemeOpen, setIsEditClockThemeOpen] = useState(false);
+  const [isEditCalendarThemeOpen, setIsEditCalendarThemeOpen] = useState(false);
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
 
   if (!selectedNode) return null;
@@ -95,6 +98,8 @@ export default function NodeSettingsSidebar({
 
         {selectedNode.type === "clock" ? (
           <EditClockThemePlug onEdit={() => setIsEditClockThemeOpen(true)} />
+        ) : selectedNode.type === "calendar" ? (
+          <EditCalendarThemePlug onEdit={() => setIsEditCalendarThemeOpen(true)} />
         ) : (
           <ColorPlug
             value={currentColor}
@@ -141,6 +146,15 @@ export default function NodeSettingsSidebar({
         <EditClockThemeDialog
           open={isEditClockThemeOpen}
           onOpenChange={setIsEditClockThemeOpen}
+          initialData={selectedNode.data}
+          onSave={handleSaveClockTheme}
+        />
+      )}
+
+      {selectedNode.type === "calendar" && (
+        <EditCalendarThemeDialog
+          open={isEditCalendarThemeOpen}
+          onOpenChange={setIsEditCalendarThemeOpen}
           initialData={selectedNode.data}
           onSave={handleSaveClockTheme}
         />

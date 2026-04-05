@@ -6,8 +6,8 @@ export default function ZoomControls() {
     const { zoomIn, zoomOut } = useReactFlow();
 
     return (
-        <div className="absolute bottom-4 left-4 flex flex-col gap-2 z-50">
-            <div className="flex flex-col bg-[#333333] rounded-lg shadow-xl border border-zinc-700 overflow-hidden">
+        <div className="absolute bottom-4 left-4 flex flex-col gap-2 z-[60]">
+            <div className="flex flex-col bg-[#333333]/60 backdrop-blur-md rounded-lg shadow-xl border border-zinc-700/50 overflow-hidden">
                 <button
                     onClick={() => zoomIn({ duration: 300 })}
                     className="p-2 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors border-b border-zinc-700 last:border-b-0"
