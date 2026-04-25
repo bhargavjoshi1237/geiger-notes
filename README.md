@@ -105,7 +105,6 @@ components/
   internal/nodes/        Node types
   internal/edges/        Edge types
   internal/colab/        Collaboration UI
-  ui/                    shadcn primitives
 lib/supabase/            Data-access layer (boards, project boards, access)
 utils/supabase/          Schema-scoped browser and server clients
 supabase/migrations/     Timestamped @up/@down migrations (npm run db:push)
