@@ -46,6 +46,7 @@ export default function SettingsDialog({
   onOpenChange,
   settings,
   onSettingsChange,
+  dialogContainer,
 }) {
   const [activeTab, setActiveTab] = useState("general"); // general, defaults, account
 
@@ -101,8 +102,10 @@ export default function SettingsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        container={dialogContainer}
+        overlayClassName={dialogContainer ? "absolute inset-0" : undefined}
         showCloseButton={false}
-        className="max-w-2xl bg-[#1e1e1e] border-zinc-800 text-zinc-100 p-0 overflow-hidden shadow-xl sm:rounded-lg"
+        className={`${dialogContainer ? "absolute max-h-[calc(100%-1rem)]" : ""} max-w-2xl bg-[#1e1e1e] border-zinc-800 text-zinc-100 p-0 overflow-hidden shadow-xl sm:rounded-lg`}
       >
         <DialogHeader className="p-4 border-b border-zinc-800 ">
           <div className="flex items-center gap-2">
@@ -135,7 +138,7 @@ export default function SettingsDialog({
         </div>
 
         {/* Content Area */}
-        <div className="h-[500px] overflow-y-auto p-0 bg-[#1e1e1e]">
+        <div className="h-[min(500px,calc(100dvh-220px))] overflow-y-auto p-0 bg-[#1e1e1e]">
           {activeTab === "general" && (
             <div className="p-6">
               <GeneralSettings

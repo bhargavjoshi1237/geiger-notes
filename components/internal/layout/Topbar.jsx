@@ -36,6 +36,7 @@ export default function Topbar({
   onBreadcrumbClick,
   isSyncing,
   onToggleSidebar,
+  dialogContainer,
 }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCollaborateOpen, setIsCollaborateOpen] = useState(false);
@@ -209,6 +210,7 @@ export default function Topbar({
         onOpenChange={setIsSettingsOpen}
         settings={settings}
         onSettingsChange={onSettingsChange}
+        dialogContainer={dialogContainer}
       />
       <CollaborateDilouge
         id={id}
@@ -222,6 +224,7 @@ export default function Topbar({
         onKickMember={onKickMember}
         onLeaveSession={onLeaveSession}
         onMerge={onMerge}
+        dialogContainer={dialogContainer}
       />
       <NotificationDialog
         open={isNotificationOpen}
@@ -230,9 +233,18 @@ export default function Topbar({
         role={role}
         onAcceptRequest={onAcceptRequest}
         onKickMember={onKickMember}
+        dialogContainer={dialogContainer}
       />
-      <AppDialog open={isAppOpen} onOpenChange={setIsAppOpen} />
-      <HelpDialog open={isHelpOpen} onOpenChange={setIsHelpOpen} />
+      <AppDialog
+        open={isAppOpen}
+        onOpenChange={setIsAppOpen}
+        dialogContainer={dialogContainer}
+      />
+      <HelpDialog
+        open={isHelpOpen}
+        onOpenChange={setIsHelpOpen}
+        dialogContainer={dialogContainer}
+      />
     </>
   );
 }

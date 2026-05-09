@@ -31,6 +31,7 @@ export default function CollaborateDilouge({
   onKickMember,
   onLeaveSession,
   onMerge,
+  dialogContainer,
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -283,8 +284,10 @@ export default function CollaborateDilouge({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        container={dialogContainer}
+        overlayClassName={dialogContainer ? "absolute inset-0" : undefined}
         showCloseButton={false}
-        className="max-w-md bg-[#1e1e1e] border-zinc-800 text-zinc-100 p-0 overflow-hidden gap-0 sm:rounded-lg shadow-xl"
+        className={`${dialogContainer ? "absolute max-h-[calc(100%-1rem)]" : ""} max-w-md bg-[#1e1e1e] border-zinc-800 text-zinc-100 p-0 overflow-hidden gap-0 sm:rounded-lg shadow-xl`}
       >
         <DialogHeader className="p-4 border-b border-zinc-800 space-y-0">
           <div className="flex items-center justify-between w-full">
@@ -340,7 +343,7 @@ export default function CollaborateDilouge({
             ))}
         </div>
 
-        <div className="p-4 bg-[#1e1e1e] h-[300px]">
+        <div className="p-4 bg-[#1e1e1e] h-[min(300px,calc(100dvh-220px))] overflow-y-auto">
           {activeTab === "host" && (
             <HostTab
               isSessionActive={isSessionActive}

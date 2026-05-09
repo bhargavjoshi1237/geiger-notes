@@ -1,18 +1,12 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Check,
   LayoutGrid,
-  Lock,
   PenSquare,
-  ShieldCheck,
   Smartphone,
-  Sparkles,
   Users,
   Wifi,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Footer from "@/components/ui/footer";
 import {
   Accordion,
@@ -20,6 +14,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Header } from "@/components/header";
 import { createClient } from "@/utils/supabase/server";
 import LandingBoardShowcase from "@/components/LandingBoardShowcase";
 
@@ -28,10 +23,6 @@ export const metadata = {
   description:
     "Create visual notes, organize ideas on infinite boards, and collaborate with your team in Geiger Notes.",
 };
-
-const features = [
-  
-];
 
 const utilityCards = [
   {
@@ -54,17 +45,20 @@ const utilityCards = [
   },
   {
     title: "Infinite Canvas",
-    description: "Map ideas visually with free-form boards, smart zoom, and drag-and-drop building blocks.",
+    description:
+      "Map ideas visually with free-form boards, smart zoom, and drag-and-drop building blocks.",
     icon: PenSquare,
   },
   {
     title: "Structured Navigation",
-    description: "Create nested boards and move from overview to detail without losing context.",
+    description:
+      "Create nested boards and move from overview to detail without losing context.",
     icon: LayoutGrid,
   },
   {
     title: "Real-Time Collaboration",
-    description: "Share sessions, collaborate live, and keep everyone aligned while ideas evolve.",
+    description:
+      "Share sessions, collaborate live, and keep everyone aligned while ideas evolve.",
     icon: Users,
   },
 ];
@@ -79,8 +73,7 @@ const faqs = [
   {
     value: "item-2",
     question: "Do you use my notes for ads?",
-    answer:
-      "No. Your workspace content is not used for ad personalization.",
+    answer: "No. Your workspace content is not used for ad personalization.",
   },
   {
     value: "item-3",
@@ -107,119 +100,98 @@ export default async function NotesLandingPage() {
   const dashOrigin = (process.env.NEXT_PUBLIC_DASH_ORIGIN || "").replace(/\/$/, "");
   const boardHref = user ? `${notesRoot}/${user.id}/home` : "";
   const loginHref = `${dashOrigin}/login?next=${encodeURIComponent(notesRoot)}`;
-  const profileImage = user?.id && process.env.NEXT_PUBLIC_SUPABASE_URL
-    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/pfp/${user.id}/latest.jpg`
-    : "";
-  const profileName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || "User";
+  const ctaHref = user ? boardHref : loginHref;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans">
-      <header className="border-b border-zinc-800 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={`${basePath}/logo1.svg`} alt="Geiger Notes" className="h-6 w-6" />
-            <span className="text-sm font-medium text-zinc-200">Geiger Notes</span>
-          </div>
-          {user ? (
+    <div className="flex min-h-screen w-full flex-col bg-zinc-950 text-zinc-100 selection:bg-indigo-500/30 font-sans">
+      <div className="fixed inset-0 z-0 bg-[linear-gradient(to_right,#80808030_1px,transparent_1px),linear-gradient(to_bottom,#80808030_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+
+      <Header />
+
+      <main className="relative z-10 flex flex-1 flex-col pt-16 sm:pt-20">
+        <section className="mx-auto mb-10 mt-10 flex w-full max-w-6xl items-start justify-start px-4 sm:mt-16 sm:px-6">
+          <div className="max-w-3xl">
+            <h1 className="mb-4 text-2xl font-semibold text-white sm:text-3xl">
+              Capture, connect, and explore ideas on a living notes canvas.
+            </h1>
+            <p className="mb-6 max-w-xl text-sm text-zinc-400 sm:text-base">
+              Geiger Notes combines free-form visual thinking with practical team
+              workflows. Build boards, organize concepts, and collaborate in real time.
+            </p>
             <Link
-              href={boardHref}
-              className="inline-flex items-center rounded-full bg-zinc-900 p-0.5 hover:border-zinc-600 transition-colors"
-              aria-label="Open board"
+              href={ctaHref}
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-zinc-100 px-6 text-sm font-medium text-zinc-950 transition-colors hover:bg-white sm:text-base"
             >
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={profileImage} alt={profileName} />
-              </Avatar>
+              {user ? "Continue to Your Board" : "Log in to Start"}
+              <ArrowRight className="h-4 w-4" />
             </Link>
-          ) : (
-            <Button asChild variant="outline" size="sm" className="border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800">
-              <Link href={loginHref}>Log in</Link>
-            </Button>
-          )}
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-6 py-14 space-y-14">
-        
- <main className="mt-10">
-        <section className="mb-16">
-          <h1 className="text-3xl font-semibold text-white mb-4">
-            Capture, connect, and explore ideas on a living notes canvas.
-          </h1>
-          <p className="text-zinc-400 mb-6 max-w-xl">
-            Geiger Notes combines free-form visual thinking with practical team workflows. Build boards, organize concepts, and collaborate in real time.
-          </p>
-          <Link
-            href={user ? boardHref : loginHref}
-            className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-zinc-100 text-zinc-950 font-medium hover:bg-white transition-colors"
-          >
-            {user ? "Continue to Your Board" : "Log in to Start"}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </section>
-
-        <section className="grid gap-6 md:grid-cols-3">
-          {features.map(({ title, description, icon: Icon }) => (
-            <article key={title} className="border border-zinc-800 rounded-xl p-6 bg-zinc-900/50">
-              <Icon className="h-6 w-6 text-zinc-400 mb-4" />
-              <h2 className="text-lg font-semibold text-zinc-100 mb-2">{title}</h2>
-              <p className="text-sm text-zinc-400">{description}</p>
-            </article>
-          ))}
-        </section>
-      </main>
-
-        <LandingBoardShowcase
-          ctaHref={user ? boardHref : loginHref}
-          ctaLabel={user ? "Open your board" : "Log in to start"}
-        />
-
-    
-        <section className="grid gap-4 md:grid-cols-3">
-          {utilityCards.map(({ title, description, icon: Icon }) => (
-            <article key={title} className="rounded-xl border border-zinc-800 bg-[#191919] p-5">
-              <Icon className="h-5 w-5 text-zinc-300 mb-3" />
-              <h4 className="text-zinc-100 font-medium">{title}</h4>
-              <p className="text-sm text-zinc-400 mt-2">{description}</p>
-            </article>
-          ))}
-        </section>
-        <section className="rounded-2xl flex border border-zinc-800 bg-[#191919] p-6 md:p-8">
-          <div className=" mr-auto w-[50%]">
-            <h3 className="text-3xl font-semibold text-white">Questions & Answers</h3>
           </div>
-          <div className="ml-auto w-[75%]">
+        </section>
+
+        <div className="mx-auto my-10 w-[94%] sm:my-20 md:w-[80%]">
+          <LandingBoardShowcase
+            ctaHref={ctaHref}
+            ctaLabel={user ? "Open your board" : "Checkout Notes"}
+          />
+        </div>
+
+        <section className="mx-auto grid w-full max-w-6xl gap-4 px-4 sm:px-6 md:grid-cols-3">
+          {utilityCards.map(({ title, description, icon: Icon }) => (
+            <article
+              key={title}
+              className="rounded-sm border border-zinc-800 bg-[#191919] p-5"
+            >
+              <Icon className="mb-3 h-5 w-5 text-zinc-300" />
+              <h2 className="font-medium text-zinc-100">{title}</h2>
+              <p className="mt-2 text-sm text-zinc-400">{description}</p>
+            </article>
+          ))}
+        </section>
+
+        <section className="mx-auto mt-10 flex w-full max-w-6xl flex-col gap-6 px-4 sm:px-6 md:mt-16 md:flex-row">
+          <div className="md:w-[35%]">
+            <h2 className="text-3xl font-semibold text-white">Questions & Answers</h2>
+          </div>
+          <div className="md:w-[65%]">
             <Accordion type="single" collapsible className="w-full">
               {faqs.map((faq) => (
-                <AccordionItem key={faq.value} value={faq.value} className="border-zinc-800">
+                <AccordionItem
+                  key={faq.value}
+                  value={faq.value}
+                  className="border-zinc-800"
+                >
                   <AccordionTrigger className="text-zinc-200 hover:text-white hover:no-underline">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-zinc-400">{faq.answer}</AccordionContent>
+                  <AccordionContent className="text-zinc-400">
+                    {faq.answer}
+                  </AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-zinc-800 bg-[#191919] px-6 py-12 text-center">
-          <p className="text-zinc-400">Show your team how fast visual planning can be.</p>
-          <h3 className="text-3xl font-semibold text-white mt-2">Start building your next board</h3>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <section className="relative z-20 overflow-hidden px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
+          <div className="container relative z-10 mx-auto flex flex-col items-center text-center">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-zinc-500 sm:text-sm">
+              Show your team how fast visual planning can be.
+            </p>
+            <h2 className="mb-8 bg-gradient-to-b from-white to-zinc-500 bg-clip-text text-3xl font-black tracking-tighter text-transparent drop-shadow-lg sm:mb-10 sm:text-5xl lg:text-6xl">
+              START BUILDING
+            </h2>
             <Link
-              href={user ? boardHref : loginHref}
-              className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-zinc-100 text-zinc-950 font-medium hover:bg-white transition-colors"
+              href={ctaHref}
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-zinc-100 px-6 text-sm font-medium text-zinc-950 transition-colors hover:bg-white sm:w-auto"
             >
               {user ? "Open board" : "Create an account"}
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="#features" className="inline-flex items-center h-10 px-6 rounded-full border border-zinc-700 bg-zinc-900 text-zinc-200 hover:bg-zinc-800">
-              Learn more
-            </Link>
           </div>
         </section>
-          
       </main>
-       <Footer />
+
+      <Footer />
     </div>
   );
 }

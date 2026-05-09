@@ -39,6 +39,7 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
     doubleClickToInsert: false,
   });
   const [rfInstance, setRfInstance] = React.useState(null);
+  const [dialogContainer, setDialogContainer] = React.useState(null);
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const lastPaneClick = React.useRef(0);
 
@@ -254,6 +255,10 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  React.useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
+
   const handleMerge = React.useCallback(
     (newNodes, newEdges) => {
       setNodes(newNodes);
@@ -269,7 +274,10 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
   }, []);
 
   return (
-    <div className={`relative h-full w-full overflow-hidden bg-[#161616] text-white ${className}`}>
+    <div
+      ref={setDialogContainer}
+      className={`relative h-full w-full overflow-hidden bg-[#161616] text-white ${className}`}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -287,6 +295,8 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
         edgeTypes={edgeTypes}
         colorMode="dark"
         defaultViewport={viewport}
+        fitView
+        fitViewOptions={{ padding: 0.18, minZoom: 0.55, maxZoom: 0.85 }}
         className="bg-[#161616] touch-none"
         proOptions={{ hideAttribution: true }}
         minZoom={0.1}
@@ -314,11 +324,12 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
           onBreadcrumbClick={() => {}}
           isSyncing={false}
           onToggleSidebar={toggleSidebar}
+          dialogContainer={dialogContainer}
         />
       </div>
 
       <div
-        className={`absolute top-14 bottom-0 left-0 z-40 transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+        className={`absolute top-14 bottom-0 left-0 z-40 transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <Sidebar
           selectedEdge={selectedEdge}
