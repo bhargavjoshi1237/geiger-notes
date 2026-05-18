@@ -45,7 +45,7 @@ this repo only references them.
 
 | Concern | File |
 |---|---|
-| Migrations | `supabase/migrations/0001_relocate_personal.sql`, `0002_project_boards.sql`, `0003_abilities.sql` |
+| Migrations | `supabase/migrations/20260705203018_relocate_personal.sql`, `20260705203019_project_boards.sql`, `20260705203020_abilities.sql` |
 | Migration runner | `@geiger/orm` (`npm run db:push` / `db:rollback`) |
 | Browser client | `lib/supabase/client.js` |
 | Current user | `lib/supabase/user.js` |
