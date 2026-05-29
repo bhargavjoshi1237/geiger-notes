@@ -61,10 +61,8 @@ this repo only references them.
 2. **Expose the `notes` schema** in Supabase → Settings → API → Exposed schemas,
    so PostgREST serves `notes.*`.
 3. **Run the migrations:** `npm run db:push` (idempotent; re-runnable).
-   - `npm run db:clean` drops only the project/ability objects
-     (`project_boards`, `role_ability`, `open_module` + the resolver functions) —
-     it never touches the relocated personal tables or the shared `public.*`
-     tables.
+   - These three migrations have no `@down` section, so `npm run db:rollback`
+     refuses them; there is no clean-up script for the project/ability objects.
 
 > Note on the launch URL: this build scopes by `public.projects.id` (flow's
 > model). geiger-dash deep-links notes as `/notes/project/<notes_project_id>`
