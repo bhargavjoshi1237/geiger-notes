@@ -16,6 +16,7 @@ export default function Sidebar({
   selectedNode,
   onUpdateNode,
   onDeselectNode,
+  enabledTools,
 }) {
   const [cachedSelectedEdge, setCachedSelectedEdge] = useState(selectedEdge);
   const [cachedSelectedNode, setCachedSelectedNode] = useState(selectedNode);
@@ -57,7 +58,7 @@ export default function Sidebar({
           activePanel === "main" ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <MainSidebar />
+        <MainSidebar enabledTools={enabledTools} />
       </div>
       <div
         className={`absolute inset-0 flex flex-col py-4 w-full h-full transition-transform duration-300 ease-in-out ${panelBgClass} ${

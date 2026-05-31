@@ -69,6 +69,16 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
   --animate-sync-progress: sync-progress 2s infinite ease-in-out;
+  --animate-shimmer: shimmer 2.5s infinite;
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
 
   @keyframes sync-progress {
     0% {

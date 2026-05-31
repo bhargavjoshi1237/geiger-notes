@@ -13,6 +13,8 @@ import { useCollabLogic } from '@/lib/collab/hooks/useCollabLogic';
 import CanvasSkeleton from '@/components/internal/canvas/CanvasSkeleton';
 import CommentNode from '@/components/internal/nodes/CommentNode';
 import LinkNode from '@/components/internal/nodes/LinkNode';
+import CheckboxNode from '@/components/internal/nodes/CheckboxNode';
+import TableNode from '@/components/internal/nodes/TableNode';
 import UserDrawer from '@/components/internal/layout/UserDrawer';
 
 export default function CollabPage({ params }) {
@@ -57,6 +59,8 @@ export default function CollabPage({ params }) {
         custom: CustomNode,
         comment: CommentNode,
         link: LinkNode,
+        todo: CheckboxNode,
+        table: TableNode,
     }), []);
 
     const edgeTypes = useMemo(() => ({
@@ -213,12 +217,13 @@ export default function CollabPage({ params }) {
                             <Background color="#373737" gap={12} size={1} variant="dots" />
                             <ZoomControls />
                         </ReactFlow>
-                        <UserDrawer 
-                            sessionData={sessionData} 
-                            role={role} 
-                            currentUser={currentUser} 
-                            onKickMember={kickMember} 
-                            onLeaveSession={leaveSession} 
+                        <UserDrawer
+                            sessionData={sessionData}
+                            role={role}
+                            currentUser={currentUser}
+                            onKickMember={kickMember}
+                            onLeaveSession={leaveSession}
+                            onRequestAccess={requestAccess}
                         />
                     </div>  
                 </main>

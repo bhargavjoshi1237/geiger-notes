@@ -14,6 +14,8 @@ import DocumentNode from "@/components/internal/nodes/DocumentNode";
 import ImageNode from "@/components/internal/nodes/ImageNode";
 import FileNode from "@/components/internal/nodes/FileNode";
 import CalendarNode from "@/components/internal/nodes/calendar/CalendarNode";
+import CheckboxNode from "@/components/internal/nodes/CheckboxNode";
+import TableNode from "@/components/internal/nodes/TableNode";
 import { useLandingPlaygroundLogic } from "@/lib/hooks/useLandingPlaygroundLogic";
 import "@xyflow/react/dist/style.css";
 
@@ -150,6 +152,37 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
         return;
       }
 
+      if (type === "todo") {
+        const newNode = {
+          id: `node-${Date.now()}`,
+          type: "todo",
+          position,
+          data: {
+            title: "To-do",
+            items: [{ id: `todo-${Date.now()}`, text: "", checked: false }],
+          },
+        };
+        setNodes((nds) => nds.concat(newNode));
+        return;
+      }
+
+      if (type === "table") {
+        const newNode = {
+          id: `node-${Date.now()}`,
+          type: "table",
+          position,
+          data: {
+            columns: ["Column 1", "Column 2"],
+            rows: [
+              ["", ""],
+              ["", ""],
+            ],
+          },
+        };
+        setNodes((nds) => nds.concat(newNode));
+        return;
+      }
+
       const newNode = {
         id: `node-${Date.now()}`,
         type,
@@ -229,6 +262,8 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
       image: ImageNode,
       file: FileNode,
       calendar: CalendarNode,
+      todo: CheckboxNode,
+      table: TableNode,
     }),
     [],
   );

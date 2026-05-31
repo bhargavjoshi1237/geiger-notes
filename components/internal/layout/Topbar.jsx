@@ -16,14 +16,20 @@ import {
 import SettingsDialog from "../settings/SettingsDilouge";
 import CollaborateDilouge from "./CollaborateDilouge";
 import DigitalClock from "./DigitalClock";
-import NotificationDialog from "./NotificationDialog";
+import NotificationDropdown from "./NotificationDropdown";
 import AppDialog from "./AppDialog";
-import HelpDialog from "./HelpDialog";
+
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export default function Topbar({
   id,
   settings,
   onSettingsChange,
+  onSettingsSave,
+  onSettingsDiscard,
+  onSettingsReset,
+  settingsDirty,
+  settingsSaving,
   nodes,
   edges,
   sessionData,
@@ -36,13 +42,15 @@ export default function Topbar({
   onBreadcrumbClick,
   isSyncing,
   onToggleSidebar,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
   dialogContainer,
 }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCollaborateOpen, setIsCollaborateOpen] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isAppOpen, setIsAppOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   return (
     <>
@@ -115,14 +123,18 @@ export default function Topbar({
           )}
           <div className="flex items-center gap-0 text-[#a3a3a3]">
             <button
-              className="p-2 hover:bg-[#2a2a2a] rounded transition-colors hover:text-white"
-              title="Undo"
+              onClick={onUndo}
+              disabled={!canUndo}
+              className="p-2 hover:bg-[#2a2a2a] rounded transition-colors hover:text-white disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#a3a3a3] disabled:cursor-default"
+              title="Undo (Ctrl+Z)"
             >
               <Undo2 className="w-4 h-4" />
             </button>
             <button
-              className="p-2 hover:bg-[#2a2a2a] rounded transition-colors hover:text-white"
-              title="Redo"
+              onClick={onRedo}
+              disabled={!canRedo}
+              className="p-2 hover:bg-[#2a2a2a] rounded transition-colors hover:text-white disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#a3a3a3] disabled:cursor-default"
+              title="Redo (Ctrl+Shift+Z)"
             >
               <Redo2 className="w-4 h-4" />
             </button>
@@ -172,27 +184,35 @@ export default function Topbar({
             >
               <Smartphone className="w-[18px] h-[18px]" strokeWidth={2} />
             </button>
-            <button
-              onClick={() => setIsHelpOpen(true)}
+            <a
+              href={`${BASE_PATH}/docs`}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-8 h-8 rounded-sm border border-transparent hover:bg-[#2a2a2a] flex items-center justify-center transition-colors text-[#a3a3a3] hover:text-white"
-              title="Help"
+              title="Help & Docs"
             >
               <HelpCircle className="w-[18px] h-[18px]" strokeWidth={2} />
-            </button>
-            <button
-              onClick={() => setIsNotificationOpen(true)}
-              className="w-8 h-8 rounded-sm border border-transparent hover:bg-[#2a2a2a] flex items-center justify-center transition-colors text-[#a3a3a3] hover:text-white relative"
-              title="Notifications"
+            </a>
+            <NotificationDropdown
+              sessionData={sessionData}
+              role={role}
+              onAcceptRequest={onAcceptRequest}
+              onKickMember={onKickMember}
             >
-              <Bell className="w-[18px] h-[18px]" strokeWidth={2} />
-              {sessionData?.joiners &&
-                Object.values(sessionData.joiners).some(
-                  (j) => j.status === "requested"
-                ) &&
-                role === "host" && (
-                  <div className="absolute top-[6px] right-[7px] w-2 h-2 rounded-sm bg-[#3b82f6] border border-[#161616]"></div>
-                )}
-            </button>
+              <button
+                className="w-8 h-8 rounded-sm border border-transparent hover:bg-[#2a2a2a] flex items-center justify-center transition-colors text-[#a3a3a3] hover:text-white relative outline-none"
+                title="Notifications"
+              >
+                <Bell className="w-[18px] h-[18px]" strokeWidth={2} />
+                {sessionData?.joiners &&
+                  Object.values(sessionData.joiners).some(
+                    (j) => j.status === "requested"
+                  ) &&
+                  role === "host" && (
+                    <div className="absolute top-[6px] right-[7px] w-2 h-2 rounded-sm bg-[#3b82f6] border border-[#161616]"></div>
+                  )}
+              </button>
+            </NotificationDropdown>
             <button
               onClick={() => setIsSettingsOpen(true)}
               className="w-8 h-8 rounded-sm border border-transparent hover:bg-[#2a2a2a] hidden sm:flex items-center justify-center transition-colors text-[#a3a3a3] hover:text-white"
@@ -210,6 +230,13 @@ export default function Topbar({
         onOpenChange={setIsSettingsOpen}
         settings={settings}
         onSettingsChange={onSettingsChange}
+        onSave={onSettingsSave}
+        onDiscard={onSettingsDiscard}
+        onReset={onSettingsReset}
+        isDirty={settingsDirty}
+        isSaving={settingsSaving}
+        nodeCount={Array.isArray(nodes) ? nodes.length : 0}
+        edgeCount={Array.isArray(edges) ? edges.length : 0}
         dialogContainer={dialogContainer}
       />
       <CollaborateDilouge
@@ -226,23 +253,9 @@ export default function Topbar({
         onMerge={onMerge}
         dialogContainer={dialogContainer}
       />
-      <NotificationDialog
-        open={isNotificationOpen}
-        onOpenChange={setIsNotificationOpen}
-        sessionData={sessionData}
-        role={role}
-        onAcceptRequest={onAcceptRequest}
-        onKickMember={onKickMember}
-        dialogContainer={dialogContainer}
-      />
       <AppDialog
         open={isAppOpen}
         onOpenChange={setIsAppOpen}
-        dialogContainer={dialogContainer}
-      />
-      <HelpDialog
-        open={isHelpOpen}
-        onOpenChange={setIsHelpOpen}
         dialogContainer={dialogContainer}
       />
     </>

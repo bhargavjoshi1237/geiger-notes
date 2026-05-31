@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { ReactFlow, Background, SelectionMode } from "@xyflow/react";
+import {
+  ReactFlow,
+  Background,
+  SelectionMode,
+  MiniMap,
+  addEdge,
+  MarkerType,
+} from "@xyflow/react";
+import { useUserSettings } from "@/lib/settings/useUserSettings";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import Sidebar from "@/components/internal/layout/Sidebar";
@@ -18,6 +26,8 @@ import ImageNode from "@/components/internal/nodes/ImageNode";
 import FileNode from "@/components/internal/nodes/FileNode";
 import ClockNode from "@/components/internal/nodes/clock/ClockNode";
 import CalendarNode from "@/components/internal/nodes/calendar/CalendarNode";
+import CheckboxNode from "@/components/internal/nodes/CheckboxNode";
+import TableNode from "@/components/internal/nodes/TableNode";
 import "@xyflow/react/dist/style.css";
 
 export default function BoardCanvas({
@@ -33,7 +43,6 @@ export default function BoardCanvas({
     viewport,
     onNodesChange,
     onEdgesChange,
-    onConnect,
     onNodeDragStop,
     onMove,
     isInitialized,
@@ -47,13 +56,44 @@ export default function BoardCanvas({
     setNodes,
   } = useHomeLogic(id, boardId);
 
-  const [settings, setSettings] = React.useState({
-    doubleClickToInsert: false,
-  });
+  const {
+    settings,
+    setSetting: handleSettingsChange,
+    save: saveSettings,
+    discard: discardSettings,
+    reset: resetSettings,
+    isDirty: settingsDirty,
+    isSaving: settingsSaving,
+  } = useUserSettings();
 
-  const handleSettingsChange = (key, value) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
-  };
+  const onConnect = React.useCallback(
+    (connection) => {
+      const d = settings.defaultEdge || {};
+      const stroke = d.stroke || "#71717a";
+      setEdges((eds) =>
+        addEdge(
+          {
+            ...connection,
+            type: "center",
+            animated: !!d.animated,
+            style: {
+              stroke,
+              strokeWidth: d.strokeWidth || 2,
+              strokeDasharray: d.dashed ? "6 6" : undefined,
+            },
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              width: 20,
+              height: 20,
+              color: stroke,
+            },
+          },
+          eds
+        )
+      );
+    },
+    [settings.defaultEdge, setEdges]
+  );
 
   const [rfInstance, setRfInstance] = React.useState(null);
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
@@ -191,6 +231,37 @@ export default function BoardCanvas({
         return;
       }
 
+      if (type === "todo") {
+        const newNode = {
+          id: `node-${Date.now()}`,
+          type: "todo",
+          position,
+          data: {
+            title: "To-do",
+            items: [{ id: `todo-${Date.now()}`, text: "", checked: false }],
+          },
+        };
+        setNodes((nds) => nds.concat(newNode));
+        return;
+      }
+
+      if (type === "table") {
+        const newNode = {
+          id: `node-${Date.now()}`,
+          type: "table",
+          position,
+          data: {
+            columns: ["Column 1", "Column 2"],
+            rows: [
+              ["", ""],
+              ["", ""],
+            ],
+          },
+        };
+        setNodes((nds) => nds.concat(newNode));
+        return;
+      }
+
       const newNode = {
         id: `node-${Date.now()}`,
         type,
@@ -270,6 +341,8 @@ export default function BoardCanvas({
       file: FileNode,
       clock: ClockNode,
       calendar: CalendarNode,
+      todo: CheckboxNode,
+      table: TableNode,
     }),
     [],
   );
@@ -359,8 +432,20 @@ export default function BoardCanvas({
           zoomOnScroll={zoomOnScroll}
           zoomOnDoubleClick={false}
           selectionMode={SelectionMode.Partial}
+          snapToGrid={!!settings.snapToGrid}
+          snapGrid={[15, 15]}
         >
           <Background color="#373737" gap={12} size={1} variant="dots" />
+          {settings.showMinimap && (
+            <MiniMap
+              pannable
+              zoomable
+              className="!bg-[#1e1e1e] !border !border-zinc-800 rounded-md"
+              nodeColor="#3f3f46"
+              nodeStrokeColor="#52525b"
+              maskColor="rgba(0,0,0,0.6)"
+            />
+          )}
         </ReactFlow>
       </div>
 
@@ -369,6 +454,11 @@ export default function BoardCanvas({
           id={id}
           settings={settings}
           onSettingsChange={handleSettingsChange}
+          onSettingsSave={saveSettings}
+          onSettingsDiscard={discardSettings}
+          onSettingsReset={resetSettings}
+          settingsDirty={settingsDirty}
+          settingsSaving={settingsSaving}
           nodes={nodes}
           edges={edges}
           onMerge={handleMerge}
@@ -387,6 +477,7 @@ export default function BoardCanvas({
           selectedNode={selectedNode}
           onUpdateNode={updateNode}
           onDeselectNode={deselectNodes}
+          enabledTools={settings.toolbarTools}
         />
       </div>
 

@@ -176,6 +176,10 @@ export default function CollaborateDilouge({
     const joinersMap = sessionData.joiners || {};
     Object.keys(joinersMap).forEach((uid) => {
       const m = joinersMap[uid];
+      // Only active members (joined) and pending requests are relevant here.
+      // Kicked/left entries are retained for access control but must not show
+      // up as members or as fake join requests.
+      if (m.status !== "joined" && m.status !== "requested") return;
       list.push({
         id: uid,
         name: m.name || m.email || "Unknown",

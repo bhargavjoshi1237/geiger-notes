@@ -1,165 +1,117 @@
 "use client";
 
 import React from "react";
-import {
-  Database,
-  HardDrive,
-  Info,
-  MousePointerClick,
-  RefreshCcw,
-  Clock,
-  Trash2,
-} from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Sparkles, RotateCcw, Boxes } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GroupLabel, ToggleRow } from "./SettingsPrimitives";
 
-export default function GeneralSettings({ settings, onSettingsChange }) {
-  const usage = {
-    nodes: 540,
-    maxNodes: 1000,
-    projects: 3,
-    maxProjects: 10,
-    storage: "1.2 GB",
-    maxStorage: "5 GB",
-  };
-  const nodePercentage = (usage.nodes / usage.maxNodes) * 100;
+export default function GeneralSettings({
+  settings = {},
+  onSettingsChange,
+  onReset,
+  nodeCount = 0,
+  edgeCount = 0,
+}) {
+  const set = (key, value) => onSettingsChange?.(key, value);
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-zinc-800/50">
-        <div>
-          <h3 className="text-sm font-medium text-zinc-200">System Status</h3>
-          <p className="text-xs text-zinc-500 mt-1">
-            Usage metrics and cache options.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-zinc-500 hover:text-zinc-300"
-          >
-            <RefreshCcw className="w-4 h-4" />
-          </Button>
-        </div>
+      <div className="pb-4 border-b border-zinc-800/50">
+        <h3 className="text-sm font-medium text-zinc-200">General</h3>
+        <p className="text-xs text-zinc-500 mt-1">
+          Control how the canvas behaves and what the interface shows.
+        </p>
       </div>
 
-      {/* Usage Section */}
-      <div className="space-y-5">
-        <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-          Resources
-        </h4>
-
-        <div className="space-y-3">
-          <div className="flex justify-between text-xs">
-            <span className="text-zinc-400">Node Allowance</span>
-            <span className="text-zinc-500">
-              <span className="text-zinc-200 font-medium">{usage.nodes}</span> /{" "}
-              {usage.maxNodes}
+      {/* Workspace stats — real counts from the live canvas */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-lg border border-zinc-800/60 bg-zinc-900/30 p-3">
+          <div className="flex items-center gap-2 text-zinc-500">
+            <Boxes className="w-3.5 h-3.5" />
+            <span className="text-[11px] uppercase tracking-wider font-semibold">
+              Nodes
             </span>
           </div>
-          <Progress
-            value={nodePercentage}
-            className="h-1.5 bg-zinc-800"
-            indicatorClassName={
-              nodePercentage > 90 ? "bg-red-500" : "bg-zinc-100"
-            }
-          />
+          <div className="text-xl font-semibold text-zinc-100 mt-1.5 tabular-nums">
+            {nodeCount}
+          </div>
         </div>
-
-        <div className="space-y-3 pt-2">
-          <div className="flex justify-between text-xs">
-            <span className="text-zinc-400">Storage</span>
-            <span className="text-zinc-500">{usage.storage} used</span>
+        <div className="rounded-lg border border-zinc-800/60 bg-zinc-900/30 p-3">
+          <div className="flex items-center gap-2 text-zinc-500">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="text-[11px] uppercase tracking-wider font-semibold">
+              Connections
+            </span>
           </div>
-          <div className="flex h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
-            <div className="h-full bg-zinc-400" style={{ width: "25%" }} />
-            <div className="h-full bg-zinc-600" style={{ width: "10%" }} />
-          </div>
-          <div className="flex gap-4 text-[10px] text-zinc-500 pt-1">
-            <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
-              <span>Media</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-              <span>Docs</span>
-            </div>
+          <div className="text-xl font-semibold text-zinc-100 mt-1.5 tabular-nums">
+            {edgeCount}
           </div>
         </div>
       </div>
 
-      {/* Preferences Section */}
-      <div className="space-y-4 pt-4 border-t border-zinc-800/50">
-        <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
-          Controls
-        </h4>
-
-        <div className="flex items-center justify-between py-2">
-          <div className="space-y-0.5">
-            <Label className="text-sm font-medium text-zinc-200">
-              Double Click to Insert
-            </Label>
-            <p className="text-xs text-zinc-500">Fast card creation</p>
-          </div>
-          <Switch
-            checked={settings?.doubleClickToInsert}
-            onCheckedChange={(checked) =>
-              onSettingsChange?.("doubleClickToInsert", checked)
-            }
-          />
-        </div>
-
-        <div className="flex items-center justify-between py-2">
-          <div className="space-y-0.5">
-            <Label className="text-sm font-medium text-zinc-200">
-              Show Clock
-            </Label>
-            <p className="text-xs text-zinc-500">Display time in toolbar</p>
-          </div>
-          <Switch
-            checked={settings?.showClock ?? true}
-            onCheckedChange={(checked) =>
-              onSettingsChange?.("showClock", checked)
-            }
-            disabled
-          />
-        </div>
-
-        <div className="flex items-center justify-between py-2">
-          <div className="space-y-0.5">
-            <Label className="text-sm font-medium text-zinc-200">
-              Clock Animation
-            </Label>
-            <p className="text-xs text-zinc-500">Shimmer effect on time</p>
-          </div>
-          <Switch
-            checked={settings?.clockAnimation ?? true}
-            onCheckedChange={(checked) =>
-              onSettingsChange?.("clockAnimation", checked)
-            }
-          />
-        </div>
+      {/* Editing */}
+      <div className="space-y-1">
+        <GroupLabel className="mb-2">Editing</GroupLabel>
+        <ToggleRow
+          title="Double-click to insert"
+          description="Quickly create a note by double-clicking an empty area."
+          checked={settings.doubleClickToInsert}
+          onChange={(c) => set("doubleClickToInsert", c)}
+        />
+        <ToggleRow
+          title="Snap to grid"
+          description="Align nodes to a 15px grid while dragging."
+          checked={settings.snapToGrid}
+          onChange={(c) => set("snapToGrid", c)}
+        />
+        <ToggleRow
+          title="Show minimap"
+          description="Display an overview map in the corner of the canvas."
+          checked={settings.showMinimap}
+          onChange={(c) => set("showMinimap", c)}
+        />
       </div>
 
-      {/* Danger Zone / Cache */}
-      <div className="pt-6 mt-2 border-t border-zinc-800/50">
-        <div className="flex items-center justify-between p-3 rounded-md border border-zinc-800/50 bg-zinc-900/20 hover:border-red-900/30 transition-colors">
+      {/* Interface */}
+      <div className="space-y-1 pt-2 border-t border-zinc-800/50">
+        <GroupLabel className="mb-2 mt-4">Interface</GroupLabel>
+        <ToggleRow
+          title="Show clock"
+          description="Display the current time in the toolbar."
+          checked={settings.showClock ?? true}
+          onChange={(c) => set("showClock", c)}
+        />
+        <ToggleRow
+          title="Clock animation"
+          description="Subtle shimmer effect on the toolbar clock."
+          checked={settings.clockAnimation ?? true}
+          onChange={(c) => set("clockAnimation", c)}
+          disabled={!(settings.showClock ?? true)}
+        />
+      </div>
+
+      {/* Reset */}
+      <div className="pt-4 border-t border-zinc-800/50">
+        <div className="flex items-center justify-between p-3 rounded-md border border-zinc-800/50 bg-zinc-900/20">
           <div className="space-y-0.5">
-            <h4 className="text-sm font-medium text-zinc-300">Local Cache</h4>
-            <p className="text-xs text-zinc-500">Clear temporary files</p>
+            <h4 className="text-sm font-medium text-zinc-300">
+              Restore defaults
+            </h4>
+            <p className="text-xs text-zinc-500">
+              Reset all General and Defaults preferences to their original
+              values.
+            </p>
           </div>
           <Button
             variant="outline"
             size="sm"
-            className="h-8 border-zinc-700 text-zinc-400 hover:text-red-400 hover:border-red-900/50 hover:bg-red-900/10"
+            onClick={onReset}
+            disabled={!onReset}
+            className="h-8 border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:border-zinc-600"
           >
-            <Trash2 className="w-3.5 h-3.5 mr-2" />
-            Clear
+            <RotateCcw className="w-3.5 h-3.5 mr-2" />
+            Reset
           </Button>
         </div>
       </div>
