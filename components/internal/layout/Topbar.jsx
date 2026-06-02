@@ -19,8 +19,6 @@ import DigitalClock from "./DigitalClock";
 import NotificationDropdown from "./NotificationDropdown";
 import AppDialog from "./AppDialog";
 
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
-
 export default function Topbar({
   id,
   settings,
@@ -185,7 +183,7 @@ export default function Topbar({
               <Smartphone className="w-[18px] h-[18px]" strokeWidth={2} />
             </button>
             <a
-              href={`${BASE_PATH}/docs`}
+              href="/docs"
               target="_blank"
               rel="noopener noreferrer"
               className="w-8 h-8 rounded-sm border border-transparent hover:bg-[#2a2a2a] flex items-center justify-center transition-colors text-[#a3a3a3] hover:text-white"

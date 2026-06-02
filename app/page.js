@@ -101,6 +101,7 @@ export default async function NotesLandingPage() {
   const boardHref = user ? `/${user.id}/home` : "";
   const loginHref = `${dashOrigin}/login?next=${encodeURIComponent(notesRoot)}`;
   const ctaHref = user ? boardHref : loginHref;
+  const studioHref = dashOrigin || "/";
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-zinc-950 text-zinc-100 selection:bg-indigo-500/30 font-sans">
@@ -118,13 +119,23 @@ export default async function NotesLandingPage() {
               Geiger Notes combines free-form visual thinking with practical team
               workflows. Build boards, organize concepts, and collaborate in real time.
             </p>
-            <Link
-              href={ctaHref}
-              className="inline-flex h-10 items-center gap-2 rounded-full bg-zinc-100 px-6 text-sm font-medium text-zinc-950 transition-colors hover:bg-white sm:text-base"
-            >
-              {user ? "Continue to Your Board" : "Log in to Start"}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            {user ? (
+              <Link
+                href={ctaHref}
+                className="inline-flex h-10 items-center gap-2 rounded-full bg-zinc-100 px-6 text-sm font-medium text-zinc-950 transition-colors hover:bg-white sm:text-base"
+              >
+                Continue to Your Board
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <a
+                href={ctaHref}
+                className="inline-flex h-10 items-center gap-2 rounded-full bg-zinc-100 px-6 text-sm font-medium text-zinc-950 transition-colors hover:bg-white sm:text-base"
+              >
+                Log in to Start
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            )}
           </div>
         </section>
 
@@ -132,6 +143,7 @@ export default async function NotesLandingPage() {
           <LandingBoardShowcase
             ctaHref={ctaHref}
             ctaLabel={user ? "Open your board" : "Checkout Notes"}
+            ctaInNotesApp={Boolean(user)}
           />
         </div>
 
@@ -181,19 +193,19 @@ export default async function NotesLandingPage() {
               TRY GEIGER NOW
             </h2>
             <div className="flex w-full max-w-md flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-              <Link
-                href="/"
+              <a
+                href={studioHref}
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-zinc-100 px-6 text-sm font-medium text-zinc-950 transition-colors hover:bg-white sm:w-auto"
               > Studio
                 <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/"
+              </a>
+              <a
+                href={studioHref}
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-zinc-100 px-6 text-sm font-medium text-zinc-950 transition-colors hover:bg-white sm:w-auto"
               >
                 Contact Sales
                 <ArrowRight className="h-4 w-4" />
-              </Link>
+              </a>
             </div>
           </div>
         </section>

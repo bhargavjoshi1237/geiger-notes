@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 
 export default function Footer() {
@@ -22,39 +21,39 @@ export default function Footer() {
           <div>
             <h4 className="font-bold text-zinc-100 mb-4">Products</h4>
             <ul className="space-y-3">
-              <li><Link href="/flow" className="hover:text-zinc-100 transition-colors text-zinc-400 text-sm">Geiger Flow</Link></li>
-              <li><Link href="#" className="hover:text-zinc-100 transition-colors text-zinc-400 text-sm">Geiger Notes</Link></li>
-              <li><Link href="#" className="hover:text-zinc-100 transition-colors text-zinc-400 text-sm">Geiger DAM</Link></li>
-              <li><Link href="#" className="hover:text-zinc-100 transition-colors text-zinc-400 text-sm">Geiger Grey</Link></li>
-              <li><Link href="#" className="hover:text-zinc-100 transition-colors text-zinc-400 text-sm">Geiger Enterprise</Link></li>
+              <li><a href="/flow" className="hover:text-zinc-100 transition-colors text-zinc-400 text-sm">Geiger Flow</a></li>
+              <li><a href="#" className="hover:text-zinc-100 transition-colors text-zinc-400 text-sm">Geiger Notes</a></li>
+              <li><a href="#" className="hover:text-zinc-100 transition-colors text-zinc-400 text-sm">Geiger DAM</a></li>
+              <li><a href="#" className="hover:text-zinc-100 transition-colors text-zinc-400 text-sm">Geiger Grey</a></li>
+              <li><a href="#" className="hover:text-zinc-100 transition-colors text-zinc-400 text-sm">Geiger Enterprise</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-bold text-zinc-100 mb-4">Resources</h4>
             <ul className="flex flex-col gap-3 text-sm text-zinc-400">
-              <li><Link href="/docs" className="hover:text-zinc-100 transition-colors">Documentation</Link></li>
-              <li><Link href="#" className="hover:text-zinc-100 transition-colors">Help Center</Link></li>
-              <li><Link href="#" className="hover:text-zinc-100 transition-colors">Community</Link></li>
-              <li><Link href="#" className="hover:text-zinc-100 transition-colors">Contact Support</Link></li>
+              <li><a href="/docs" className="hover:text-zinc-100 transition-colors">Documentation</a></li>
+              <li><a href="#" className="hover:text-zinc-100 transition-colors">Help Center</a></li>
+              <li><a href="#" className="hover:text-zinc-100 transition-colors">Community</a></li>
+              <li><a href="#" className="hover:text-zinc-100 transition-colors">Contact Support</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-bold text-zinc-100 mb-4">Company</h4>
             <ul className="flex flex-col gap-3 text-sm text-zinc-400">
-              <li><Link href="#" className="hover:text-zinc-100 transition-colors">About</Link></li>
-              <li><Link href="/blog" className="hover:text-zinc-100 transition-colors">Blog</Link></li>
-              <li><Link href="#" className="hover:text-zinc-100 transition-colors">Careers</Link></li>
-              <li><Link href="#" className="hover:text-zinc-100 transition-colors">Legal</Link></li>
+              <li><a href="#" className="hover:text-zinc-100 transition-colors">About</a></li>
+              <li><a href="/blog" className="hover:text-zinc-100 transition-colors">Blog</a></li>
+              <li><a href="#" className="hover:text-zinc-100 transition-colors">Careers</a></li>
+              <li><a href="#" className="hover:text-zinc-100 transition-colors">Legal</a></li>
             </ul>
           </div>
         </div>
         <div className="pt-8 border-t border-zinc-800/50 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
           <p>&copy; {new Date().getFullYear()} Geiger Studios. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <Link href="#" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
-            <Link href="#" className="hover:text-zinc-300 transition-colors">Terms of Service</Link>
+            <a href="#" className="hover:text-zinc-300 transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-zinc-300 transition-colors">Terms of Service</a>
           </div>
         </div>
       </div>

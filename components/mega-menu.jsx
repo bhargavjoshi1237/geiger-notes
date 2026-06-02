@@ -1,5 +1,6 @@
 "use client";
 
+import { forwardRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Zap, Layers, Cpu, ContainerIcon, Menu } from "lucide-react";
@@ -14,8 +15,27 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+const NavLink = forwardRef(function NavLink(
+  { inNotesApp = false, href, children, ...props },
+  ref
+) {
+  if (inNotesApp) {
+    return (
+      <Link ref={ref} href={href} {...props}>
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <a ref={ref} href={href} {...props}>
+      {children}
+    </a>
+  );
+});
+
 export function MegaMenu({ userId }) {
-  const notesHref = userId ? `/notes/${userId}/home` : "/notes";
+  const dashboardHref = userId ? `/${userId}/home` : "/";
 
   const products = [
     {
@@ -28,7 +48,8 @@ export function MegaMenu({ userId }) {
       icon: Zap,
       label: "Notes",
       description: "Write and collaborate.",
-      href: notesHref,
+      href: dashboardHref,
+      inNotesApp: Boolean(userId),
     },
     {
       icon: Layers,
@@ -69,8 +90,9 @@ export function MegaMenu({ userId }) {
                     {products.map((item) => {
                       const Icon = item.icon;
                       return (
-                        <Link
+                        <NavLink
                           href={item.href}
+                          inNotesApp={item.inNotesApp}
                           key={item.label}
                           className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-zinc-800"
                         >
@@ -79,7 +101,7 @@ export function MegaMenu({ userId }) {
                             <p className="text-sm text-zinc-100">{item.label}</p>
                             <p className="text-xs text-zinc-500">{item.description}</p>
                           </div>
-                        </Link>
+                        </NavLink>
                       );
                     })}
                   </div>
@@ -89,14 +111,14 @@ export function MegaMenu({ userId }) {
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">Resources</p>
                   <div className="space-y-1">
                     {resources.map((item) => (
-                      <Link
+                      <a
                         href={item.href}
                         key={item.label}
                         className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
                       >
                         {item.label}
                         <ArrowRight className="h-3.5 w-3.5 text-zinc-500" />
-                      </Link>
+                      </a>
                     ))}
                   </div>
                 </div>
@@ -105,9 +127,9 @@ export function MegaMenu({ userId }) {
           </div>
         </div>
 
-        <Link href="/pricing" className="py-6 transition-colors hover:text-zinc-100">
+        <a href="/pricing" className="py-6 transition-colors hover:text-zinc-100">
           Pricing
-        </Link>
+        </a>
       </nav>
 
       <div className="md:hidden">
@@ -137,13 +159,14 @@ export function MegaMenu({ userId }) {
                     const Icon = item.icon;
                     return (
                       <SheetClose asChild key={item.label}>
-                        <Link
+                        <NavLink
                           href={item.href}
+                          inNotesApp={item.inNotesApp}
                           className="flex min-w-[86px] flex-col items-center justify-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/50 px-2 py-3 text-center text-xs text-zinc-200"
                         >
                           <Icon className="h-4 w-4 text-zinc-400" />
                           <p className="leading-tight">{item.label}</p>
-                        </Link>
+                        </NavLink>
                       </SheetClose>
                     );
                   })}
@@ -154,34 +177,43 @@ export function MegaMenu({ userId }) {
                 <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Resources</p>
                 {resources.map((item) => (
                   <SheetClose asChild key={item.label}>
-                    <Link
+                    <a
                       href={item.href}
                       className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-200"
                     >
                       {item.label}
                       <ArrowRight className="h-4 w-4 text-zinc-500" />
-                    </Link>
+                    </a>
                   </SheetClose>
                 ))}
               </div>
 
               <div className="space-y-2">
                 <SheetClose asChild>
-                  <Link
+                  <a
                     href="/pricing"
                     className="inline-flex w-full items-center justify-center rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-900"
                   >
                     View Pricing
-                  </Link>
+                  </a>
                 </SheetClose>
 
                 <SheetClose asChild>
-                  <Link
-                    href={userId ? `/notes/${userId}/home` : "/login"}
-                    className="inline-flex w-full items-center justify-center rounded-lg border border-zinc-700 bg-transparent px-4 py-2 text-sm font-medium text-zinc-100"
-                  >
-                    {userId ? "Open Dashboard" : "Sign In"}
-                  </Link>
+                  {userId ? (
+                    <Link
+                      href={`/${userId}/home`}
+                      className="inline-flex w-full items-center justify-center rounded-lg border border-zinc-700 bg-transparent px-4 py-2 text-sm font-medium text-zinc-100"
+                    >
+                      Open Dashboard
+                    </Link>
+                  ) : (
+                    <a
+                      href="/login"
+                      className="inline-flex w-full items-center justify-center rounded-lg border border-zinc-700 bg-transparent px-4 py-2 text-sm font-medium text-zinc-100"
+                    >
+                      Sign In
+                    </a>
+                  )}
                 </SheetClose>
               </div>
             </div>

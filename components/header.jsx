@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/server";
 import { MegaMenu } from "@/components/mega-menu";
@@ -19,7 +18,7 @@ export async function Header() {
         avatarUrl: process.env.NEXT_PUBLIC_SUPABASE_URL
           ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/pfp/${userId}/latest.jpg`
           : "",
-        dashboardHref: `/notes/${userId}/home`,
+        dashboardHref: `/${userId}/home`,
       }
     : null;
 
@@ -37,12 +36,12 @@ export async function Header() {
           {userProfile ? (
             <UserProfileDropdown user={userProfile} />
           ) : (
-            <Link
+            <a
               href="/login"
               className="text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-colors"
             >
               Sign In
-            </Link>
+            </a>
           )}
         </div>
       </div>

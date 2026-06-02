@@ -61,7 +61,7 @@ export function UserProfileDropdown({ user }) {
             asChild
             className="text-[#a3a3a3] focus:bg-[#2a2a2a] focus:text-white cursor-pointer gap-2"
           >
-            <Link href={user?.dashboardHref || "/notes"}>
+            <Link href={user?.dashboardHref || "/"}>
               <HomeIcon className="w-3.5 h-3.5" />
               <span>Dashboard</span>
             </Link>
