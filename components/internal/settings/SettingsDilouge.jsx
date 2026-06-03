@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SlidersHorizontal, Shapes, UserRound, Loader2 } from "lucide-react";
+import { SlidersHorizontal, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -17,9 +17,9 @@ import DefaultsSettings from "./DefaultsSettings";
 import AccountSettings from "./AccountSettings";
 
 const NAV = [
-  { id: "general", label: "General", icon: SlidersHorizontal },
-  { id: "defaults", label: "Defaults", icon: Shapes },
-  { id: "account", label: "Account", icon: UserRound },
+  { id: "general", label: "General", },
+  { id: "defaults", label: "Defaults", },
+  { id: "account", label: "Account", },
 ];
 
 export default function SettingsDialog({
@@ -71,44 +71,39 @@ export default function SettingsDialog({
           "max-w-2xl bg-[#1e1e1e] border-zinc-800 text-zinc-100 p-0 overflow-hidden shadow-xl sm:rounded-lg"
         )}
       >
-        <div className="flex h-[min(560px,calc(100dvh-120px))]">
-          {/* Left rail */}
-          <nav className="w-14 sm:w-48 shrink-0 border-r border-zinc-800 bg-[#1a1a1a] flex flex-col">
-            <DialogHeader className="p-4 pb-3 space-y-0 text-left">
-              <DialogTitle className="text-base font-medium text-zinc-100 hidden sm:block">
+        <div className="flex flex-col h-[min(680px,calc(100dvh-80px))]">
+          <DialogHeader className="p-4 border-b border-zinc-800 space-y-0">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-zinc-400" />
+              <DialogTitle className="text-base font-sm text-zinc-100">
                 Settings
               </DialogTitle>
-              <div className="sm:hidden flex justify-center">
-                <SlidersHorizontal className="w-4 h-4 text-zinc-300" />
-              </div>
-            </DialogHeader>
-            <div className="flex-1 px-2 sm:px-3 space-y-1 pt-1">
-              {NAV.map((item) => {
-                const Icon = item.icon;
-                const active = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={cn(
-                      "w-full flex items-center justify-center sm:justify-start gap-2.5 rounded-md px-2 sm:px-3 py-2 text-sm font-medium transition-colors",
-                      active
-                        ? "bg-zinc-800 text-zinc-100"
-                        : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
-                    )}
-                    title={item.label}
-                  >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span className="hidden sm:inline">{item.label}</span>
-                  </button>
-                );
-              })}
             </div>
-          </nav>
+          </DialogHeader>
+
+          <div className="flex border-b border-zinc-800 bg-[#1e1e1e]">
+            {NAV.map((item) => {
+              const active = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={cn(
+                    "flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2",
+                    active
+                      ? "border-zinc-100 text-zinc-100 bg-zinc-800/30"
+                      : "border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/20"
+                  )}
+                >
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
           {/* Content + footer */}
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-4">
               {activeTab === "general" && (
                 <GeneralSettings
                   settings={settings}

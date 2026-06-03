@@ -125,8 +125,8 @@ export default function AccountSettings() {
   if (!user) return null;
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between pb-4 border-b border-zinc-800/50">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-medium text-zinc-200">Account</h3>
           <p className="text-xs text-zinc-500 mt-1">
@@ -141,10 +141,7 @@ export default function AccountSettings() {
         </Badge>
       </div>
 
-      {/* Profile */}
-      <div className="space-y-4">
-        <GroupLabel>Profile</GroupLabel>
-        <div className="flex items-center gap-4 p-3 rounded-lg border border-zinc-800/50 bg-zinc-900/20">
+        <div className="flex items-center gap-4 pt-3 pb-3 rounded-lg">
           <Avatar className="h-16 w-16 border border-zinc-700 bg-zinc-800">
             <AvatarImage src={user.avatarUrl} />
             <AvatarFallback className="bg-zinc-800 text-zinc-400 font-medium text-lg">
@@ -212,7 +209,6 @@ export default function AccountSettings() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Security */}
       <div className="space-y-2 pt-2 border-t border-zinc-800/50">
@@ -267,29 +263,18 @@ export default function AccountSettings() {
 
       {/* Sign out */}
       <div className="pt-4 border-t border-zinc-800/50">
-        <div
-          className="flex items-center justify-between p-3 rounded-md border border-zinc-800/50 bg-red-900/5 hover:bg-red-900/10 hover:border-red-900/30 transition-colors cursor-pointer"
+        <Button
           onClick={handleSignOut}
+          disabled={signingOut}
+          className="w-full bg-red-800 text-white hover:bg-red-600/80 transition-colors"
         >
-          <div className="space-y-0.5">
-            <h4 className="text-sm font-medium text-red-400/90">Sign out</h4>
-            <p className="text-xs text-red-500/50">
-              End your current session safely
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={signingOut}
-            className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
-          >
-            {signingOut ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <LogOut className="w-3.5 h-3.5" />
-            )}
-          </Button>
-        </div>
+          {signingOut ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <LogOut className="w-3.5 h-3.5" />
+          )}
+          Sign out
+        </Button>
       </div>
     </div>
   );

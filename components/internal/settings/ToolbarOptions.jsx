@@ -38,11 +38,11 @@ export default function ToolbarOptions({
               aria-pressed={isActive}
               className={`flex flex-col items-center justify-center gap-2 aspect-square rounded-xl transition-all pt-3 pb-3 border-2 ${
                 isActive
-                  ? "bg-zinc-800 border-zinc-500 text-white"
-                  : "bg-zinc-900 border-transparent text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+                  ? "bg-[#2a2a2a] border-[#3a3a3a] text-white"
+                  : "bg-[#1a1a1a] border-transparent text-[#737373] hover:bg-[#202020] hover:text-[#a3a3a3]"
               }`}
             >
-              <Icon className={`w-6 h-6 ${isActive ? "text-[#e7e7e7]" : ""}`} />
+              <Icon className={`w-6 h-6 ${isActive ? "text-[#e7e7e7]" : "text-[#737373]"}`} />
               <span className="text-[10px] font-medium truncate w-full px-1">
                 {tool.label}
               </span>

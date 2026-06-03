@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Spline, MousePointer2 } from "lucide-react";
 import ColorPicker from "../edges/ColorePicker";
 import ToolbarOptions from "./ToolbarOptions";
-import { Segmented } from "./SettingsPrimitives";
+import { SegmentedTabs } from "./SegmentedTabs";
 import { TOOL_IDS } from "@/lib/settings/defaults";
 
 const STROKE_WIDTHS = [
@@ -117,22 +117,23 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
                 </ColorPicker>
               </div>
 
-              <div>
+              <div className="w-full">
                 <span className="mb-2 block text-zinc-400 text-xs font-medium">
                   Thickness
                 </span>
-                <Segmented
-                  options={STROKE_WIDTHS}
+                <SegmentedTabs
+                  tabs={STROKE_WIDTHS}
                   value={edge.strokeWidth || 2}
                   onChange={(v) => updateEdge("strokeWidth", v)}
+                  fullWidth
                 />
               </div>
             </div>
 
             <div className="flex items-center justify-between pt-1">
               <span className="text-sm text-zinc-300">Line style</span>
-              <Segmented
-                options={[
+              <SegmentedTabs
+                tabs={[
                   { label: "Solid", value: false },
                   { label: "Dashed", value: true },
                 ]}
@@ -162,7 +163,7 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
               <span>Toolbar</span>
             </div>
           </AccordionTrigger>
-          <AccordionContent className="px-4 py-4 border-t border-zinc-800/50">
+          <AccordionContent className="px-4 py-4 border-t border-b border-zinc-800/50">
             <ToolbarOptions
               selectedTools={tools}
               onToggleTool={toggleTool}
