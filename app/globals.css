@@ -180,6 +180,16 @@
   font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
+.rolling-logo-stripe {
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rolling-logo-motion {
+    display: none;
+  }
+}
+
 /* React Flow Transition & Animation */
 .react-flow__node {
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
