@@ -56,15 +56,17 @@ const RollingLogo = () => {
                 dur={REEL_DURATION}
                 repeatCount="indefinite"
               />
-              <path d={path} fill="white" />
+              <path d={path} fill="currentColor" className="text-foreground" />
               <path
                 d={path}
-                fill="white"
+                fill="currentColor"
+                className="text-foreground"
                 transform={`translate(${-vector.x} ${-vector.y})`}
               />
               <path
                 d={path}
-                fill="white"
+                fill="currentColor"
+                className="text-foreground"
                 transform={`translate(${-vector.x * 2} ${-vector.y * 2})`}
               />
             </g>
@@ -81,7 +83,7 @@ const CanvasSkeleton = () => {
       <div
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
-          backgroundImage: "radial-gradient(#999 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(var(--canvas-dots) 1px, transparent 1px)",
           backgroundSize: "20px 20px",
         }}
       />
@@ -90,7 +92,7 @@ const CanvasSkeleton = () => {
         <RollingLogo />
       </div>
 
-      <div className="absolute bottom-10 right-10 flex items-center gap-2 text-zinc-500 text-sm font-medium animate-pulse">
+      <div className="absolute bottom-10 right-10 flex items-center gap-2 text-muted-foreground text-sm font-medium animate-pulse">
         <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"></div>
         Loading Canvas...
       </div>

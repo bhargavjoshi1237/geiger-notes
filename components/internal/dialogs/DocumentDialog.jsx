@@ -28,12 +28,12 @@ const Toolbar = ({ editor }) => {
   }
 
   return (
-    <div className="flex flex-wrap gap-1 p-2 border-b border-zinc-800 bg-[#1e1e1e]">
+    <div className="flex flex-wrap gap-1 p-2 border-b border-border bg-surface-dialog">
       <Toggle
         size="sm"
         pressed={editor.isActive("bold")}
         onPressedChange={() => editor.chain().focus().toggleBold().run()}
-        className="data-[state=on]:bg-zinc-700 hover:bg-zinc-800 text-zinc-300"
+        className="data-[state=on]:bg-surface-hover hover:bg-surface-hover text-foreground"
       >
         <Bold className="h-4 w-4" />
       </Toggle>
@@ -41,7 +41,7 @@ const Toolbar = ({ editor }) => {
         size="sm"
         pressed={editor.isActive("italic")}
         onPressedChange={() => editor.chain().focus().toggleItalic().run()}
-        className="data-[state=on]:bg-zinc-700 hover:bg-zinc-800 text-zinc-300"
+        className="data-[state=on]:bg-surface-hover hover:bg-surface-hover text-foreground"
       >
         <Italic className="h-4 w-4" />
       </Toggle>
@@ -49,7 +49,7 @@ const Toolbar = ({ editor }) => {
         size="sm"
         pressed={editor.isActive("strike")}
         onPressedChange={() => editor.chain().focus().toggleStrike().run()}
-        className="data-[state=on]:bg-zinc-700 hover:bg-zinc-800 text-zinc-300"
+        className="data-[state=on]:bg-surface-hover hover:bg-surface-hover text-foreground"
       >
         <Strikethrough className="h-4 w-4" />
       </Toggle>
@@ -57,16 +57,16 @@ const Toolbar = ({ editor }) => {
         size="sm"
         pressed={editor.isActive("code")}
         onPressedChange={() => editor.chain().focus().toggleCode().run()}
-        className="data-[state=on]:bg-zinc-700 hover:bg-zinc-800 text-zinc-300"
+        className="data-[state=on]:bg-surface-hover hover:bg-surface-hover text-foreground"
       >
         <Code className="h-4 w-4" />
       </Toggle>
-      <div className="w-[1px] h-6 bg-zinc-700 mx-1 self-center" />
+      <div className="w-[1px] h-6 bg-surface-hover mx-1 self-center" />
       <Toggle
         size="sm"
         pressed={editor.isActive("bulletList")}
         onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
-        className="data-[state=on]:bg-zinc-700 hover:bg-zinc-800 text-zinc-300"
+        className="data-[state=on]:bg-surface-hover hover:bg-surface-hover text-foreground"
       >
         <List className="h-4 w-4" />
       </Toggle>
@@ -74,7 +74,7 @@ const Toolbar = ({ editor }) => {
         size="sm"
         pressed={editor.isActive("orderedList")}
         onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
-        className="data-[state=on]:bg-zinc-700 hover:bg-zinc-800 text-zinc-300"
+        className="data-[state=on]:bg-surface-hover hover:bg-surface-hover text-foreground"
       >
         <ListOrdered className="h-4 w-4" />
       </Toggle>
@@ -82,7 +82,7 @@ const Toolbar = ({ editor }) => {
         size="sm"
         pressed={editor.isActive("blockquote")}
         onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
-        className="data-[state=on]:bg-zinc-700 hover:bg-zinc-800 text-zinc-300"
+        className="data-[state=on]:bg-surface-hover hover:bg-surface-hover text-foreground"
       >
         <Quote className="h-4 w-4" />
       </Toggle>
@@ -294,7 +294,7 @@ const DocumentEditor = ({ documentId, onClose, isOpen }) => {
       editorProps: {
         attributes: {
           class:
-            "prose prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[500px] text-zinc-300 p-6",
+            "prose prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[500px] text-foreground p-6",
         },
       },
       onUpdate: ({ editor }) => {
@@ -306,13 +306,13 @@ const DocumentEditor = ({ documentId, onClose, isOpen }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl h-[85vh] flex flex-col bg-[#1e1e1e] text-white border-zinc-800 p-0 overflow-hidden shadow-2xl">
-        <DialogHeader className="px-6 py-4 border-b border-zinc-800 flex flex-row items-center justify-between space-y-0 shrink-0 bg-[#1e1e1e]">
+      <DialogContent className="max-w-5xl h-[85vh] flex flex-col bg-surface-dialog text-foreground border-border p-0 overflow-hidden shadow-2xl">
+        <DialogHeader className="px-6 py-4 border-b border-border flex flex-row items-center justify-between space-y-0 shrink-0 bg-surface-dialog">
           <DialogTitle className="text-lg font-medium">
             Document Editor
           </DialogTitle>
           <div className="flex items-center gap-2">
-            <div className="text-xs text-zinc-500 font-mono uppercase tracking-wider">
+            <div className="text-xs text-muted-foreground font-mono uppercase tracking-wider">
               {saveStatus === "saving" && (
                 <span className="text-yellow-500 animate-pulse">Saving...</span>
               )}
@@ -320,10 +320,10 @@ const DocumentEditor = ({ documentId, onClose, isOpen }) => {
                 <span className="text-green-500">Synced</span>
               )}
               {saveStatus === "unsaved" && (
-                <span className="text-zinc-500">Unsaved changes...</span>
+                <span className="text-muted-foreground">Unsaved changes...</span>
               )}
               {saveStatus === "local" && (
-                <span className="text-zinc-500">Local playground</span>
+                <span className="text-muted-foreground">Local playground</span>
               )}
             </div>
           </div>
@@ -336,10 +336,10 @@ const DocumentEditor = ({ documentId, onClose, isOpen }) => {
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto w-full relative bg-[#1e1e1e]">
+        <div className="flex-1 overflow-y-auto w-full relative bg-surface-dialog">
           {loading ? (
             <div className="flex items-center justify-center h-full">
-              <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
             <div

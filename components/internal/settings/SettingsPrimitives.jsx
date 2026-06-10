@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 export function GroupLabel({ children, className = "" }) {
   return (
     <h4
-      className={`text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ${className}`}
+      className={`text-[11px] font-semibold text-muted-foreground uppercase tracking-wider ${className}`}
     >
       {children}
     </h4>
@@ -24,9 +24,9 @@ export function SettingRow({ title, description, control, disabled }) {
       }`}
     >
       <div className="space-y-0.5 min-w-0">
-        <div className="text-sm font-medium text-zinc-200">{title}</div>
+        <div className="text-sm font-medium text-foreground">{title}</div>
         {description ? (
-          <p className="text-xs text-zinc-500 leading-snug">{description}</p>
+          <p className="text-xs text-muted-foreground leading-snug">{description}</p>
         ) : null}
       </div>
       <div className="shrink-0">{control}</div>
@@ -55,7 +55,7 @@ export function ToggleRow({ title, description, checked, onChange, disabled }) {
 // A compact segmented control (radio-style group of buttons).
 export function Segmented({ options, value, onChange }) {
   return (
-    <div className="inline-flex items-center rounded-md border border-zinc-700 bg-zinc-900/50 p-0.5">
+    <div className="inline-flex items-center rounded-md border border-border bg-muted/50 p-0.5">
       {options.map((opt) => {
         const active = opt.value === value;
         return (
@@ -65,8 +65,8 @@ export function Segmented({ options, value, onChange }) {
             onClick={() => onChange(opt.value)}
             className={`px-2.5 py-1 text-xs font-medium rounded transition-colors ${
               active
-                ? "bg-zinc-100 text-zinc-900"
-                : "text-zinc-400 hover:text-zinc-200"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {opt.label}

@@ -91,10 +91,10 @@ export default function FileChangeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-[#1e1e1e] border-zinc-800 text-zinc-100">
+      <DialogContent className="sm:max-w-[500px] bg-surface-dialog border-border text-foreground">
         <DialogHeader>
           <DialogTitle>Upload File</DialogTitle>
-          <DialogDescription className="text-zinc-400">
+          <DialogDescription className="text-muted-foreground">
             Upload a new file to replace the current one.
           </DialogDescription>
         </DialogHeader>
@@ -128,7 +128,7 @@ export default function FileChangeDialog({
           )}
 
           <div
-            className="border-2 border-dashed border-zinc-700 rounded-lg p-6 flex flex-col items-center justify-center min-h-[150px] cursor-pointer hover:border-zinc-500 transition-colors bg-zinc-900/50"
+            className="border-2 border-dashed border-border rounded-lg p-6 flex flex-col items-center justify-center min-h-[150px] cursor-pointer hover:border-ring transition-colors bg-muted/50"
             onDragOver={handleDragOver}
             onDrop={handleDragDrop}
             onClick={() => fileInputRef.current?.click()}
@@ -137,10 +137,10 @@ export default function FileChangeDialog({
               <div className="relative w-full h-full flex flex-col items-center justify-center gap-3">
                 <FileText className="w-12 h-12 text-blue-400" />
                 <div className="text-center">
-                  <p className="text-sm font-medium text-zinc-200">
+                  <p className="text-sm font-medium text-foreground">
                     {selectedFile.name}
                   </p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-muted-foreground">
                     {(selectedFile.size / 1024).toFixed(2)} KB
                   </p>
                 </div>
@@ -158,10 +158,10 @@ export default function FileChangeDialog({
               </div>
             ) : (
               <div className="text-center space-y-2">
-                <div className="bg-zinc-800 p-3 rounded-full inline-flex">
-                  <Upload className="w-6 h-6 text-zinc-400" />
+                <div className="bg-surface-hover p-3 rounded-full inline-flex">
+                  <Upload className="w-6 h-6 text-muted-foreground" />
                 </div>
-                <div className="text-zinc-300 font-medium">
+                <div className="text-foreground font-medium">
                   Click or drag file here
                 </div>
               </div>
@@ -179,14 +179,14 @@ export default function FileChangeDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            className="border-border text-foreground hover:bg-surface-hover hover:text-foreground"
           >
             Cancel
           </Button>
           <Button
             onClick={processAndSave}
             disabled={!selectedFile || isProcessing}
-            className="bg-white text-black hover:bg-zinc-200 min-w-[100px]"
+            className="bg-primary text-primary-foreground hover:bg-primary/80 min-w-[100px]"
           >
             {isProcessing ? "Processing..." : "Upload File"}
           </Button>

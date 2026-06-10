@@ -75,8 +75,8 @@ const TableNode = ({ id, data, selected }) => {
     <div className="relative group">
       <div
         className={`
-          bg-[#2a2a2a] rounded-xl shadow-lg overflow-hidden transition-all duration-200
-          ${selected ? "ring-2 ring-white" : "ring-1 ring-transparent hover:ring-zinc-600"}
+          bg-surface-hover rounded-xl shadow-lg overflow-hidden transition-all duration-200
+          ${selected ? "ring-2 ring-foreground" : "ring-1 ring-transparent hover:ring-border"}
         `}
       >
         <table className="border-collapse">
@@ -85,7 +85,7 @@ const TableNode = ({ id, data, selected }) => {
               {columns.map((col, colIndex) => (
                 <th
                   key={colIndex}
-                  className="relative border border-[#3a3a3a] bg-[#222222] px-2 py-1.5 min-w-[120px] group/col"
+                  className="relative border border-border bg-surface-dialog px-2 py-1.5 min-w-[120px] group/col"
                 >
                   <TextEditingTrait>
                     <input
@@ -95,14 +95,14 @@ const TableNode = ({ id, data, selected }) => {
                         handleHeaderChange(colIndex, e.target.value)
                       }
                       placeholder="Header"
-                      className="w-full bg-transparent text-zinc-100 text-xs font-semibold text-left focus:outline-none placeholder:text-zinc-600"
+                      className="w-full bg-transparent text-foreground text-xs font-semibold text-left focus:outline-none placeholder:text-muted-foreground"
                     />
                   </TextEditingTrait>
                   {columns.length > 1 && (
                     <button
                       type="button"
                       onClick={() => handleRemoveColumn(colIndex)}
-                      className="nodrag absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-zinc-700 text-zinc-300 hover:bg-red-500 hover:text-white flex items-center justify-center opacity-0 group-hover/col:opacity-100 transition-opacity"
+                      className="nodrag absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-surface-hover text-foreground hover:bg-red-500 hover:text-white flex items-center justify-center opacity-0 group-hover/col:opacity-100 transition-opacity"
                       title="Delete column"
                     >
                       <X className="w-2.5 h-2.5" />
@@ -118,7 +118,7 @@ const TableNode = ({ id, data, selected }) => {
                 {columns.map((_, colIndex) => (
                   <td
                     key={colIndex}
-                    className="relative border border-[#3a3a3a] px-2 py-1.5"
+                    className="relative border border-border px-2 py-1.5"
                   >
                     <TextEditingTrait>
                       <input
@@ -127,14 +127,14 @@ const TableNode = ({ id, data, selected }) => {
                         onChange={(e) =>
                           handleCellChange(rowIndex, colIndex, e.target.value)
                         }
-                        className="w-full bg-transparent text-zinc-200 text-xs focus:outline-none placeholder:text-zinc-600"
+                        className="w-full bg-transparent text-foreground text-xs focus:outline-none placeholder:text-muted-foreground"
                       />
                     </TextEditingTrait>
                     {colIndex === 0 && rows.length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveRow(rowIndex)}
-                        className="nodrag absolute top-1/2 -left-2 -translate-y-1/2 w-4 h-4 rounded-full bg-zinc-700 text-zinc-300 hover:bg-red-500 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-opacity"
+                        className="nodrag absolute top-1/2 -left-2 -translate-y-1/2 w-4 h-4 rounded-full bg-surface-hover text-foreground hover:bg-red-500 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-opacity"
                         title="Delete row"
                       >
                         <X className="w-2.5 h-2.5" />
@@ -147,20 +147,20 @@ const TableNode = ({ id, data, selected }) => {
           </tbody>
         </table>
 
-        <div className="flex border-t border-[#3a3a3a]">
+        <div className="flex border-t border-border">
           <button
             type="button"
             onClick={handleAddRow}
-            className="nodrag flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] text-zinc-500 hover:text-zinc-200 hover:bg-[#333333] transition-colors"
+            className="nodrag flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-node-default transition-colors"
           >
             <Plus className="w-3 h-3" />
             Row
           </button>
-          <div className="w-px bg-[#3a3a3a]" />
+          <div className="w-px bg-border" />
           <button
             type="button"
             onClick={handleAddColumn}
-            className="nodrag flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] text-zinc-500 hover:text-zinc-200 hover:bg-[#333333] transition-colors"
+            className="nodrag flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-node-default transition-colors"
           >
             <Plus className="w-3 h-3" />
             Column
@@ -171,12 +171,12 @@ const TableNode = ({ id, data, selected }) => {
       <Handle
         type="target"
         position={Position.Left}
-        className="!w-2 !h-2 !bg-zinc-500 !border-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="!w-2 !h-2 !bg-muted-foreground !border-0 opacity-0 group-hover:opacity-100 transition-opacity"
       />
       <Handle
         type="source"
         position={Position.Right}
-        className="!w-2 !h-2 !bg-zinc-500 !border-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="!w-2 !h-2 !bg-muted-foreground !border-0 opacity-0 group-hover:opacity-100 transition-opacity"
       />
     </div>
   );

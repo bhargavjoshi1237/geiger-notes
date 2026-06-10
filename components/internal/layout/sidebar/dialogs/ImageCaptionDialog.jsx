@@ -41,26 +41,26 @@ const ImageCaptionDialog = ({ open, onOpenChange, initialData, onSave }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-[#1e1e1e] border-zinc-800 text-zinc-100">
+      <DialogContent className="sm:max-w-[425px] bg-surface-dialog border-border text-foreground">
         <DialogHeader>
           <DialogTitle>Edit Caption</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="caption" className="text-zinc-300">
+            <Label htmlFor="caption" className="text-foreground">
               Caption Text
             </Label>
             <Input
               id="caption"
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-zinc-100 focus:ring-zinc-600 focus:border-zinc-600"
+              className="bg-surface-hover border-border text-foreground focus:ring-ring focus:border-ring"
               placeholder="Enter caption..."
             />
           </div>
 
           <div className="grid gap-2">
-            <Label className="text-zinc-300">
+            <Label className="text-foreground">
               Background Opacity: {Math.round(opacity * 100)}%
             </Label>
             <Slider
@@ -75,7 +75,7 @@ const ImageCaptionDialog = ({ open, onOpenChange, initialData, onSave }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label className="text-zinc-300">Background Color</Label>
+              <Label className="text-foreground">Background Color</Label>
               <ColorPicker
                 value={bgColor}
                 onChange={setBgColor}
@@ -83,7 +83,7 @@ const ImageCaptionDialog = ({ open, onOpenChange, initialData, onSave }) => {
                 align="start"
               >
                 <button
-                  className="w-full h-10 rounded border border-zinc-700 flex items-center justify-center gap-2 hover:border-zinc-500 transition-colors"
+                  className="w-full h-10 rounded border border-border flex items-center justify-center gap-2 hover:border-ring transition-colors"
                   style={{ backgroundColor: bgColor }}
                 >
                   {/* Show check pattern if transparent, but opacity handles that mostly. */}
@@ -91,7 +91,7 @@ const ImageCaptionDialog = ({ open, onOpenChange, initialData, onSave }) => {
               </ColorPicker>
             </div>
             <div className="grid gap-2">
-              <Label className="text-zinc-300">Text Color</Label>
+              <Label className="text-foreground">Text Color</Label>
               <ColorPicker
                 value={textColor}
                 onChange={setTextColor}
@@ -99,7 +99,7 @@ const ImageCaptionDialog = ({ open, onOpenChange, initialData, onSave }) => {
                 align="start"
               >
                 <button
-                  className="w-full h-10 rounded border border-zinc-700 flex items-center justify-center gap-2 hover:border-zinc-500 transition-colors"
+                  className="w-full h-10 rounded border border-border flex items-center justify-center gap-2 hover:border-ring transition-colors"
                   style={{ backgroundColor: textColor }}
                 />
               </ColorPicker>
@@ -110,13 +110,13 @@ const ImageCaptionDialog = ({ open, onOpenChange, initialData, onSave }) => {
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            className="border-border text-foreground hover:bg-surface-hover hover:text-foreground"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSave}
-            className="bg-white text-black hover:bg-zinc-200"
+            className="bg-primary text-primary-foreground hover:bg-primary/80"
           >
             Save changes
           </Button>

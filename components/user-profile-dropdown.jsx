@@ -32,7 +32,7 @@ export function UserProfileDropdown({ user }) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="ml-1 h-8 w-8 overflow-hidden rounded-full border border-[#333333] transition-colors hover:border-[#474747]"
+          className="ml-1 h-8 w-8 overflow-hidden rounded-full border border-border transition-colors hover:border-ring"
         >
           <Avatar className="size-full">
             {user?.avatarUrl && (
@@ -42,7 +42,7 @@ export function UserProfileDropdown({ user }) {
                 alt={displayName}
               />
             )}
-            <AvatarFallback className="border-0 bg-[#474747] text-[10px] font-semibold text-white">
+            <AvatarFallback className="border-0 bg-ring text-[10px] font-semibold text-foreground">
               {fallbackInitials}
             </AvatarFallback>
           </Avatar>
@@ -53,13 +53,13 @@ export function UserProfileDropdown({ user }) {
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="z-[100] w-[150px] min-w-[150px] max-w-[208px] bg-[#1a1a1a] border-[#242424] shadow-xl"
+        className="z-[100] w-[150px] min-w-[150px] max-w-[208px] bg-surface-dialog border-border shadow-xl"
         onCloseAutoFocus={(event) => event.preventDefault()}
       >
         <DropdownMenuGroup>
           <DropdownMenuItem
             asChild
-            className="text-[#a3a3a3] focus:bg-[#2a2a2a] focus:text-white cursor-pointer gap-2"
+            className="text-muted-foreground focus:bg-surface-hover focus:text-foreground cursor-pointer gap-2"
           >
             <Link href={user?.dashboardHref || "/"}>
               <HomeIcon className="w-3.5 h-3.5" />
@@ -70,7 +70,7 @@ export function UserProfileDropdown({ user }) {
           <form action={logout} onSubmit={() => clearProfileImageCache()}>
             <DropdownMenuItem
               asChild
-              className="text-[#737373] focus:bg-[#2a2a2a] focus:text-white cursor-pointer gap-2"
+              className="text-text-secondary focus:bg-surface-hover focus:text-foreground cursor-pointer gap-2"
             >
               <button type="submit" className="w-full">
                 <LogOut className="w-3.5 h-3.5" />

@@ -55,12 +55,12 @@ const CalendarNode = ({ id, data, selected, dragging, width, height }) => {
         className={`
           relative flex flex-col w-full h-full min-h-[100px] min-w-[100px] group rounded-xl
           transition-all duration-300 ease-out
-          ${selected ? "border-2 border-white" : "border-2 border-transparent hover:border-zinc-600"}
+          ${selected ? "border-2 border-foreground" : "border-2 border-transparent hover:border-border"}
           ${dragging ? "shadow-2xl shadow-black/50 z-50" : ""}
           ${isVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-2 scale-95"}
         `}
         style={{
-          backgroundColor: data.backgroundColor || "#2a2a2a",
+          backgroundColor: data.backgroundColor || "var(--surface-hover)",
           ...(outline.enabled
             ? {
                 borderColor: outline.color,
@@ -130,7 +130,7 @@ const CalendarNode = ({ id, data, selected, dragging, width, height }) => {
           type="source"
           position={Position.Right}
           className={`
-            !w-2 !h-2 !bg-zinc-100 !border-0
+            !w-2 !h-2 !bg-foreground !border-0
             absolute !top-0 !-right-[1px]
             flex items-center justify-center
 
@@ -142,7 +142,7 @@ const CalendarNode = ({ id, data, selected, dragging, width, height }) => {
             ${selected ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
         `}
         >
-          <ArrowRight className="w-[10px] h-[10px] opacity-0 group-hover/handle:opacity-100 transition-opacity duration-200 text-black -rotate-45" />
+          <ArrowRight className="w-[10px] h-[10px] opacity-0 group-hover/handle:opacity-100 transition-opacity duration-200 text-background -rotate-45" />
         </Handle>
       </div>
     </>

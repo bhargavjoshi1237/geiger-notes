@@ -27,7 +27,7 @@ export default function MergeTab({
         <div className="h-full flex flex-col">
           <ScrollArea className="flex-1 px-4 pb-4">
             {mergeSessions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center text-zinc-500">
+              <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4">
                   <History className="w-8 h-8 opacity-20 ml-auto mr-auto" />
                 </div>
@@ -42,10 +42,10 @@ export default function MergeTab({
                   <button
                     key={session.id}
                     onClick={() => handleMergeSessionSelect(session)}
-                    className="w-full flex flex-col gap-1 p-3 rounded-lg bg-zinc-800/40 hover:bg-zinc-800/80 border border-zinc-800 hover:border-zinc-700 transition-all text-left group"
+                    className="w-full flex flex-col gap-1 p-3 rounded-lg bg-surface-hover/40 hover:bg-surface-hover/80 border border-border hover:border-border transition-all text-left group"
                   >
                     <div className="flex items-center justify-between w-full">
-                      <span className="text-sm font-medium text-zinc-200 group-hover:text-white transition-colors">
+                      <span className="text-sm font-medium text-foreground group-hover:text-foreground transition-colors">
                         {session.code || "Untitled Session"}
                       </span>
                       <span>
@@ -53,7 +53,7 @@ export default function MergeTab({
                           {currentUser && (
                             <Avatar
                               size="sm"
-                              className="border-2 border-zinc-900"
+                              className="border-2 border-surface-dialog"
                             >
                               <AvatarImage
                                 src={currentUser?.user_metadata?.avatar_url}
@@ -76,7 +76,7 @@ export default function MergeTab({
                                 <Avatar
                                   key={index}
                                   size="sm"
-                                  className="border-2 border-zinc-900"
+                                  className="border-2 border-surface-dialog"
                                 >
                                   <AvatarImage
                                     src={joiner.avatar_url}
@@ -106,18 +106,18 @@ export default function MergeTab({
                       </span>
                     </div>
                     <div className="flex items-center justify-between mt-1">
-                      <div className="text-xs text-zinc-500 group-hover:text-zinc-400">
+                      <div className="text-xs text-muted-foreground group-hover:text-muted-foreground">
                         {session.rollback ? (
                           <div className="text-[10px] text-amber-500/90 flex items-center gap-1 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
                             <GitMerge className="w-3 h-3" /> Merged
                           </div>
                         ) : (
-                          <div className="text-[10px] text-zinc-500 flex items-center gap-1 bg-zinc-800/50 px-1.5 py-0.5 rounded border border-zinc-700/50">
+                          <div className="text-[10px] text-muted-foreground flex items-center gap-1 bg-surface-hover/50 px-1.5 py-0.5 rounded border border-border/50">
                             <GitMerge className="w-3 h-3" /> Not Merged
                           </div>
                         )}
                       </div>
-                      <p className="text-xs text-zinc-500 group-hover:text-zinc-400">
+                      <p className="text-xs text-muted-foreground group-hover:text-muted-foreground">
                         {new Date(session.created_at).toLocaleDateString()}
                       </p>
                     </div>
@@ -133,25 +133,25 @@ export default function MergeTab({
             {hasRollback ? (
               <div className="flex flex-col items-center justify-center p-8 text-center space-y-6">
                 <div className="space-y-2">
-                  <h3 className="text-lg font-medium text-zinc-100">
+                  <h3 className="text-lg font-medium text-foreground">
                     Undo Merge
                   </h3>
-                  <p className="text-sm text-zinc-400 max-w-[260px] mx-auto leading-relaxed">
+                  <p className="text-sm text-muted-foreground max-w-[260px] mx-auto leading-relaxed">
                     Merged on{" "}
-                    <span className="text-zinc-300">
+                    <span className="text-foreground">
                       {new Date(
                         selectedMergeSession.rollback.merged_at,
                       ).toLocaleDateString()}
                     </span>{" "}
                     at{" "}
-                    <span className="text-zinc-300">
+                    <span className="text-foreground">
                       {new Date(
                         selectedMergeSession.rollback.merged_at,
                       ).toLocaleTimeString()}
                     </span>
                   </p>
                 </div>
-                <div className="text-xs text-zinc-500 bg-zinc-900/50 px-4 py-3 rounded-md border border-zinc-800 w-full">
+                <div className="text-xs text-muted-foreground bg-muted/50 px-4 py-3 rounded-md border border-border w-full">
                   Rolling back will restore the board state to exactly how it
                   was before the merge.
                 </div>
@@ -161,26 +161,26 @@ export default function MergeTab({
                 {mergeDiff && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-zinc-800/30 border-2 border-zinc-800 border-dashed rounded-xl p-4 text-center flex flex-col items-center justify-center gap-1 group hover:border-emerald-500/30 transition-colors">
+                      <div className="bg-surface-hover/30 border-2 border-border border-dashed rounded-xl p-4 text-center flex flex-col items-center justify-center gap-1 group hover:border-emerald-500/30 transition-colors">
                         <div className="text-2xl font-bold text-emerald-400">
                           {mergeDiff.newNodes.length}
                         </div>
-                        <div className="text-xs font-medium text-zinc-400 group-hover:text-zinc-300">
+                        <div className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
                           New Nodes
                         </div>
                       </div>
-                      <div className="bg-zinc-800/30 border-2 border-zinc-800 border-dashed rounded-xl p-4 text-center flex flex-col items-center justify-center gap-1 group hover:border-blue-500/30 transition-colors">
+                      <div className="bg-surface-hover/30 border-2 border-border border-dashed rounded-xl p-4 text-center flex flex-col items-center justify-center gap-1 group hover:border-blue-500/30 transition-colors">
                         <div className="text-2xl font-bold text-blue-400">
                           {mergeDiff.changedNodes.length}
                         </div>
-                        <div className="text-xs font-medium text-zinc-400 group-hover:text-zinc-300">
+                        <div className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
                           Modified
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-3 pt-2">
-                      <div className="text-sm text-zinc-400 leading-relaxed">
+                      <div className="text-sm text-muted-foreground leading-relaxed">
                         Merging will combine these changes into your current
                         board. Your local unique nodes will be preserved.
                       </div>
@@ -191,18 +191,18 @@ export default function MergeTab({
             )}
           </ScrollArea>
 
-          <div className="p-4 border-t border-zinc-800 flex gap-2">
+          <div className="p-4 border-t border-border flex gap-2">
             <Button
               variant="ghost"
               onClick={() => setSelectedMergeSession(null)}
-              className="w-[30%] bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white"
+              className="w-[30%] bg-surface-hover text-foreground hover:bg-surface-hover hover:text-foreground"
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> Back
             </Button>
             {hasRollback ? (
               <Button
                 onClick={handleRollback}
-                className="flex-1 bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-900/20"
+                className="flex-1 bg-amber-600 hover:bg-amber-700 text-foreground shadow-lg shadow-amber-900/20"
               >
                 <Undo className="w-4 h-4 mr-2" />
                 Rollback
@@ -210,7 +210,7 @@ export default function MergeTab({
             ) : (
               <Button
                 onClick={confirmMerge}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-foreground shadow-lg shadow-emerald-900/20"
               >
                 Merge Changes
               </Button>

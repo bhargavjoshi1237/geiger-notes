@@ -118,7 +118,7 @@ export default function AccountSettings() {
   if (loading)
     return (
       <div className="flex h-40 items-center justify-center">
-        <Loader2 className="w-5 h-5 text-zinc-500 animate-spin" />
+        <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
       </div>
     );
 
@@ -128,8 +128,8 @@ export default function AccountSettings() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-medium text-zinc-200">Account</h3>
-          <p className="text-xs text-zinc-500 mt-1">
+          <h3 className="text-sm font-medium text-foreground">Account</h3>
+          <p className="text-xs text-muted-foreground mt-1">
             Manage your profile and security.
           </p>
         </div>
@@ -142,9 +142,9 @@ export default function AccountSettings() {
       </div>
 
         <div className="flex items-center gap-4 pt-3 pb-3 rounded-lg">
-          <Avatar className="h-16 w-16 border border-zinc-700 bg-zinc-800">
+          <Avatar className="h-16 w-16 border border-border bg-surface-hover">
             <AvatarImage src={user.avatarUrl} />
-            <AvatarFallback className="bg-zinc-800 text-zinc-400 font-medium text-lg">
+            <AvatarFallback className="bg-surface-hover text-muted-foreground font-medium text-lg">
               {user.name?.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -161,13 +161,13 @@ export default function AccountSettings() {
                     if (e.key === "Escape") setEditingName(false);
                   }}
                   maxLength={60}
-                  className="h-8 bg-zinc-950/50 border-zinc-700 text-zinc-100"
+                  className="h-8 bg-muted/50 border-border text-foreground"
                 />
                 <Button
                   size="icon"
                   onClick={saveName}
                   disabled={savingName}
-                  className="h-8 w-8 bg-zinc-100 text-black hover:bg-zinc-300 shrink-0"
+                  className="h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/60 shrink-0"
                 >
                   {savingName ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -179,31 +179,31 @@ export default function AccountSettings() {
                   size="icon"
                   variant="ghost"
                   onClick={() => setEditingName(false)}
-                  className="h-8 w-8 text-zinc-400 hover:text-zinc-200 shrink-0"
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
                 >
                   <X className="w-3.5 h-3.5" />
                 </Button>
               </div>
             ) : (
               <div className="flex items-center gap-2 group">
-                <span className="text-sm font-medium text-zinc-200 truncate">
+                <span className="text-sm font-medium text-foreground truncate">
                   {user.name}
                 </span>
                 <button
                   type="button"
                   onClick={startEdit}
-                  className="text-zinc-500 hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                   title="Edit name"
                 >
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
               </div>
             )}
-            <div className="text-xs text-zinc-500 flex items-center gap-2 truncate">
+            <div className="text-xs text-muted-foreground flex items-center gap-2 truncate">
               <Mail className="w-3 h-3 shrink-0" />
               <span className="truncate">{user.email}</span>
             </div>
-            <div className="text-[10px] text-zinc-600 flex items-center gap-1.5">
+            <div className="text-[10px] text-text-secondary flex items-center gap-1.5">
               <Calendar className="w-3 h-3" />
               Member since {user.memberSince}
             </div>
@@ -211,16 +211,16 @@ export default function AccountSettings() {
         </div>
 
       {/* Security */}
-      <div className="space-y-2 pt-2 border-t border-zinc-800/50">
+      <div className="space-y-2 pt-2 border-t border-border/50">
         <GroupLabel className="mt-4">Security</GroupLabel>
         <div className="flex items-center justify-between py-2">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded bg-zinc-900/50 border border-zinc-800/50 text-zinc-400">
+            <div className="p-2 rounded bg-muted/50 border border-border/50 text-muted-foreground">
               <Shield className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-sm font-medium text-zinc-300">Password</div>
-              <div className="text-xs text-zinc-500">
+              <div className="text-sm font-medium text-foreground">Password</div>
+              <div className="text-xs text-muted-foreground">
                 Receive a secure reset link by email
               </div>
             </div>
@@ -230,7 +230,7 @@ export default function AccountSettings() {
             size="sm"
             onClick={handlePasswordReset}
             disabled={sendingReset}
-            className="h-8 border-zinc-700 text-zinc-300 hover:text-zinc-100 hover:border-zinc-600"
+            className="h-8 border-border text-foreground hover:text-foreground hover:border-ring"
           >
             {sendingReset ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -242,19 +242,19 @@ export default function AccountSettings() {
 
         <div className="flex items-center justify-between py-2">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded bg-zinc-900/50 border border-zinc-800/50 text-zinc-400">
+            <div className="p-2 rounded bg-muted/50 border border-border/50 text-muted-foreground">
               <LifeBuoy className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-sm font-medium text-zinc-300">Support</div>
-              <div className="text-xs text-zinc-500">
+              <div className="text-sm font-medium text-foreground">Support</div>
+              <div className="text-xs text-muted-foreground">
                 Questions about billing or your plan
               </div>
             </div>
           </div>
           <a
             href="mailto:support@vardaam.com?subject=Geiger%20Notes%20Support"
-            className="inline-flex items-center h-8 px-3 rounded-md border border-zinc-700 text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 text-sm transition-colors"
+            className="inline-flex items-center h-8 px-3 rounded-md border border-border text-foreground hover:text-foreground hover:border-ring text-sm transition-colors"
           >
             Contact
           </a>
@@ -262,7 +262,7 @@ export default function AccountSettings() {
       </div>
 
       {/* Sign out */}
-      <div className="pt-4 border-t border-zinc-800/50">
+      <div className="pt-4 border-t border-border/50">
         <Button
           onClick={handleSignOut}
           disabled={signingOut}

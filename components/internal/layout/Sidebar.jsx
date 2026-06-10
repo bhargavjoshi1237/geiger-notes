@@ -42,7 +42,7 @@ export default function Sidebar({
 
   const shellBgClass = debugBgLayers
     ? "bg-fuchsia-600/70 border-fuchsia-300/60"
-    : "bg-[#161616]/50 border-[#2a2a2a]/50";
+    : "bg-background/50 border-topbar-border/50";
   const panelBgClass = debugBgLayers ? "bg-cyan-500/35" : "bg-transparent";
   const shellBlurClass = debugBgLayers ? "" : "backdrop-blur-md";
 

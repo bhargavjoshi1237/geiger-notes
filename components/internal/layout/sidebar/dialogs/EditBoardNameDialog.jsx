@@ -34,13 +34,13 @@ export default function EditBoardNameDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1e1e1e] border-zinc-800 text-white sm:max-w-[425px]">
+      <DialogContent className="bg-surface-dialog border-border text-foreground sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Board Name</DialogTitle>
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-300">Name</label>
+            <label className="text-sm font-medium text-foreground">Name</label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -48,19 +48,19 @@ export default function EditBoardNameDialog({
                 if (e.key === "Enter") handleSave();
               }}
               autoFocus
-              className="bg-zinc-900 border-zinc-700 text-white focus-visible:ring-zinc-600 focus-visible:ring-offset-0"
+              className="bg-muted border-border text-foreground focus-visible:ring-ring focus-visible:ring-offset-0"
               placeholder="Enter board name"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-300">Caption</label>
+            <label className="text-sm font-medium text-foreground">Caption</label>
             <Input
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSave();
               }}
-              className="bg-zinc-900 border-zinc-700 text-white focus-visible:ring-zinc-600 focus-visible:ring-offset-0"
+              className="bg-muted border-border text-foreground focus-visible:ring-ring focus-visible:ring-offset-0"
               placeholder="Double click to open"
             />
           </div>
@@ -69,13 +69,13 @@ export default function EditBoardNameDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+            className="border-border text-muted-foreground hover:bg-surface-hover hover:text-foreground"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSave}
-            className="bg-white text-black hover:bg-zinc-200"
+            className="bg-primary text-primary-foreground hover:bg-primary/80"
           >
             Save
           </Button>

@@ -39,7 +39,7 @@ export const ReactionPlug = ({ onReaction, emojis, reactions }) => {
         <SidebarButton icon={SmilePlus} label="Add reaction" />
       </PopoverTrigger>
       <PopoverContent
-        className="w-auto p-1.5 bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 shadow-2xl rounded-2xl"
+        className="w-auto p-1.5 bg-muted/95 backdrop-blur-xl border border-border shadow-2xl rounded-2xl"
         side="right"
         align="start"
         sideOffset={12}
@@ -52,7 +52,7 @@ export const ReactionPlug = ({ onReaction, emojis, reactions }) => {
               className="
                 group relative p-2 rounded-xl
                 transition-all duration-150
-                hover:bg-zinc-800/80
+                hover:bg-surface-hover/80
                 active:scale-90 flex items-center justify-center
               "
               onClick={() => onReaction(label)}

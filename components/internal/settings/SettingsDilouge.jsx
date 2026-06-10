@@ -68,20 +68,20 @@ export default function SettingsDialog({
         showCloseButton={false}
         className={cn(
           dialogContainer ? "absolute max-h-[calc(100%-1rem)]" : "",
-          "max-w-2xl bg-[#1e1e1e] border-zinc-800 text-zinc-100 p-0 overflow-hidden shadow-xl sm:rounded-lg"
+          "max-w-2xl bg-surface-dialog border-border text-foreground p-0 overflow-hidden shadow-xl sm:rounded-lg"
         )}
       >
         <div className="flex flex-col h-[min(680px,calc(100dvh-80px))]">
-          <DialogHeader className="p-4 border-b border-zinc-800 space-y-0">
+          <DialogHeader className="p-4 border-b border-border space-y-0">
             <div className="flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-zinc-400" />
-              <DialogTitle className="text-base font-sm text-zinc-100">
+              <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
+              <DialogTitle className="text-base font-sm text-foreground">
                 Settings
               </DialogTitle>
             </div>
           </DialogHeader>
 
-          <div className="flex border-b border-zinc-800 bg-[#1e1e1e]">
+          <div className="flex border-b border-border bg-surface-dialog">
             {NAV.map((item) => {
               const active = activeTab === item.id;
               return (
@@ -91,8 +91,8 @@ export default function SettingsDialog({
                   className={cn(
                     "flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2",
                     active
-                      ? "border-zinc-100 text-zinc-100 bg-zinc-800/30"
-                      : "border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/20"
+                      ? "border-foreground text-foreground bg-surface-hover/30"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-hover/20"
                   )}
                 >
                   <span>{item.label}</span>
@@ -124,7 +124,7 @@ export default function SettingsDialog({
 
             {/* Footer — only the preference tabs need a save action */}
             {activeTab !== "account" && (
-              <div className="p-3 px-4 border-t border-zinc-800 bg-[#1e1e1e] flex items-center justify-end gap-2 text-sm">
+              <div className="p-3 px-4 border-t border-border bg-surface-dialog flex items-center justify-end gap-2 text-sm">
                 {onSave && isDirty && (
                   <span className="mr-auto text-xs text-amber-400/80">
                     Unsaved changes
@@ -135,14 +135,14 @@ export default function SettingsDialog({
                     <Button
                       variant="ghost"
                       onClick={handleCancel}
-                      className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                      className="text-muted-foreground hover:text-foreground hover:bg-surface-hover"
                     >
                       Cancel
                     </Button>
                     <Button
                       onClick={handleSave}
                       disabled={!isDirty || isSaving}
-                      className="bg-zinc-100 text-black hover:bg-zinc-300 disabled:opacity-40"
+                      className="bg-primary text-primary-foreground hover:bg-primary/60 disabled:opacity-40"
                     >
                       {isSaving ? (
                         <>
@@ -157,7 +157,7 @@ export default function SettingsDialog({
                 ) : (
                   <Button
                     onClick={close}
-                    className="bg-zinc-100 text-black hover:bg-zinc-300"
+                    className="bg-primary text-primary-foreground hover:bg-primary/60"
                   >
                     Done
                   </Button>

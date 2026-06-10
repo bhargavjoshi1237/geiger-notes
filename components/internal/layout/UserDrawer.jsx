@@ -73,14 +73,14 @@ export default function UserDrawer({
         <DialogTrigger asChild>
           <button
             type="button"
-            className="group flex items-center gap-2 rounded-lg border border-zinc-800 bg-[#1e1e1e]/95 px-2.5 py-2 text-zinc-400 shadow-xl shadow-black/20 backdrop-blur transition-colors hover:border-zinc-700 hover:bg-zinc-800/90 hover:text-zinc-100"
+            className="group flex items-center gap-2 rounded-lg border border-border bg-surface-dialog/95 px-2.5 py-2 text-muted-foreground shadow-xl shadow-black/20 backdrop-blur transition-colors hover:border-border hover:bg-surface-hover/90 hover:text-foreground"
             title="Session members"
           >
             <div className="flex items-center -space-x-2">
               {members.slice(0, 3).map((member) => (
                 <div
                   key={member.id}
-                  className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#1e1e1e] bg-zinc-800 text-[10px] font-semibold text-zinc-300"
+                  className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface-dialog bg-surface-hover text-[10px] font-semibold text-foreground"
                   style={
                     member.color
                       ? { backgroundColor: member.color, color: "#000" }
@@ -92,7 +92,7 @@ export default function UserDrawer({
                 </div>
               ))}
               {members.length > 3 && (
-                <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#1e1e1e] bg-zinc-800 text-[10px] font-semibold text-zinc-300">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface-dialog bg-surface-hover text-[10px] font-semibold text-foreground">
                   +{members.length - 3}
                 </div>
               )}
@@ -104,13 +104,13 @@ export default function UserDrawer({
 
         <DialogContent
           showCloseButton={false}
-          className="max-w-md gap-0 overflow-hidden border-zinc-800 bg-[#1e1e1e] p-0 text-zinc-100 shadow-xl sm:rounded-lg"
+          className="max-w-md gap-0 overflow-hidden border-border bg-surface-dialog p-0 text-foreground shadow-xl sm:rounded-lg"
         >
-          <DialogHeader className="space-y-0 border-b border-zinc-800 p-4">
+          <DialogHeader className="space-y-0 border-b border-border p-4">
             <div className="flex w-full items-center justify-between">
               <div className="flex items-center gap-2">
-                <Users2 className="h-4 w-4 text-zinc-400" />
-                <DialogTitle className="text-base font-medium text-zinc-100">
+                <Users2 className="h-4 w-4 text-muted-foreground" />
+                <DialogTitle className="text-base font-medium text-foreground">
                   Session Members
                 </DialogTitle>
               </div>
@@ -122,18 +122,18 @@ export default function UserDrawer({
             </div>
           </DialogHeader>
 
-          <div className="bg-[#1e1e1e] p-4">
+          <div className="bg-surface-dialog p-4">
             <ScrollArea className="h-[min(300px,calc(100dvh-220px))] -mx-2 px-2">
               <div className="space-y-1">
                 {members.map((member) => (
                   <div
                     key={member.id}
-                    className="group flex items-center justify-between rounded p-2 transition-colors hover:bg-zinc-800/50"
+                    className="group flex items-center justify-between rounded p-2 transition-colors hover:bg-surface-hover/50"
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="relative shrink-0">
                         <div
-                          className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700 bg-zinc-800 text-xs font-medium text-zinc-300"
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface-hover text-xs font-medium text-foreground"
                           style={
                             member.color
                               ? {
@@ -146,17 +146,17 @@ export default function UserDrawer({
                           {initial(member.name)}
                         </div>
                         {member.role === "Owner" && (
-                          <div className="absolute -bottom-1 -right-1 rounded-full border border-zinc-700 bg-[#1e1e1e] p-0.5">
+                          <div className="absolute -bottom-1 -right-1 rounded-full border border-border bg-surface-dialog p-0.5">
                             <Crown className="h-3 w-3 fill-amber-500 text-amber-500" />
                           </div>
                         )}
                       </div>
 
                       <div className="flex min-w-0 flex-col">
-                        <span className="flex items-center gap-1.5 truncate text-sm font-medium text-zinc-200">
+                        <span className="flex items-center gap-1.5 truncate text-sm font-medium text-foreground">
                           {member.name}
                           {member.isMe && (
-                            <span className="text-xs font-normal text-zinc-500">
+                            <span className="text-xs font-normal text-muted-foreground">
                               (You)
                             </span>
                           )}
@@ -166,7 +166,7 @@ export default function UserDrawer({
                             "text-xs",
                             member.role === "Owner"
                               ? "text-amber-500/80"
-                              : "text-zinc-500",
+                              : "text-muted-foreground",
                           )}
                         >
                           {member.role}
@@ -189,7 +189,7 @@ export default function UserDrawer({
             </ScrollArea>
           </div>
 
-          <div className="flex items-center justify-end gap-2 border-t border-zinc-800 bg-[#1e1e1e] p-4">
+          <div className="flex items-center justify-end gap-2 border-t border-border bg-surface-dialog p-4">
             {role === "editor" && (
               <button
                 onClick={onLeaveSession}
@@ -201,7 +201,7 @@ export default function UserDrawer({
             )}
 
             {role === "pending" && (
-              <div className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-zinc-800 bg-zinc-900 px-3 text-sm font-medium text-zinc-400">
+              <div className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-border bg-muted px-3 text-sm font-medium text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Waiting for host approval...
               </div>
@@ -218,7 +218,7 @@ export default function UserDrawer({
             )}
 
             <DialogClose asChild>
-              <button className="inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200">
+              <button className="inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground">
                 Close
               </button>
             </DialogClose>

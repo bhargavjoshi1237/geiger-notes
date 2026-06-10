@@ -28,7 +28,7 @@ const FileNode = ({ id, data, selected, dragging }) => {
   const fileSize = data.fileSize ? formatBytes(data.fileSize) : "";
   const fileUrl = data.src || null;
   const caption = data.caption || "";
-  const color = data.color || "#1e1e1e";
+  const color = data.color || "var(--surface-dialog)";
 
   const handleDownload = (e) => {
     e.stopPropagation();
@@ -43,7 +43,7 @@ const FileNode = ({ id, data, selected, dragging }) => {
         className={`
           relative flex flex-col w-full h-full min-h-[68px] min-w-[338px] group
           transition-all duration-300 ease-out
-          ${selected ? "border-2 border-white" : "border-2 border-transparent hover:border-zinc-600"}
+          ${selected ? "border-2 border-foreground" : "border-2 border-transparent hover:border-border"}
           ${dragging ? "shadow-2xl shadow-black/50 z-50" : ""}
         `}
         style={{ backgroundColor: color }}
@@ -64,24 +64,24 @@ const FileNode = ({ id, data, selected, dragging }) => {
 
         <div className="flex flex-col h-full w-full">
           <div className="flex items-center p-4 gap-3">
-            <div className="w-10 h-10 rounded-none bg-zinc-800/50 flex items-center justify-center shrink-0">
-              <FileIcon className="text-zinc-300" size={20} />
+            <div className="w-10 h-10 rounded-none bg-surface-hover flex items-center justify-center shrink-0">
+              <FileIcon className="text-foreground" size={20} />
             </div>
             <div className="flex-1 min-w-0 flex flex-col justify-center">
               <div
-                className="text-sm font-medium text-zinc-200 truncate"
+                className="text-sm font-medium text-foreground truncate"
                 title={fileName}
               >
                 {fileName}
               </div>
               {fileSize && (
-                <div className="text-xs text-zinc-400 truncate">{fileSize}</div>
+                <div className="text-xs text-muted-foreground truncate">{fileSize}</div>
               )}
             </div>
             {fileUrl && (
               <button
                 onClick={handleDownload}
-                className="p-2 hover:bg-zinc-800/50 rounded-none transition-colors text-zinc-400 hover:text-white z-10"
+                className="p-2 hover:bg-surface-hover rounded-none transition-colors text-muted-foreground hover:text-foreground z-10"
                 title="Download"
               >
                 <Download size={16} />
@@ -90,7 +90,7 @@ const FileNode = ({ id, data, selected, dragging }) => {
           </div>
 
           {caption && (
-            <div className="px-4 pb-4 text-sm text-zinc-300 whitespace-pre-wrap">
+            <div className="px-4 pb-4 text-sm text-foreground whitespace-pre-wrap">
               {caption}
             </div>
           )}
@@ -114,7 +114,7 @@ const FileNode = ({ id, data, selected, dragging }) => {
           type="source"
           position={Position.Right}
           className={`
-            !w-2 !h-2 !bg-zinc-100 !border-0
+            !w-2 !h-2 !bg-foreground !border-0
             absolute !top-0 !right-[0px]
             flex items-center justify-center
             origin-top-right
@@ -125,7 +125,7 @@ const FileNode = ({ id, data, selected, dragging }) => {
             z-50
           `}
         >
-          <ArrowRight className="w-[10px] h-[10px] opacity-0 group-hover/handle:opacity-100 transition-opacity duration-200 text-black -rotate-45" />
+          <ArrowRight className="w-[10px] h-[10px] opacity-0 group-hover/handle:opacity-100 transition-opacity duration-200 text-background -rotate-45" />
         </Handle>
       </div>
     </>

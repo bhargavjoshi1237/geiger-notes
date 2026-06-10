@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function LoadingTestPage() {
   return (
-    <main className="h-screen w-screen overflow-hidden bg-[#161616] text-white">
+    <main className="h-screen w-screen overflow-hidden bg-background text-foreground">
       <CanvasSkeleton />
     </main>
   );

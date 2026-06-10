@@ -351,13 +351,13 @@ export default function ImageCropDialog({ open, onOpenChange, src, onSave }) {
     : 0;
 
   return createPortal(
-    <div className="fixed inset-0 z-[99999] bg-black/95 flex flex-col items-center justify-center cursor-default animate-in fade-in duration-200 select-none">
+    <div className="fixed inset-0 z-[99999] bg-background/95 flex flex-col items-center justify-center cursor-default animate-in fade-in duration-200 select-none">
       <div className="absolute top-5 right-5 flex items-center gap-2 z-50 pointer-events-auto">
         <Button
           variant="secondary"
           size="icon"
           onClick={resetCrop}
-          className="rounded-full w-10 h-10 hover:bg-zinc-900 hover:text-white transition-colors"
+          className="rounded-full w-10 h-10 hover:bg-muted hover:text-foreground transition-colors"
           title="Reset Crop"
         >
           <RotateCcw size={18} />
@@ -367,7 +367,7 @@ export default function ImageCropDialog({ open, onOpenChange, src, onSave }) {
           variant="secondary"
           size="icon"
           onClick={handleSave}
-          className="rounded-full w-10 h-10 bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
+          className="rounded-full w-10 h-10 bg-surface-hover hover:bg-surface-hover text-foreground transition-colors"
           title="Apply Crop"
         >
           <Check size={18} />
@@ -377,14 +377,14 @@ export default function ImageCropDialog({ open, onOpenChange, src, onSave }) {
           variant="secondary"
           size="icon"
           onClick={() => onOpenChange(false)}
-          className="rounded-full w-10 h-10 hover:bg-zinc-900 hover:text-white transition-colors"
+          className="rounded-full w-10 h-10 hover:bg-muted hover:text-foreground transition-colors"
           title="Cancel"
         >
           <X size={18} />
         </Button>
       </div>
-      <div className="absolute top-5 left-5 z-50 text-zinc-400 text-sm pointer-events-none">
-        <span className="bg-zinc-900/80 px-3 py-1.5 rounded-lg backdrop-blur border border-zinc-800">
+      <div className="absolute top-5 left-5 z-50 text-muted-foreground text-sm pointer-events-none">
+        <span className="bg-muted/80 px-3 py-1.5 rounded-lg backdrop-blur border border-border">
           Crop Image
         </span>
       </div>
@@ -407,7 +407,7 @@ export default function ImageCropDialog({ open, onOpenChange, src, onSave }) {
       </div>
 
       {imgLoaded && (
-        <div className="mt-4 text-zinc-500 text-xs bg-zinc-900/80 px-3 py-1.5 rounded-lg border border-zinc-800">
+        <div className="mt-4 text-muted-foreground text-xs bg-muted/80 px-3 py-1.5 rounded-lg border border-border">
           {cropNatW} × {cropNatH} px
         </div>
       )}

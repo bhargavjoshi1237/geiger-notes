@@ -13,14 +13,14 @@ export default function ToolbarOptions({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted-foreground">
           {selectedTools.length} of {TOOLS.length} tools visible
         </p>
         <button
           type="button"
           onClick={onReset}
           disabled={allOn}
-          className="text-xs text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:hover:text-zinc-400 transition-colors"
+          className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:hover:text-muted-foreground transition-colors"
         >
           Show all
         </button>
@@ -38,11 +38,11 @@ export default function ToolbarOptions({
               aria-pressed={isActive}
               className={`flex flex-col items-center justify-center gap-2 aspect-square rounded-xl transition-all pt-3 pb-3 border-2 ${
                 isActive
-                  ? "bg-[#2a2a2a] border-[#3a3a3a] text-white"
-                  : "bg-[#1a1a1a] border-transparent text-[#737373] hover:bg-[#202020] hover:text-[#a3a3a3]"
+                  ? "bg-surface-hover border-border text-foreground"
+                  : "bg-background border-transparent text-text-secondary hover:bg-card hover:text-muted-foreground"
               }`}
             >
-              <Icon className={`w-6 h-6 ${isActive ? "text-[#e7e7e7]" : "text-[#737373]"}`} />
+              <Icon className={`w-6 h-6 ${isActive ? "text-foreground" : "text-text-secondary"}`} />
               <span className="text-[10px] font-medium truncate w-full px-1">
                 {tool.label}
               </span>

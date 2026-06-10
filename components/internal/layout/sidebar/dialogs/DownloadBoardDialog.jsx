@@ -311,15 +311,15 @@ export default function DownloadBoardDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1e1e1e] border-zinc-800 text-white sm:max-w-[440px]">
+      <DialogContent className="bg-surface-dialog border-border text-foreground sm:max-w-[440px]">
         <DialogHeader>
           <DialogTitle>Download Board</DialogTitle>
         </DialogHeader>
 
         <div className="py-4 space-y-3">
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-muted-foreground">
             Choose a format to export{" "}
-            <span className="text-zinc-200 font-medium">
+            <span className="text-foreground font-medium">
               {boardName || "this board"}
             </span>
             .
@@ -337,21 +337,21 @@ export default function DownloadBoardDialog({
                     ${
                       isSelected
                         ? `${fmt.accent} border-opacity-100`
-                        : "bg-zinc-900 border-zinc-800 hover:bg-zinc-800/60 hover:border-zinc-700"
+                        : "bg-muted border-border hover:bg-surface-hover/60 hover:border-border"
                     }`}
                 >
                   <div
-                    className={`p-2 rounded-md shrink-0 ${isSelected ? fmt.accent : "bg-zinc-800"}`}
+                    className={`p-2 rounded-md shrink-0 ${isSelected ? fmt.accent : "bg-surface-hover"}`}
                   >
-                    <Icon className={`w-4 h-4 ${isSelected ? fmt.color : "text-zinc-400"}`} />
+                    <Icon className={`w-4 h-4 ${isSelected ? fmt.color : "text-muted-foreground"}`} />
                   </div>
                   <div className="min-w-0">
                     <p
-                      className={`text-sm font-semibold leading-tight ${isSelected ? "text-white" : "text-zinc-300"}`}
+                      className={`text-sm font-semibold leading-tight ${isSelected ? "text-foreground" : "text-foreground"}`}
                     >
                       {fmt.label}
                     </p>
-                    <p className="text-[11px] text-zinc-500 truncate">
+                    <p className="text-[11px] text-muted-foreground truncate">
                       {fmt.description}
                     </p>
                   </div>
@@ -366,14 +366,14 @@ export default function DownloadBoardDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
-            className="border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+            className="border-border text-muted-foreground hover:bg-surface-hover hover:text-foreground"
           >
             Cancel
           </Button>
           <Button
             onClick={handleDownload}
             disabled={isLoading}
-            className="bg-white text-black hover:bg-zinc-200"
+            className="bg-primary text-primary-foreground hover:bg-primary/80"
           >
             {isLoading ? (
               <>

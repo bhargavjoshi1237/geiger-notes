@@ -49,8 +49,8 @@ const ImageNode = ({ id, data, selected, dragging }) => {
       <div
         className={`
           relative flex flex-col w-full h-full min-h-[200px] min-w-[100px] group
-          transition-all duration-300 ease-out bg-[#1e1e1e]
-          ${selected ? "border-2 border-white" : "border-2 border-transparent hover:border-zinc-600"}
+          transition-all duration-300 ease-out bg-surface-dialog
+          ${selected ? "border-2 border-foreground" : "border-2 border-transparent hover:border-border"}
           ${dragging ? "shadow-2xl shadow-black/50 z-50" : ""}
         `}
         onDoubleClick={handleDoubleClick}
@@ -121,7 +121,7 @@ const ImageNode = ({ id, data, selected, dragging }) => {
           type="source"
           position={Position.Right}
           className={`
-            !w-2 !h-2 !bg-zinc-100 !border-0
+            !w-2 !h-2 !bg-foreground !border-0
             absolute !top-0 !right-[0px]
             flex items-center justify-center
             origin-top-right
@@ -132,7 +132,7 @@ const ImageNode = ({ id, data, selected, dragging }) => {
             z-50
           `}
         >
-          <ArrowRight className="w-[10px] h-[10px] opacity-0 group-hover/handle:opacity-100 transition-opacity duration-200 text-black -rotate-45" />
+          <ArrowRight className="w-[10px] h-[10px] opacity-0 group-hover/handle:opacity-100 transition-opacity duration-200 text-background -rotate-45" />
         </Handle>
       </div>
 

@@ -204,7 +204,7 @@ export default function ImageSettingsSidebar({
             onClick={() => setIsCaptionDialogOpen(true)}
           />
 
-          <div className="w-full h-[1px] bg-zinc-800 my-1" />
+          <div className="w-full h-[1px] bg-border my-1" />
 
           <ActionPlug
             icon={RotateCcw}
@@ -232,7 +232,7 @@ export default function ImageSettingsSidebar({
             onClick={() => setIsCropDialogOpen(true)}
           />
 
-          <div className="w-full h-[1px] bg-zinc-800 my-1" />
+          <div className="w-full h-[1px] bg-border my-1" />
 
           <ActionPlug
             icon={Pencil}

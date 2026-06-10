@@ -23,10 +23,10 @@ export default function MembersTab({
   return (
     <div className="h-full flex flex-col">
       {!isSessionActive ? (
-        <div className="flex flex-col items-center justify-center h-[200px] text-zinc-500 space-y-2">
+        <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground space-y-2">
           <Users2 className="w-8 h-8 opacity-20" />
           <p className="text-sm">No active session</p>
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-muted-foreground">
             Start or join a session to see members
           </p>
         </div>
@@ -35,11 +35,11 @@ export default function MembersTab({
           <ScrollArea className="h-[300px] px-2">
             {isHost && requestedMembers.length > 0 && (
               <div className="mb-6">
-                <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 px-1 flex items-center justify-between">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1 flex items-center justify-between">
                   Requests
                   <Badge
                     variant="secondary"
-                    className="bg-zinc-800 text-zinc-400 text-[10px] h-5 px-1.5"
+                    className="bg-surface-hover text-muted-foreground text-[10px] h-5 px-1.5"
                   >
                     {requestedMembers.length}
                   </Badge>
@@ -48,17 +48,17 @@ export default function MembersTab({
                   {requestedMembers.map((user) => (
                     <div
                       key={user.id}
-                      className="flex items-center justify-between p-2 rounded bg-zinc-800/30 border border-zinc-800/50"
+                      className="flex items-center justify-between p-2 rounded bg-surface-hover/30 border border-border/50"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-400">
+                        <div className="w-8 h-8 rounded-full bg-surface-hover flex items-center justify-center text-xs font-medium text-muted-foreground">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-zinc-200">
+                          <div className="text-sm font-medium text-foreground">
                             {user.name}
                           </div>
-                          <div className="text-xs text-zinc-500">
+                          <div className="text-xs text-muted-foreground">
                             Wants to join
                           </div>
                         </div>
@@ -89,19 +89,19 @@ export default function MembersTab({
             )}
 
             <div>
-              <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 px-1">
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
                 In Session ({joinedMembers.length})
               </h4>
               <div className="space-y-1">
                 {joinedMembers.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-2 rounded hover:bg-zinc-800/50 transition-colors group"
+                    className="flex items-center justify-between p-2 rounded hover:bg-surface-hover/50 transition-colors group"
                   >
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <div
-                          className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-300 border border-zinc-700"
+                          className="w-8 h-8 rounded-full bg-surface-hover flex items-center justify-center text-xs font-medium text-foreground border border-border"
                           style={
                             user.color
                               ? {
@@ -115,7 +115,7 @@ export default function MembersTab({
                         </div>
                         <div
                           className={cn(
-                            "absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[#1e1e1e]",
+                            "absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-surface-dialog",
                             user.status === "online"
                               ? "bg-emerald-500"
                               : "bg-amber-500",
@@ -123,21 +123,21 @@ export default function MembersTab({
                         />
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-zinc-200 flex items-center gap-2">
+                        <div className="text-sm font-medium text-foreground flex items-center gap-2">
                           {user.name}
                           {user.isMe && (
-                            <span className="text-zinc-500 text-xs">(You)</span>
+                            <span className="text-muted-foreground text-xs">(You)</span>
                           )}
                           {user.role === "Owner" && (
                             <Badge
                               variant="outline"
-                              className="text-[10px] h-4 py-0 px-1 border-zinc-700 text-zinc-400 font-normal"
+                              className="text-[10px] h-4 py-0 px-1 border-border text-muted-foreground font-normal"
                             >
                               Host
                             </Badge>
                           )}
                         </div>
-                        <div className="text-xs text-zinc-500">{user.role}</div>
+                        <div className="text-xs text-muted-foreground">{user.role}</div>
                       </div>
                     </div>
                     {isHost && !user.isMe && (

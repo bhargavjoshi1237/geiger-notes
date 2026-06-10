@@ -22,7 +22,7 @@ const DrawingToolbar = ({
 }) => {
   return (
     <div
-      className="absolute left-5 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-50 bg-zinc-900/90 p-3 rounded-xl border border-zinc-800 backdrop-blur pointer-events-auto animate-in slide-in-from-left-5 duration-300"
+      className="absolute left-5 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-50 bg-muted/90 p-3 rounded-xl border border-border backdrop-blur pointer-events-auto animate-in slide-in-from-left-5 duration-300"
       onClick={(e) => e.stopPropagation()}
     >
       <Button
@@ -57,7 +57,7 @@ const DrawingToolbar = ({
         <Eraser size={20} />
       </Button>
 
-      <div className="w-full h-[1px] bg-zinc-700" />
+      <div className="w-full h-[1px] bg-surface-hover" />
 
       <div className="relative group/size flex items-center transition-all duration-300">
         <Button
@@ -70,7 +70,7 @@ const DrawingToolbar = ({
           }}
         >
           {isSizeOpen ? (
-            <X size={18} className="text-zinc-400" />
+            <X size={18} className="text-muted-foreground" />
           ) : (
             <div
               className="w-4 h-4 rounded-full bg-current"
@@ -82,7 +82,7 @@ const DrawingToolbar = ({
         </Button>
 
         <div
-          className={`absolute left-full ml-6 bg-zinc-900/90 border border-zinc-800 p-2 rounded-xl flex gap-2 items-center backdrop-blur transition-all duration-300 origin-left ${
+          className={`absolute left-full ml-6 bg-muted/90 border border-border p-2 rounded-xl flex gap-2 items-center backdrop-blur transition-all duration-300 origin-left ${
             isSizeOpen
               ? "opacity-100 scale-100 translate-x-0"
               : "opacity-0 scale-95 -translate-x-4 pointer-events-none"
@@ -92,10 +92,10 @@ const DrawingToolbar = ({
             <button
               key={size}
               onClick={() => setBrushSize(size)}
-              className={`rounded-full hover:bg-zinc-700 flex items-center justify-center w-8 h-8 transition-all ${brushSize === size ? "bg-zinc-700 ring-1 ring-white" : ""}`}
+              className={`rounded-full hover:bg-surface-hover flex items-center justify-center w-8 h-8 transition-all ${brushSize === size ? "bg-surface-hover ring-1 ring-white" : ""}`}
             >
               <div
-                className="bg-white rounded-full"
+                className="bg-background rounded-full"
                 style={{
                   width: size,
                   height: size,
@@ -119,7 +119,7 @@ const DrawingToolbar = ({
           }}
         >
           {isColorOpen ? (
-            <X size={18} className="text-zinc-400" />
+            <X size={18} className="text-muted-foreground" />
           ) : (
             <div
               className="w-5 h-5 rounded-full border border-white/20"
@@ -129,7 +129,7 @@ const DrawingToolbar = ({
         </Button>
 
         <div
-          className={`absolute left-full ml-6 bg-zinc-900/90 border border-zinc-800 p-2 rounded-xl grid grid-cols-4 gap-2 backdrop-blur transition-all duration-300 origin-left ${
+          className={`absolute left-full ml-6 bg-muted/90 border border-border p-2 rounded-xl grid grid-cols-4 gap-2 backdrop-blur transition-all duration-300 origin-left ${
             isColorOpen
               ? "opacity-100 scale-100 translate-x-0"
               : "opacity-0 scale-95 -translate-x-4 pointer-events-none"
@@ -148,12 +148,12 @@ const DrawingToolbar = ({
         </div>
       </div>
 
-      <div className="w-full h-[1px] bg-zinc-700" />
+      <div className="w-full h-[1px] bg-surface-hover" />
 
       <Button
         variant="ghost"
         size="icon"
-        className="text-zinc-400 hover:text-white hover:bg-zinc-700"
+        className="text-muted-foreground hover:text-foreground hover:bg-surface-hover"
         onClick={clearDrawing}
         title="Clear All"
       >

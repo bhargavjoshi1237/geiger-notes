@@ -18,6 +18,8 @@ import CollaborateDilouge from "./CollaborateDilouge";
 import DigitalClock from "./DigitalClock";
 import NotificationDropdown from "./NotificationDropdown";
 import AppDialog from "./AppDialog";
+import ThemeToggle from "@/components/ui/theme-toggle";
+import Logo from "@/components/ui/logo";
 
 export default function Topbar({
   id,
@@ -52,14 +54,14 @@ export default function Topbar({
 
   return (
     <>
-      <header className="relative h-14 px-4 flex items-center justify-between border-b border-[#2a2a2a]/50 bg-[#161616]/60 backdrop-blur-md text-white z-20 w-full shrink-0">
+      <header className="relative h-14 px-4 flex items-center justify-between border-b border-topbar-border/50 bg-topbar-bg backdrop-blur-md text-foreground z-20 w-full shrink-0">
         <div
           className={`absolute top-0 left-0 right-0 h-[3px] z-50 transition-opacity duration-500 ${
             isSyncing ? "opacity-100" : "opacity-0"
           }`}
         >
           <div
-            className={`h-full w-1/3 bg-gradient-to-r from-transparent via-[#474747] to-transparent ${
+            className={`h-full w-1/3 bg-gradient-to-r from-transparent via-ring to-transparent ${
               isSyncing ? "animate-sync-progress" : ""
             }`}
           ></div>
@@ -67,7 +69,7 @@ export default function Topbar({
         <div className="flex items-center gap-2">
           <button
             onClick={onToggleSidebar}
-            className="inline-flex items-center justify-center rounded-md text-[#a3a3a3] hover:text-white hover:bg-[#2a2a2a] h-7 w-7 md:hidden -ml-2 transition-colors"
+            className="inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-hover h-7 w-7 md:hidden -ml-2 transition-colors"
             title="Toggle Sidebar"
           >
             <PanelLeft className="w-4 h-4" />
@@ -80,29 +82,25 @@ export default function Topbar({
                 : "/"
             }
           >
-            <img
-              src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/logo1.svg`}
-              className="w-5 h-5 -mr-1.5"
-              alt=""
-            />
+            <Logo className="w-5 h-5 -mr-1.5 text-foreground" size={20} />
           </a>
           <div
             onClick={() => onBreadcrumbClick && onBreadcrumbClick(null)}
-            className="flex items-center gap-1 cursor-pointer group group-data-[collapsible=icon]:hidden md:border-l md:border-[#333333] ml-1.5 pl-2 hidden sm:flex"
+            className="flex items-center gap-1 cursor-pointer group group-data-[collapsible=icon]:hidden md:border-l md:border-divider ml-1.5 pl-2 hidden sm:flex"
           >
-            <span className="text-white font-semibold text-sm ml-2.5">Notes</span>
+            <span className="text-foreground font-semibold text-sm ml-2.5">Notes</span>
           </div>
           {breadcrumbs &&
             breadcrumbs.map((crumb) => (
               <React.Fragment key={crumb.id}>
-                <LucideChevronRight className="w-4 h-4 text-[#474747]" />
+                <LucideChevronRight className="w-4 h-4 text-ring" />
                 <div
                   onClick={() =>
                     onBreadcrumbClick && onBreadcrumbClick(crumb.id)
                   }
-                  className="flex items-center gap-2 text-[#a3a3a3] hover:text-white transition-colors cursor-pointer p-1 rounded"
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer p-1 rounded"
                 >
-                  <span className="text-sm font-medium text-white">
+                  <span className="text-sm font-medium text-foreground">
                     {crumb.name}
                   </span>
                 </div>
@@ -116,14 +114,14 @@ export default function Topbar({
               <div className="hidden md:block">
                 <DigitalClock animated={settings?.clockAnimation ?? true} />
               </div>
-              <div className="hidden sm:block h-5 w-[1px] bg-[#333333] mx-1"></div>
+              <div className="hidden sm:block h-5 w-[1px] bg-divider mx-1"></div>
             </>
           )}
-          <div className="flex items-center gap-0 text-[#a3a3a3]">
+          <div className="flex items-center gap-0 text-muted-foreground">
             <button
               onClick={onUndo}
               disabled={!canUndo}
-              className="p-2 hover:bg-[#2a2a2a] rounded transition-colors hover:text-white disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#a3a3a3] disabled:cursor-default"
+              className="p-2 hover:bg-surface-hover rounded transition-colors hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground disabled:cursor-default"
               title="Undo (Ctrl+Z)"
             >
               <Undo2 className="w-4 h-4" />
@@ -131,14 +129,14 @@ export default function Topbar({
             <button
               onClick={onRedo}
               disabled={!canRedo}
-              className="p-2 hover:bg-[#2a2a2a] rounded transition-colors hover:text-white disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#a3a3a3] disabled:cursor-default"
+              className="p-2 hover:bg-surface-hover rounded transition-colors hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground disabled:cursor-default"
               title="Redo (Ctrl+Shift+Z)"
             >
               <Redo2 className="w-4 h-4" />
             </button>
           </div>
-          <div className="hidden sm:block h-5 w-[1px] bg-[#333333] mx-1"></div>
-          <div className="flex items-center gap-0 sm:gap-1 text-[#a3a3a3]">
+          <div className="hidden sm:block h-5 w-[1px] bg-divider mx-1"></div>
+          <div className="flex items-center gap-0 sm:gap-1 text-muted-foreground">
             <button
               onClick={() => setIsCollaborateOpen(true)}
               className={`relative group p-2 rounded-lg transition-all duration-300`}
@@ -154,14 +152,14 @@ export default function Topbar({
                 <>
                   <span
                     className={`absolute inset-1 rounded-lg animate-ping opacity-20 ${
-                      role === "host" ? "bg-[#474747]" : "bg-emerald-500"
+                      role === "host" ? "bg-ring" : "bg-emerald-500"
                     }`}
                     style={{ animationDuration: "2s" }}
                   ></span>
                   <span className="absolute inset-0 rounded-lg"></span>
                 </>
               )}
-              <div className="relative p-2 hover:bg-[#2a2a2a] rounded transition-colors hover:text-white">
+              <div className="relative p-2 hover:bg-surface-hover rounded transition-colors hover:text-foreground">
                 <Users2
                   className={`w-[18px] h-[18px] transition-transform duration-300 ${
                     sessionData ? "drop-shadow-sm" : ""
@@ -172,12 +170,13 @@ export default function Topbar({
             </button>
           </div>
 
-          <div className="hidden sm:block h-5 w-[1px] bg-[#333333] mx-1"></div>
+          <div className="hidden sm:block h-5 w-[1px] bg-divider mx-1"></div>
 
           <div className="flex items-center gap-0 sm:gap-1">
+            <ThemeToggle />
             <button
               onClick={() => setIsAppOpen(true)}
-              className="w-8 h-8 rounded-sm border border-transparent hover:bg-[#2a2a2a] hidden sm:flex items-center justify-center transition-colors text-[#a3a3a3] hover:text-white"
+              className="w-8 h-8 rounded-sm border border-transparent hover:bg-surface-hover hidden sm:flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground"
               title="Mobile"
             >
               <Smartphone className="w-[18px] h-[18px]" strokeWidth={2} />
@@ -186,7 +185,7 @@ export default function Topbar({
               href="/docs"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-8 h-8 rounded-sm border border-transparent hover:bg-[#2a2a2a] flex items-center justify-center transition-colors text-[#a3a3a3] hover:text-white"
+              className="w-8 h-8 rounded-sm border border-transparent hover:bg-surface-hover flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground"
               title="Help & Docs"
             >
               <HelpCircle className="w-[18px] h-[18px]" strokeWidth={2} />
@@ -198,7 +197,7 @@ export default function Topbar({
               onKickMember={onKickMember}
             >
               <button
-                className="w-8 h-8 rounded-sm border border-transparent hover:bg-[#2a2a2a] flex items-center justify-center transition-colors text-[#a3a3a3] hover:text-white relative outline-none"
+                className="w-8 h-8 rounded-sm border border-transparent hover:bg-surface-hover flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground relative outline-none"
                 title="Notifications"
               >
                 <Bell className="w-[18px] h-[18px]" strokeWidth={2} />
@@ -207,13 +206,13 @@ export default function Topbar({
                     (j) => j.status === "requested"
                   ) &&
                   role === "host" && (
-                    <div className="absolute top-[6px] right-[7px] w-2 h-2 rounded-sm bg-[#3b82f6] border border-[#161616]"></div>
+                    <div className="absolute top-[6px] right-[7px] w-2 h-2 rounded-sm bg-notification-dot border border-background"></div>
                   )}
               </button>
             </NotificationDropdown>
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="w-8 h-8 rounded-sm border border-transparent hover:bg-[#2a2a2a] hidden sm:flex items-center justify-center transition-colors text-[#a3a3a3] hover:text-white"
+              className="w-8 h-8 rounded-sm border border-transparent hover:bg-surface-hover hidden sm:flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground"
               title="Settings"
             >
               <div className="w-full h-full flex items-center justify-center">

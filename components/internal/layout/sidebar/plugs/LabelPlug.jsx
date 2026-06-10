@@ -38,15 +38,15 @@ export const LabelPlug = ({
         side="right"
         align="start"
         sideOffset={8}
-        className="w-72 bg-[#1e1e1e] border-zinc-800 p-4 shadow-2xl rounded-xl"
+        className="w-72 bg-surface-dialog border-border p-4 shadow-2xl rounded-xl"
       >
         <div className="flex flex-col gap-3">
-          <Label className="text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">
+          <Label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
             {title}
           </Label>
           <div className="relative">
             <Input
-              className="bg-zinc-900/50 border-zinc-800 text-zinc-200 focus:border-zinc-700 focus:ring-zinc-700/20 transition-all font-medium"
+              className="bg-muted/50 border-border text-foreground focus:border-border focus:ring-ring/20 transition-all font-medium"
               value={localValue}
               onChange={handleChange}
               placeholder={placeholder}

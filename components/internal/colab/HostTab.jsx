@@ -19,10 +19,10 @@ export default function HostTab({
         <div className="text-center space-y-5 animate-in fade-in -mt-10">
           <Play className="w-8 h-8 opacity-20 ml-auto mr-auto" />
           <div className="space-y-1">
-            <h3 className="text-md font-semibold text-zinc-100">
+            <h3 className="text-md font-semibold text-foreground">
               Start a Session
             </h3>
-            <p className="text-xs text-zinc-500 max-w-[260px] mx-auto">
+            <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">
               Create a live collaborative workspace and invite others instantly.
             </p>
           </div>
@@ -30,7 +30,7 @@ export default function HostTab({
           <Button
             onClick={startSession}
             disabled={isStarting}
-            className="bg-zinc-100 text-sm text-black hover:bg-zinc-200 min-w-[150px] transition-all active:scale-95"
+            className="bg-primary text-sm text-primary-foreground hover:bg-primary/80 min-w-[150px] transition-all active:scale-95"
           >
             {isStarting ? "Starting…" : "Start Session"}
           </Button>
@@ -39,7 +39,7 @@ export default function HostTab({
         <div className="w-full max-w-sm space-y-6 animate-in fade-in zoom-in-95">
           <div className="space-y-4">
             <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Session Active
               </span>
             </div>
@@ -48,15 +48,15 @@ export default function HostTab({
               <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-500" />
               <button
                 onClick={copyToClipboard}
-                className="relative w-full flex items-center justify-center gap-3 bg-zinc-900 border border-zinc-800 hover:border-zinc-700/50 rounded-xl p-4 transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-emerald-900/10"
+                className="relative w-full flex items-center justify-center gap-3 bg-muted border border-border hover:border-border/50 rounded-xl p-4 transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-emerald-900/10"
               >
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xl font-bold text-zinc-100 tracking-[0.15em] select-all">
+                  <span className="font-mono text-xl font-bold text-foreground tracking-[0.15em] select-all">
                     {sessionCode}
                   </span>
                 </div>
 
-                <div className="flex items-center w-[10%] justify-center gap-1.5 text-xs text-zinc-500 font-medium group-hover:text-emerald-500/80 transition-colors">
+                <div className="flex items-center w-[10%] justify-center gap-1.5 text-xs text-muted-foreground font-medium group-hover:text-emerald-500/80 transition-colors">
                   {copied ? (
                     <>
                       <Check className="w-3.5 h-3.5" />
@@ -70,7 +70,7 @@ export default function HostTab({
               </button>
             </div>
 
-            <p className="text-[11px] text-zinc-600 text-center px-4">
+            <p className="text-[11px] text-muted-foreground text-center px-4">
               Share this code with team members to let them join your workspace
               instantly.
             </p>

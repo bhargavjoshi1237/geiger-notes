@@ -17,34 +17,34 @@ export default function GeneralSettings({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="pb-4 border-b border-zinc-800/50">
-        <h3 className="text-sm font-medium text-zinc-200">General</h3>
-        <p className="text-xs text-zinc-500 mt-1">
+      <div className="pb-4 border-b border-border/50">
+        <h3 className="text-sm font-medium text-foreground">General</h3>
+        <p className="text-xs text-muted-foreground mt-1">
           Control how the canvas behaves and what the interface shows.
         </p>
       </div>
 
       {/* Workspace stats — real counts from the live canvas */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-lg border border-zinc-800/60 bg-zinc-900/30 p-3">
-          <div className="flex items-center gap-2 text-zinc-500">
+        <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <Boxes className="w-3.5 h-3.5" />
             <span className="text-[11px] uppercase tracking-wider font-semibold">
               Nodes
             </span>
           </div>
-          <div className="text-xl font-semibold text-zinc-100 mt-1.5 tabular-nums">
+          <div className="text-xl font-semibold text-foreground mt-1.5 tabular-nums">
             {nodeCount}
           </div>
         </div>
-        <div className="rounded-lg border border-zinc-800/60 bg-zinc-900/30 p-3">
-          <div className="flex items-center gap-2 text-zinc-500">
+        <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <Sparkles className="w-3.5 h-3.5" />
             <span className="text-[11px] uppercase tracking-wider font-semibold">
               Connections
             </span>
           </div>
-          <div className="text-xl font-semibold text-zinc-100 mt-1.5 tabular-nums">
+          <div className="text-xl font-semibold text-foreground mt-1.5 tabular-nums">
             {edgeCount}
           </div>
         </div>
@@ -74,7 +74,7 @@ export default function GeneralSettings({
       </div>
 
       {/* Interface */}
-      <div className="space-y-1 pt-2 border-t border-zinc-800/50">
+      <div className="space-y-1 pt-2 border-t border-border/50">
         <GroupLabel className="mb-2 mt-4">Interface</GroupLabel>
         <ToggleRow
           title="Show clock"
@@ -92,13 +92,13 @@ export default function GeneralSettings({
       </div>
 
       {/* Reset */}
-      <div className="pt-4 border-t border-zinc-800/50">
-        <div className="flex items-center justify-between p-3 rounded-md border border-zinc-800/50 bg-zinc-900/20">
+      <div className="pt-4 border-t border-border/50">
+        <div className="flex items-center justify-between p-3 rounded-md border border-border/50 bg-muted/20">
           <div className="space-y-0.5">
-            <h4 className="text-sm font-medium text-zinc-300">
+            <h4 className="text-sm font-medium text-foreground">
               Restore defaults
             </h4>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted-foreground">
               Reset all General and Defaults preferences to their original
               values.
             </p>
@@ -108,7 +108,7 @@ export default function GeneralSettings({
             size="sm"
             onClick={onReset}
             disabled={!onReset}
-            className="h-8 border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:border-zinc-600"
+            className="h-8 border-border text-muted-foreground hover:text-foreground hover:border-ring"
           >
             <RotateCcw className="w-3.5 h-3.5 mr-2" />
             Reset

@@ -22,10 +22,10 @@ export default function CollabPage({ params }) {
     const searchParams = useSearchParams();
     const debugBgLayers = searchParams.get("layerdebug") === "1";
 
-    const shellBgClass = debugBgLayers ? "bg-red-700/85" : "bg-[#161616]";
+    const shellBgClass = debugBgLayers ? "bg-red-700/85" : "bg-background";
     const mainBgClass = debugBgLayers ? "bg-emerald-700/55" : "";
-    const loadingBgClass = debugBgLayers ? "bg-yellow-500/70" : "bg-[#161616]";
-    const flowBgClass = debugBgLayers ? "bg-blue-700/45" : "bg-[#161616]";
+    const loadingBgClass = debugBgLayers ? "bg-yellow-500/70" : "bg-background";
+    const flowBgClass = debugBgLayers ? "bg-blue-700/45" : "bg-background";
 
     const {
         nodes,
@@ -143,7 +143,7 @@ export default function CollabPage({ params }) {
     }, [settings.doubleClickToInsert, rfInstance, setNodes, role]);
 
     return (
-        <div className={`flex flex-col h-screen w-screen overflow-hidden ${shellBgClass} text-white`}>
+        <div className={`flex flex-col h-screen w-screen overflow-hidden ${shellBgClass} text-foreground`}>
             <Topbar 
                 id={id} 
                 settings={settings} 

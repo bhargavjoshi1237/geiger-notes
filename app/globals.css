@@ -61,6 +61,27 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
+  /* App-specific semantic tokens */
+  --color-surface-dialog: var(--surface-dialog);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-active: var(--surface-active);
+  --color-text-secondary: var(--text-secondary);
+  --color-canvas-dots: var(--canvas-dots);
+  --color-minimap-node: var(--minimap-node);
+  --color-minimap-stroke: var(--minimap-stroke);
+  --color-edge-stroke: var(--edge-stroke);
+  --color-node-default: var(--node-default);
+  --color-comment-bg: var(--comment-bg);
+  --color-comment-input: var(--comment-input);
+  --color-scrollbar-thumb: var(--scrollbar-thumb);
+  --color-scrollbar-thumb-hover: var(--scrollbar-thumb-hover);
+  --color-topbar-bg: var(--topbar-bg);
+  --color-topbar-border: var(--topbar-border);
+  --color-divider: var(--divider);
+  --color-zoom-bg: var(--zoom-bg);
+  --color-notification-dot: var(--notification-dot);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -98,8 +119,11 @@
   }
 }
 
+/* ─── Light Theme (default) ─── */
 :root {
   --radius: 0.625rem;
+
+  /* shadcn/ui core tokens (oklch - zinc base) */
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
@@ -118,11 +142,15 @@
   --border: oklch(0.92 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
   --ring: oklch(0.705 0.015 286.067);
+
+  /* Charts */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
+
+  /* Sidebar */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.141 0.005 285.823);
   --sidebar-primary: oklch(0.21 0.006 285.885);
@@ -131,9 +159,31 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+
+  /* App-specific semantic tokens (light) */
+  --surface-dialog: #ffffff;
+  --surface-hover: #f3f4f6;
+  --surface-active: #e5e7eb;
+  --text-secondary: #525252;
+  --canvas-dots: #d1d5db;
+  --minimap-node: #d1d5db;
+  --minimap-stroke: #9ca3af;
+  --edge-stroke: #71717a;
+  --node-default: #f3f4f6;
+  --comment-bg: #dbeafe;
+  --comment-input: #bfdbfe;
+  --scrollbar-thumb: #d1d5db;
+  --scrollbar-thumb-hover: #9ca3af;
+  --topbar-bg: rgba(255, 255, 255, 0.6);
+  --topbar-border: #e5e7eb;
+  --divider: #e5e7eb;
+  --zoom-bg: rgba(229, 231, 235, 0.6);
+  --notification-dot: #3b82f6;
 }
 
+/* ─── Dark Theme ─── */
 .dark {
+  /* shadcn/ui core tokens */
   --background: #161616;
   --foreground: #e7e7e7;
   --card: #202020;
@@ -152,11 +202,15 @@
   --border: #333333;
   --input: #242424;
   --ring: #474747;
+
+  /* Charts */
   --chart-1: #3b82f6;
   --chart-2: #10b981;
   --chart-3: #f59e0b;
   --chart-4: #8b5cf6;
   --chart-5: #ef4444;
+
+  /* Sidebar */
   --sidebar: #1a1a1a;
   --sidebar-foreground: #a3a3a3;
   --sidebar-primary: #e7e7e7;
@@ -165,6 +219,26 @@
   --sidebar-accent-foreground: #e7e7e7;
   --sidebar-border: #2a2a2a;
   --sidebar-ring: #474747;
+
+  /* App-specific semantic tokens (dark) */
+  --surface-dialog: #1e1e1e;
+  --surface-hover: #2a2a2a;
+  --surface-active: #242424;
+  --text-secondary: #737373;
+  --canvas-dots: #373737;
+  --minimap-node: #3f3f46;
+  --minimap-stroke: #52525b;
+  --edge-stroke: #71717a;
+  --node-default: #333333;
+  --comment-bg: #2A3441;
+  --comment-input: #3B4654;
+  --scrollbar-thumb: #333333;
+  --scrollbar-thumb-hover: #474747;
+  --topbar-bg: rgba(22, 22, 22, 0.6);
+  --topbar-border: #2a2a2a;
+  --divider: #333333;
+  --zoom-bg: rgba(51, 51, 51, 0.6);
+  --notification-dot: #3b82f6;
 }
 
 @layer base {
@@ -195,3 +269,65 @@
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
+.scrollbar-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.scrollbar-subtle::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-subtle::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-subtle::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.scrollbar-subtle::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.supabase-activity-line {
+  position: absolute;
+  inset-block: 0;
+  left: -114%;
+  width: 114%;
+  animation: supabase-activity-line 3s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(115 115 115 / 0.08) 22%,
+    rgb(163 163 163 / 0.5) 50%,
+    rgb(115 115 115 / 0.08) 78%,
+    transparent 100%
+  );
+  filter: drop-shadow(0 0 3px rgb(163 163 163 / 0.14));
+}
+
+.supabase-activity-line.is-saving {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(71 71 71 / 0.07) 22%,
+    rgb(128 148 138 / 0.48) 50%,
+    rgb(71 71 71 / 0.07) 78%,
+    transparent 100%
+  );
+}
+
+@keyframes supabase-activity-line {
+  0% {
+    left: -114%;
+  }
+  100% {
+    left: 100%;
+  }
+}

@@ -37,6 +37,7 @@ export default function BoardCanvas({
   breadcrumbs,
   onBreadcrumbClick,
 }) {
+  const { theme } = useTheme();
   const {
     nodes,
     edges,
@@ -188,7 +189,7 @@ export default function BoardCanvas({
           position,
           data: {
             label: "Image",
-            src: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?q=80&w=1000&auto=format&fit=crop", // Nice placeholder
+            src: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?q=80&w=1000&auto=format&fit=crop",
             alt: "Placeholder Image",
           },
           style: { width: 200, height: 250 },
@@ -389,10 +390,12 @@ export default function BoardCanvas({
     [onNavigate],
   );
 
+  const colorMode = theme === "light" ? "light" : "dark";
+
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-[#161616] text-white">
+    <div className="relative h-screen w-screen overflow-hidden bg-background text-foreground">
       <div
-        className={`absolute inset-0 z-10 bg-[#161616] transition-opacity duration-700 pointer-events-none ${
+        className={`absolute inset-0 z-10 bg-background transition-opacity duration-700 pointer-events-none ${
           !isInitialized || isLoading ? "opacity-100" : "opacity-0"
         }`}
       >
@@ -419,9 +422,9 @@ export default function BoardCanvas({
           onNodeDoubleClick={onNodeDoubleClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          colorMode="dark"
+          colorMode={colorMode}
           defaultViewport={viewport}
-          className="bg-[#161616] touch-none"
+          className="bg-background touch-none"
           proOptions={{ hideAttribution: true }}
           minZoom={0.1}
           maxZoom={2}
@@ -435,15 +438,15 @@ export default function BoardCanvas({
           snapToGrid={!!settings.snapToGrid}
           snapGrid={[15, 15]}
         >
-          <Background color="#373737" gap={12} size={1} variant="dots" />
+          <Background color="var(--canvas-dots)" gap={12} size={1} variant="dots" />
           {settings.showMinimap && (
             <MiniMap
               pannable
               zoomable
-              className="!bg-[#1e1e1e] !border !border-zinc-800 rounded-md"
-              nodeColor="#3f3f46"
-              nodeStrokeColor="#52525b"
-              maskColor="rgba(0,0,0,0.6)"
+              className="!bg-surface-dialog !border !border-border rounded-md"
+              nodeColor="var(--minimap-node)"
+              nodeStrokeColor="var(--minimap-stroke)"
+              maskColor={theme === "light" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)"}
             />
           )}
         </ReactFlow>
@@ -482,10 +485,10 @@ export default function BoardCanvas({
       </div>
 
       <div className={`absolute bottom-4 z-50 transition-all duration-300 ${sidebarOpen ? "left-20" : "left-4"}`}>
-        <div className="flex flex-col bg-[#333333]/60 backdrop-blur-md rounded-lg shadow-xl border border-zinc-700/50 overflow-hidden">
+        <div className="flex flex-col bg-zoom-bg backdrop-blur-md rounded-lg shadow-xl border border-border/50 overflow-hidden">
           <button
             onClick={() => rfInstance?.zoomIn({ duration: 300 })}
-            className="p-2 hover:bg-zinc-700/60 text-zinc-400 hover:text-white transition-colors border-b border-zinc-700/50"
+            className="p-2 hover:bg-surface-hover text-muted-foreground hover:text-foreground transition-colors border-b border-border/50"
             title="Zoom In"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -495,7 +498,7 @@ export default function BoardCanvas({
           </button>
           <button
             onClick={() => rfInstance?.zoomOut({ duration: 300 })}
-            className="p-2 hover:bg-zinc-700/60 text-zinc-400 hover:text-white transition-colors"
+            className="p-2 hover:bg-surface-hover text-muted-foreground hover:text-foreground transition-colors"
             title="Zoom Out"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

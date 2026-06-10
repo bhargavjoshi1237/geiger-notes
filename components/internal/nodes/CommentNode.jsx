@@ -67,8 +67,8 @@ const CommentNode = ({ id, data, selected }) => {
     <div className="relative group">
       <div
         className={`
-          relative flex items-center p-3 gap-3 min-w-[300px] bg-[#2A3441] rounded-lg shadow-lg transition-all duration-200
-          ${selected ? "ring-2 ring-blue-500" : "hover:ring-1 hover:ring-zinc-600"}
+          relative flex items-center p-3 gap-3 min-w-[300px] bg-comment-bg rounded-lg shadow-lg transition-all duration-200
+          ${selected ? "ring-2 ring-blue-500" : "hover:ring-1 hover:ring-border"}
         `}
       >
         <Avatar initials="JJ" className="shrink-0" />
@@ -84,7 +84,7 @@ const CommentNode = ({ id, data, selected }) => {
           >
             <input
               type="text"
-              className="w-full bg-[#3B4654] text-zinc-200 text-sm rounded px-3 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-zinc-500 placeholder:text-zinc-500"
+              className="w-full bg-comment-input text-foreground text-sm rounded px-3 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
               placeholder="Write a comment..."
               value={comment}
               onChange={handleChange}
@@ -101,12 +101,12 @@ const CommentNode = ({ id, data, selected }) => {
         <Handle
           type="target"
           position={Position.Left}
-          className="!w-2 !h-2 !bg-zinc-500 !border-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="!w-2 !h-2 !bg-muted-foreground !border-0 opacity-0 group-hover:opacity-100 transition-opacity"
         />
         <Handle
           type="source"
           position={Position.Right}
-          className="!w-2 !h-2 !bg-zinc-500 !border-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="!w-2 !h-2 !bg-muted-foreground !border-0 opacity-0 group-hover:opacity-100 transition-opacity"
         />
       </div>
       <Reactions

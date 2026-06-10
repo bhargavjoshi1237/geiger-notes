@@ -39,8 +39,8 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
   return (
     <div className="space-y-6">
       <div className="pb-1">
-        <h3 className="text-sm font-medium text-zinc-200">Defaults</h3>
-        <p className="text-xs text-zinc-500 mt-1">
+        <h3 className="text-sm font-medium text-foreground">Defaults</h3>
+        <p className="text-xs text-muted-foreground mt-1">
           Set the default style for new items and choose which tools appear on
           the canvas.
         </p>
@@ -55,17 +55,17 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
         {/* Connection / edge defaults */}
         <AccordionItem
           value="edges"
-          className="border border-zinc-800 rounded-md bg-zinc-900/30"
+          className="border border-border rounded-md bg-muted/30"
         >
-          <AccordionTrigger className="px-4 py-3 hover:no-underline text-zinc-300 hover:text-zinc-100">
+          <AccordionTrigger className="px-4 py-3 hover:no-underline text-foreground hover:text-foreground">
             <div className="flex items-center gap-2">
-              <Spline className="w-4 h-4 text-zinc-500" />
+              <Spline className="w-4 h-4 text-muted-foreground" />
               <span>Connections</span>
             </div>
           </AccordionTrigger>
-          <AccordionContent className="px-4 py-4 space-y-5 border-t border-zinc-800/50">
+          <AccordionContent className="px-4 py-4 space-y-5 border-t border-border/50">
             {/* Live preview */}
-            <div className="flex items-center justify-center h-12 rounded-md bg-zinc-950/40 border border-zinc-800/60">
+            <div className="flex items-center justify-center h-12 rounded-md bg-muted/40 border border-border/60">
               <svg width="160" height="20" className="overflow-visible">
                 <line
                   x1="4"
@@ -95,7 +95,7 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="mb-2 block text-zinc-400 text-xs font-medium">
+                <span className="mb-2 block text-muted-foreground text-xs font-medium">
                   Color
                 </span>
                 <ColorPicker
@@ -104,13 +104,13 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
                 >
                   <button
                     type="button"
-                    className="flex items-center w-full h-9 px-3 gap-2 border border-zinc-700 rounded hover:border-zinc-500 transition-colors bg-transparent"
+                    className="flex items-center w-full h-9 px-3 gap-2 border border-border rounded hover:border-ring transition-colors bg-transparent"
                   >
                     <span
-                      className="w-4 h-4 rounded-full border border-zinc-600"
+                      className="w-4 h-4 rounded-full border border-ring"
                       style={{ backgroundColor: edge.stroke || "#71717a" }}
                     />
-                    <span className="text-sm text-zinc-300 font-mono">
+                    <span className="text-sm text-foreground font-mono">
                       {edge.stroke || "#71717a"}
                     </span>
                   </button>
@@ -118,7 +118,7 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
               </div>
 
               <div className="w-full">
-                <span className="mb-2 block text-zinc-400 text-xs font-medium">
+                <span className="mb-2 block text-muted-foreground text-xs font-medium">
                   Thickness
                 </span>
                 <SegmentedTabs
@@ -131,7 +131,7 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
             </div>
 
             <div className="flex items-center justify-between pt-1">
-              <span className="text-sm text-zinc-300">Line style</span>
+              <span className="text-sm text-foreground">Line style</span>
               <SegmentedTabs
                 tabs={[
                   { label: "Solid", value: false },
@@ -143,7 +143,7 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-300">Animated</span>
+              <span className="text-sm text-foreground">Animated</span>
               <Switch
                 checked={!!edge.animated}
                 onCheckedChange={(c) => updateEdge("animated", c)}
@@ -155,15 +155,15 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
         {/* Toolbar visibility */}
         <AccordionItem
           value="toolbar"
-          className="border border-zinc-800 rounded-md bg-zinc-900/30"
+          className="border border-border rounded-md bg-muted/30"
         >
-          <AccordionTrigger className="px-4 py-3 hover:no-underline text-zinc-300 hover:text-zinc-100">
+          <AccordionTrigger className="px-4 py-3 hover:no-underline text-foreground hover:text-foreground">
             <div className="flex items-center gap-2">
-              <MousePointer2 className="w-4 h-4 text-zinc-500" />
+              <MousePointer2 className="w-4 h-4 text-muted-foreground" />
               <span>Toolbar</span>
             </div>
           </AccordionTrigger>
-          <AccordionContent className="px-4 py-4 border-t border-b border-zinc-800/50">
+          <AccordionContent className="px-4 py-4 border-t border-b border-border/50">
             <ToolbarOptions
               selectedTools={tools}
               onToggleTool={toggleTool}

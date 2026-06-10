@@ -14,12 +14,12 @@ export default function AppDialog({ open, onOpenChange, dialogContainer }) {
       <DialogContent
         container={dialogContainer}
         overlayClassName={dialogContainer ? "absolute inset-0" : undefined}
-        className={`${dialogContainer ? "absolute max-h-[calc(100%-1rem)]" : ""} max-w-md bg-[#1e1e1e] border-zinc-800 text-zinc-100 p-0 overflow-hidden shadow-xl sm:rounded-lg`}
+        className={`${dialogContainer ? "absolute max-h-[calc(100%-1rem)]" : ""} max-w-md bg-surface-dialog border-border text-foreground p-0 overflow-hidden shadow-xl sm:rounded-lg`}
       >
-        <DialogHeader className="p-4 border-b border-zinc-800">
+        <DialogHeader className="p-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <Smartphone className="w-5 h-5 text-zinc-400" />
-            <DialogTitle className="text-base font-medium text-zinc-100">
+            <Smartphone className="w-5 h-5 text-muted-foreground" />
+            <DialogTitle className="text-base font-medium text-foreground">
               Mobile App
             </DialogTitle>
           </div>
@@ -30,10 +30,10 @@ export default function AppDialog({ open, onOpenChange, dialogContainer }) {
             <div className="text-center space-y-5 animate-in fade-in -mt-10">
               <Smartphone className="w-8 h-8 opacity-20 ml-auto mr-auto" />
             </div>
-            <p className="text-sm font-medium text-zinc-300">
+            <p className="text-sm font-medium text-foreground">
               Coming Soon to iOS & Android
             </p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted-foreground">
               We&apos;re building a seamless mobile experience for you. Stay tuned
               for updates!
             </p>

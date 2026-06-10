@@ -65,7 +65,7 @@ const ImageFullscreenModal = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[99999] bg-black/95 flex flex-col items-center justify-center p-4 cursor-default animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-[99999] bg-background/95 flex flex-col items-center justify-center p-4 cursor-default animate-in fade-in duration-200 select-none"
       onClick={closeFullRes}
     >
       <div className="absolute top-5 right-5 flex items-center gap-2 z-50 pointer-events-auto">
@@ -73,7 +73,7 @@ const ImageFullscreenModal = ({
           variant="secondary"
           size="icon"
           onClick={handleDownload}
-          className="rounded-full w-10 h-10 hover:bg-zinc-900 hover:text-white transition-colors"
+          className="rounded-full w-10 h-10 hover:bg-muted hover:text-foreground transition-colors"
           title="Download Image"
         >
           <Download size={18} />
@@ -83,7 +83,7 @@ const ImageFullscreenModal = ({
           variant="secondary"
           size="icon"
           onClick={closeFullRes}
-          className="rounded-full w-10 h-10 hover:bg-zinc-900 hover:text-white transition-colors"
+          className="rounded-full w-10 h-10 hover:bg-muted hover:text-foreground transition-colors"
           title="Close"
         >
           <X size={18} />

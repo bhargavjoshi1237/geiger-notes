@@ -3,11 +3,6 @@
 import React from "react";
 import { ArrowLeft } from "lucide-react";
 
-/**
- * SidebarButton
- * Minimalist version — geiger-flow color palette.
- * Uses transparent bg with subtle #2a2a2a hover states.
- */
 export const SidebarButton = React.forwardRef(
   (
     { icon: Icon, label, active, onClick, className, children, ...props },
@@ -23,12 +18,12 @@ export const SidebarButton = React.forwardRef(
           transition-colors duration-200 ease-in-out
           outline-none
           
-          text-[#a3a3a3] hover:text-[#e7e7e7]
-          hover:bg-[#2a2a2a]
+          text-muted-foreground hover:text-foreground
+          hover:bg-surface-hover
           
           ${
             active
-              ? "bg-[#242424] text-white"
+              ? "bg-surface-active text-foreground"
               : "bg-transparent"
           }
 
@@ -53,7 +48,7 @@ export const SidebarHeader = ({ onBack, label = "Back" }) => (
         icon={ArrowLeft}
         label={label}
         onClick={onBack}
-        className="w-10 h-10 bg-[#242424]/40 text-[#a3a3a3] hover:text-[#e7e7e7] hover:bg-[#2a2a2a] border border-transparent hover:border-[#333333]"
+        className="w-10 h-10 bg-surface-active/40 text-muted-foreground hover:text-foreground hover:bg-surface-hover border border-transparent hover:border-divider"
       />
     </div>
   </div>

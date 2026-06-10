@@ -20,10 +20,10 @@ const initialNodes = [
     position: { x: 100, y: 100 },
     data: { label: "Welcome to Geiger Notes Playground" },
     style: {
-      background: "#18181b",
-      border: "1px solid #3f3f46",
+      background: "var(--card)",
+      border: "1px solid var(--border)",
       borderRadius: "8px",
-      color: "#fafafa",
+      color: "var(--foreground)",
       padding: "10px 15px",
       fontSize: "14px",
     },
@@ -33,10 +33,10 @@ const initialNodes = [
     position: { x: 300, y: 200 },
     data: { label: "Click and drag nodes to move them" },
     style: {
-      background: "#18181b",
-      border: "1px solid #3f3f46",
+      background: "var(--card)",
+      border: "1px solid var(--border)",
       borderRadius: "8px",
-      color: "#a1a1aa",
+      color: "var(--muted-foreground)",
       padding: "10px 15px",
       fontSize: "13px",
     },
@@ -46,10 +46,10 @@ const initialNodes = [
     position: { x: 150, y: 300 },
     data: { label: "Connect nodes by dragging from handle to handle" },
     style: {
-      background: "#18181b",
-      border: "1px solid #3f3f46",
+      background: "var(--card)",
+      border: "1px solid var(--border)",
       borderRadius: "8px",
-      color: "#a1a1aa",
+      color: "var(--muted-foreground)",
       padding: "10px 15px",
       fontSize: "13px",
     },
@@ -59,10 +59,10 @@ const initialNodes = [
     position: { x: 400, y: 100 },
     data: { label: "Use the controls to zoom and pan" },
     style: {
-      background: "#18181b",
-      border: "1px solid #3f3f46",
+      background: "var(--card)",
+      border: "1px solid var(--border)",
       borderRadius: "8px",
-      color: "#a1a1aa",
+      color: "var(--muted-foreground)",
       padding: "10px 15px",
       fontSize: "13px",
     },
@@ -75,24 +75,24 @@ const initialEdges = [
     source: "1",
     target: "2",
     animated: true,
-    style: { stroke: "#52525b", strokeWidth: 2 },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#52525b" },
+    style: { stroke: "var(--muted-foreground)", strokeWidth: 2 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "var(--muted-foreground)" },
   },
   {
     id: "e1-3",
     source: "1",
     target: "3",
     animated: true,
-    style: { stroke: "#52525b", strokeWidth: 2 },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#52525b" },
+    style: { stroke: "var(--muted-foreground)", strokeWidth: 2 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "var(--muted-foreground)" },
   },
   {
     id: "e2-4",
     source: "2",
     target: "4",
     animated: true,
-    style: { stroke: "#52525b", strokeWidth: 2 },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#52525b" },
+    style: { stroke: "var(--muted-foreground)", strokeWidth: 2 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "var(--muted-foreground)" },
   },
 ];
 
@@ -108,8 +108,8 @@ export default function PlaygroundCanvas() {
           {
             ...params,
             animated: true,
-            style: { stroke: "#52525b", strokeWidth: 2 },
-            markerEnd: { type: MarkerType.ArrowClosed, color: "#52525b" },
+            style: { stroke: "var(--muted-foreground)", strokeWidth: 2 },
+            markerEnd: { type: MarkerType.ArrowClosed, color: "var(--muted-foreground)" },
           },
           eds
         )
@@ -137,10 +137,10 @@ export default function PlaygroundCanvas() {
         position,
         data: { label: label || "New Node" },
         style: {
-          background: "#18181b",
-          border: "1px solid #3f3f46",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           borderRadius: "8px",
-          color: "#fafafa",
+          color: "var(--foreground)",
           padding: "10px 15px",
           fontSize: "14px",
         },
@@ -152,7 +152,7 @@ export default function PlaygroundCanvas() {
   );
 
   return (
-    <div className="h-[500px] rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+    <div className="h-[500px] rounded-xl border border-border bg-card overflow-hidden">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -163,13 +163,13 @@ export default function PlaygroundCanvas() {
         onDragOver={onDragOver}
         onDrop={onDrop}
         fitView
-        className="bg-zinc-950"
+        className="bg-background"
       >
-        <Background color="#27272a" gap={20} size={1} />
-        <Controls className="bg-zinc-900 border-zinc-800 rounded-lg" />
+        <Background color="var(--border)" gap={20} size={1} />
+        <Controls className="bg-card border-border rounded-lg" />
         <MiniMap
-          className="bg-zinc-900 border-zinc-800 rounded-lg"
-          nodeColor="#3f3f46"
+          className="bg-card border-border rounded-lg"
+          nodeColor="hsl(var(--border))"
           maskColor="rgba(0,0,0,0.8)"
         />
       </ReactFlow>

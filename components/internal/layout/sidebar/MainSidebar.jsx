@@ -11,8 +11,6 @@ export const MainSidebar = ({ enabledTools }) => {
     event.dataTransfer.effectAllowed = "move";
   };
 
-  // When no preference is provided (public playground / collab), show every
-  // tool. Otherwise only render the tools the user enabled in Settings.
   const visibleTools = Array.isArray(enabledTools)
     ? TOOLS.filter((tool) => enabledTools.includes(tool.id))
     : TOOLS;
@@ -34,7 +32,7 @@ export const MainSidebar = ({ enabledTools }) => {
       ))}
 
       <div className="w-full px-2 py-2">
-        <div className="w-full h-[1px] bg-[#333333]/60"></div>
+        <div className="w-full h-[1px] bg-divider/60"></div>
       </div>
       <SidebarButton icon={MoreHorizontal} label="More" />
       <div className="mt-auto flex flex-col gap-4 items-center w-full pb-2">
