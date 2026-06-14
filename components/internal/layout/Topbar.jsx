@@ -197,7 +197,7 @@ export default function Topbar({
               onKickMember={onKickMember}
             >
               <button
-                className="w-8 h-8 rounded-sm border border-transparent hover:bg-surface-hover flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground relative outline-none"
+                className="w-8 h-8 rounded-sm border border-transparent hover:bg-surface-hover hidden items-center justify-center transition-colors text-muted-foreground hover:text-foreground relative outline-none sm:flex"
                 title="Notifications"
               >
                 <Bell className="w-[18px] h-[18px]" strokeWidth={2} />
