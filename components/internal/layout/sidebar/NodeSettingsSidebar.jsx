@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SidebarShell } from "./SidebarPrimitives";
 import { ColorPlug } from "./plugs/ColorPlug";
 import { EditBoardNamePlug } from "./plugs/EditBoardNamePlug";
@@ -9,23 +9,49 @@ import { EditClockThemePlug } from "./plugs/clock/EditClockThemePlug";
 import { EditCalendarThemePlug } from "./plugs/calendar/EditCalendarThemePlug";
 import { TextFormattingPlug } from "./plugs/TextFormattingPlug";
 import { DownloadBoardPlug } from "./plugs/DownloadBoardPlug";
+import { ManageAccessPlug } from "./plugs/ManageAccessPlug";
 import EditBoardNameDialog from "./dialogs/EditBoardNameDialog";
 import EditBoardIconDialog from "./dialogs/EditBoardIconDialog";
 import EditClockThemeDialog from "./dialogs/clock/EditClockThemeDialog";
 import EditCalendarThemeDialog from "./dialogs/calendar/EditCalendarThemeDialog";
 import DownloadBoardDialog from "./dialogs/DownloadBoardDialog";
+import ManageAccessDialog from "./dialogs/ManageAccessDialog";
+import { canManageBoard } from "@/lib/supabase/board-access";
 import { toast } from "sonner";
 
 export default function NodeSettingsSidebar({
   selectedNode,
   onUpdateNode,
   onBack,
+  projectId,
 }) {
   const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const [isEditIconOpen, setIsEditIconOpen] = useState(false);
   const [isEditClockThemeOpen, setIsEditClockThemeOpen] = useState(false);
   const [isEditCalendarThemeOpen, setIsEditCalendarThemeOpen] = useState(false);
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
+  const [isManageAccessOpen, setIsManageAccessOpen] = useState(false);
+  const [canManageAccess, setCanManageAccess] = useState(false);
+
+  const isProjectBoardNode =
+    selectedNode?.type === "board" &&
+    Boolean(projectId) &&
+    Boolean(selectedNode?.data?.boardId);
+
+  // Only surface Manage Access when the current user may actually manage it.
+  useEffect(() => {
+    let active = true;
+    if (isProjectBoardNode) {
+      canManageBoard(selectedNode.data.boardId, projectId).then((ok) => {
+        if (active) setCanManageAccess(ok);
+      });
+    } else {
+      setCanManageAccess(false);
+    }
+    return () => {
+      active = false;
+    };
+  }, [isProjectBoardNode, selectedNode?.data?.boardId, projectId]);
 
   if (!selectedNode) return null;
 
@@ -95,6 +121,9 @@ export default function NodeSettingsSidebar({
         {selectedNode.type === "board" && (
           <DownloadBoardPlug onDownload={() => setIsDownloadOpen(true)} />
         )}
+        {isProjectBoardNode && canManageAccess && (
+          <ManageAccessPlug onManage={() => setIsManageAccessOpen(true)} />
+        )}
 
         {selectedNode.type === "clock" ? (
           <EditClockThemePlug onEdit={() => setIsEditClockThemeOpen(true)} />
@@ -139,6 +168,15 @@ export default function NodeSettingsSidebar({
             boardId={selectedNode.data.boardId}
             boardName={selectedNode.data.label || selectedNode.data.name}
           />
+          {isProjectBoardNode && (
+            <ManageAccessDialog
+              open={isManageAccessOpen}
+              onOpenChange={setIsManageAccessOpen}
+              boardId={selectedNode.data.boardId}
+              boardName={selectedNode.data.label || selectedNode.data.name}
+              projectId={projectId}
+            />
+          )}
         </>
       )}
 

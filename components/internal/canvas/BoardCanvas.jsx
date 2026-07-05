@@ -28,16 +28,37 @@ import ClockNode from "@/components/internal/nodes/clock/ClockNode";
 import CalendarNode from "@/components/internal/nodes/calendar/CalendarNode";
 import CheckboxNode from "@/components/internal/nodes/CheckboxNode";
 import TableNode from "@/components/internal/nodes/TableNode";
+import BoardKeyDialog from "@/components/internal/layout/sidebar/dialogs/BoardKeyDialog";
+import { checkBoardEntry } from "@/lib/supabase/board-access";
 import "@xyflow/react/dist/style.css";
 
 export default function BoardCanvas({
   id,
   boardId,
+  projectId,
   onNavigate,
   breadcrumbs,
   onBreadcrumbClick,
 }) {
   const { theme } = useTheme();
+
+  // Advisory access for the currently open board. Starts editable and tightens
+  // once resolved; personal boards and the project home board stay editable.
+  const [canEdit, setCanEdit] = React.useState(true);
+  React.useEffect(() => {
+    let active = true;
+    if (projectId && boardId) {
+      checkBoardEntry(boardId, projectId).then((res) => {
+        if (active) setCanEdit(res.canEdit);
+      });
+    } else {
+      setCanEdit(true);
+    }
+    return () => {
+      active = false;
+    };
+  }, [projectId, boardId]);
+
   const {
     nodes,
     edges,
@@ -55,7 +76,7 @@ export default function BoardCanvas({
     zoomOnScroll,
     setEdges,
     setNodes,
-  } = useHomeLogic(id, boardId);
+  } = useHomeLogic(id, boardId, projectId, canEdit);
 
   const {
     settings,
@@ -109,6 +130,7 @@ export default function BoardCanvas({
   const onDrop = React.useCallback(
     async (event) => {
       event.preventDefault();
+      if (!canEdit) return;
       const type = event.dataTransfer.getData("application/reactflow");
       if (typeof type === "undefined" || !type) {
         return;
@@ -126,7 +148,10 @@ export default function BoardCanvas({
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ name: "Untitled Board" }),
+              body: JSON.stringify({
+                name: "Untitled Board",
+                ...(projectId ? { projectId } : {}),
+              }),
             },
           );
 
@@ -273,11 +298,12 @@ export default function BoardCanvas({
 
       setNodes((nds) => nds.concat(newNode));
     },
-    [rfInstance, setNodes],
+    [rfInstance, setNodes, projectId, canEdit],
   );
 
   const onPaneClick = React.useCallback(
     (event) => {
+      if (!canEdit) return;
       if (!settings.doubleClickToInsert) return;
 
       const currentTime = Date.now();
@@ -299,7 +325,7 @@ export default function BoardCanvas({
       }
       lastPaneClick.current = currentTime;
     },
-    [settings.doubleClickToInsert, rfInstance, setNodes],
+    [settings.doubleClickToInsert, rfInstance, setNodes, canEdit],
   );
 
   const selectedEdge = useMemo(() => edges.find((e) => e.selected), [edges]);
@@ -381,13 +407,48 @@ export default function BoardCanvas({
     [setNodes, setEdges],
   );
 
+  // Pending keyed board awaiting its access key before navigation.
+  const [keyPrompt, setKeyPrompt] = React.useState(null);
+
   const onNodeDoubleClick = React.useCallback(
-    (event, node) => {
-      if (node.type === "board") {
-        onNavigate(node.data.boardId, node.data.name);
+    async (event, node) => {
+      if (node.type !== "board") return;
+
+      const targetId = node.data.boardId;
+      const name = node.data.name;
+
+      // Personal boards (no project) are unchanged; project boards are gated.
+      if (!projectId) {
+        onNavigate(targetId, name);
+        return;
+      }
+
+      const res = await checkBoardEntry(targetId, projectId);
+      if (!res.canEnter) {
+        toast.error("You don't have access to this board.");
+        return;
+      }
+      if (res.needsKey) {
+        setKeyPrompt({ boardId: targetId, name, key: res.key });
+        return;
+      }
+      onNavigate(targetId, name);
+    },
+    [onNavigate, projectId],
+  );
+
+  const handleKeySubmit = React.useCallback(
+    (value) => {
+      if (!keyPrompt) return;
+      if (value === keyPrompt.key) {
+        const { boardId: bid, name } = keyPrompt;
+        setKeyPrompt(null);
+        onNavigate(bid, name);
+      } else {
+        toast.error("Incorrect access key.");
       }
     },
-    [onNavigate],
+    [keyPrompt, onNavigate],
   );
 
   const colorMode = theme === "light" ? "light" : "dark";
@@ -428,7 +489,9 @@ export default function BoardCanvas({
           proOptions={{ hideAttribution: true }}
           minZoom={0.1}
           maxZoom={2}
-          deleteKeyCode={["Backspace", "Delete"]}
+          nodesDraggable={canEdit}
+          nodesConnectable={canEdit}
+          deleteKeyCode={canEdit ? ["Backspace", "Delete"] : null}
           panOnDrag={isMobile ? true : panOnDrag}
           selectionOnDrag={isMobile ? false : selectionOnDrag}
           panOnScroll={panOnScroll}
@@ -481,6 +544,7 @@ export default function BoardCanvas({
           onUpdateNode={updateNode}
           onDeselectNode={deselectNodes}
           enabledTools={settings.toolbarTools}
+          projectId={projectId}
         />
       </div>
 
@@ -507,6 +571,16 @@ export default function BoardCanvas({
           </button>
         </div>
       </div>
+
+      <BoardKeyDialog
+        key={keyPrompt?.boardId || "none"}
+        open={!!keyPrompt}
+        onOpenChange={(o) => {
+          if (!o) setKeyPrompt(null);
+        }}
+        boardName={keyPrompt?.name}
+        onSubmit={handleKeySubmit}
+      />
     </div>
   );
 }

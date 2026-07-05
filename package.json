@@ -7,9 +7,12 @@
     "dev:turbo": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:push": "node --env-file=.env scripts/run-sqls.js",
+    "db:clean": "node --env-file=.env scripts/run-sqls.js --clean"
   },
   "dependencies": {
+    "@geiger/ui": "github:bhargavjoshi1237/geiger-ui#master",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-avatar": "^1.1.11",

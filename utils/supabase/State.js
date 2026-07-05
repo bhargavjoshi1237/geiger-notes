@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-export function useCanvasState(userId, boardId) {
+export function useCanvasState(userId, boardId, projectId) {
     const [state, setState] = useState({
         nodes: null,
         edges: null,
@@ -12,12 +12,12 @@ export function useCanvasState(userId, boardId) {
     });
 
     useEffect(() => {
-        setState(prev => ({ 
-            ...prev, 
-            nodes: null, 
-            edges: null, 
-            viewport: null, 
-            isLoading: true 
+        setState(prev => ({
+            ...prev,
+            nodes: null,
+            edges: null,
+            viewport: null,
+            isLoading: true
         }));
 
         async function loadState() {
@@ -25,7 +25,11 @@ export function useCanvasState(userId, boardId) {
                 const isProd = process.env.NODE_ENV === 'production';
                 const basePath = isProd ? (process.env.NEXT_PUBLIC_BASE_PATH || '/notes') : '';
                 const baseApiUrl = `${basePath}/api/load-state`;
-                const url = boardId ? `${baseApiUrl}?boardId=${boardId}` : baseApiUrl;
+                const params = new URLSearchParams();
+                if (projectId) params.set('projectId', projectId);
+                if (boardId) params.set('boardId', boardId);
+                const qs = params.toString();
+                const url = qs ? `${baseApiUrl}?${qs}` : baseApiUrl;
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
@@ -62,15 +66,15 @@ export function useCanvasState(userId, boardId) {
             }
         }
 
-        if (userId) {
+        if (userId || projectId) {
             loadState();
         }
-    }, [userId, boardId]);
+    }, [userId, boardId, projectId]);
 
     return state;
 }
 
-export async function saveCanvasState(userId, nodes, edges, viewport, boardId) {
+export async function saveCanvasState(userId, nodes, edges, viewport, boardId, projectId) {
     const isProd = process.env.NODE_ENV === 'production';
     const basePath = isProd ? (process.env.NEXT_PUBLIC_BASE_PATH || '/notes') : '';
     try {
@@ -79,7 +83,8 @@ export async function saveCanvasState(userId, nodes, edges, viewport, boardId) {
             nodes,
             edges,
             viewport,
-            boardId
+            boardId,
+            projectId
         });
 
         // NOTE: Do NOT use `keepalive: true` here.

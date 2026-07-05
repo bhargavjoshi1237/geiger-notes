@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { MegaMenu } from "@/components/mega-menu";
+import { SuiteMegaMenu } from "@/components/landing/suite-mega-menu";
 import { UserProfileDropdown } from "@/components/user-profile-dropdown";
 import Logo from "@/components/ui/logo";
 
@@ -31,7 +31,7 @@ export async function Header() {
           </div>
           <span className="truncate font-bold text-sm tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-muted-foreground sm:text-md">Geiger Studios</span>
         </div>
-        <MegaMenu userId={userId} />
+        <SuiteMegaMenu />
         <div className="hidden items-center gap-4 md:flex">
           {userProfile ? (
             <UserProfileDropdown user={userProfile} />

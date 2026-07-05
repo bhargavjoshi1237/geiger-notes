@@ -8,6 +8,9 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
+      // Data API defaults to the `notes` schema (relocated boards/base/collab/
+      // documents/user_settings). Auth is unaffected by db.schema.
+      db: { schema: 'notes' },
       cookies: {
         getAll() {
           return cookieStore.getAll()

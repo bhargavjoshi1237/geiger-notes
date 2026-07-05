@@ -17,6 +17,7 @@ export default function Sidebar({
   onUpdateNode,
   onDeselectNode,
   enabledTools,
+  projectId,
 }) {
   const [cachedSelectedEdge, setCachedSelectedEdge] = useState(selectedEdge);
   const [cachedSelectedNode, setCachedSelectedNode] = useState(selectedNode);
@@ -83,6 +84,7 @@ export default function Sidebar({
             selectedNode={nodeToRender}
             onUpdateNode={onUpdateNode}
             onBack={onDeselectNode}
+            projectId={projectId}
           />
         )}
       </div>
