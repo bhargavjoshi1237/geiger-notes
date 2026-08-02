@@ -18,6 +18,20 @@ import { Header } from "@/components/header";
 import { createClient } from "@/utils/supabase/server";
 import LandingBoardShowcase from "@/components/LandingBoardShowcase";
 
+const showcaseBackgroundImages = [
+  "https://200rfrtp5x71tlmk.public.blob.vercel-storage.com/geiger-dash/cursor-assets/asset-00a586c62c8782e65c0a.jpg",
+  "https://200rfrtp5x71tlmk.public.blob.vercel-storage.com/geiger-dash/cursor-assets/internal-brand-023-3291bb4c.jpg",
+  "https://200rfrtp5x71tlmk.public.blob.vercel-storage.com/geiger-dash/cursor-assets/asset-0ec1f3ba625f482c9dc3.jpg",
+  "https://200rfrtp5x71tlmk.public.blob.vercel-storage.com/geiger-dash/cursor-assets/asset-85923e7fafe00c9c0d1f.jpg",
+  "https://200rfrtp5x71tlmk.public.blob.vercel-storage.com/geiger-dash/cursor-assets/asset-8e2e88cff7f33224ddd7.jpg",
+  "https://200rfrtp5x71tlmk.public.blob.vercel-storage.com/geiger-dash/cursor-assets/asset-0a66efa21dd4b7e6c526.jpg",
+  "https://200rfrtp5x71tlmk.public.blob.vercel-storage.com/geiger-dash/cursor-assets/asset-cc24ca462279ca23250c.jpg",
+];
+
+function pickRandomShowcaseBackground() {
+  return showcaseBackgroundImages[Math.floor(Math.random() * showcaseBackgroundImages.length)];
+}
+
 export const metadata = {
   title: "Notes - Geiger Studio",
   description:
@@ -102,6 +116,7 @@ export default async function NotesLandingPage() {
   const loginHref = `${dashOrigin}/login?next=${encodeURIComponent(notesRoot)}`;
   const ctaHref = user ? boardHref : loginHref;
   const studioHref = dashOrigin || "/";
+  const showcaseBg = pickRandomShowcaseBackground();
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background text-foreground selection:bg-indigo-500/30 font-sans">
@@ -144,6 +159,7 @@ export default async function NotesLandingPage() {
             ctaHref={ctaHref}
             ctaLabel={user ? "Open your board" : "Checkout Notes"}
             ctaInNotesApp={Boolean(user)}
+            backgroundImage={showcaseBg}
           />
         </div>
 

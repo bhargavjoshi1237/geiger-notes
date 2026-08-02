@@ -6,19 +6,24 @@ export default function LandingBoardShowcase({
   ctaHref,
   ctaLabel,
   ctaInNotesApp = false,
+  backgroundImage,
 }) {
   const CtaLink = ctaInNotesApp ? Link : "a";
 
   return (
-    <section className="rounded-2xl border border-border bg-[url('https://cursor.com/marketing-static/_next/image?url=https%3A%2F%2Fptht05hbb1ssoooe.public.blob.vercel-storage.com%2Fassets%2Fmisc%2Fasset-00a586c62c8782e65c0a.jpg&w=1920&q=70')] bg-cover bg-center p-3 sm:rounded-3xl sm:p-6 md:p-8 xl:p-10">
-      <div className="flex flex-col gap-6 sm:gap-10">
+    <section
+      className="relative overflow-hidden rounded-2xl border border-border bg-cover bg-center bg-no-repeat p-3 sm:rounded-3xl sm:p-6 md:p-8 xl:p-10"
+      style={backgroundImage ? { backgroundImage: `url('${backgroundImage}')` } : undefined}
+    >
+      <div className="absolute inset-0 bg-[#080808]/75" />
+      <div className="relative z-10 flex flex-col gap-6 sm:gap-10">
         <div className="space-y-5">
          <div className="mx-auto mb-4 mt-4 flex w-[92%] flex-col items-start gap-4 sm:mb-6 sm:mt-6 sm:w-[90%]">
-           <h3 className="text-3xl font-semibold leading-tight text-foreground">
+           <h3 className="text-3xl font-semibold leading-tight text-[#f5f5f5]">
             Build in real time with the full Geiger Notes interface.
           </h3>
 
-          <p className="max-w-sm text-muted-foreground">
+          <p className="max-w-sm text-[#bcbcbc]">
             This playground runs locally on the page with the complete canvas
             system, node types, controls, and interactions. No save and no load,
             just pure exploration.

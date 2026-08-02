@@ -1,3 +1,7 @@
+-- Imported from 0004_home_board_unique.sql by geiger-orm.
+-- No @down section — this migration cannot be rolled back.
+
+-- @up
 -- One live home board per project
 -- ---------------------------------------------------------------------------
 -- The save-state API creates a project's "home" canvas (metadata.home = true)

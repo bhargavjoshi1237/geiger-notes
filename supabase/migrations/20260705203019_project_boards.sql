@@ -1,3 +1,7 @@
+-- Imported from 0002_project_boards.sql by geiger-orm.
+-- No @down section — this migration cannot be rolled back.
+
+-- @up
 -- Project boards
 -- ---------------------------------------------------------------------------
 -- The project-owned counterpart to the personal notes.boards table. Where a

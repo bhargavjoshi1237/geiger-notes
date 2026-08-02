@@ -1,3 +1,7 @@
+-- Imported from 0001_relocate_personal.sql by geiger-orm.
+-- No @down section — this migration cannot be rolled back.
+
+-- @up
 -- Relocate the per-user (personal) tables into the dedicated `notes` schema.
 -- These stay exactly as they were — still keyed on the user's uuid — they just
 -- live under `notes.*` instead of `public.*`. The suite Supabase project is

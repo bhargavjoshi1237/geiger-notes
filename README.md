@@ -71,13 +71,18 @@ STRING_URI=your-direct-postgres-connection-string    # migrations only
 
 ### Database
 
-Numbered, idempotent migrations live in `supabase/migrations/` and run in filename order:
+Schema changes are timestamped SQL migrations in `supabase/migrations/`, applied
+in version order by [`@geiger/orm`](https://github.com/bhargavjoshi1237/geiger-orm)
+and recorded in `notes.geiger_migrations`:
 
 ```bash
-npm run db:push
+npm run db:status                     # applied vs pending
+npm run db:new -- <name>              # scaffold a migration
+npm run db:push                       # apply everything pending
+npm run db:seed                       # re-runnable data
 ```
 
-Use `npm run db:clean` to reset this app's own tables before re-running. The Supabase project is shared across the suite — never drop tables you do not own.
+See [`MIGRATION_CONVENTIONS.md`](MIGRATION_CONVENTIONS.md) before writing any DDL.
 
 ### Develop
 
@@ -103,9 +108,8 @@ components/
   ui/                    shadcn primitives
 lib/supabase/            Data-access layer (boards, project boards, access)
 utils/supabase/          Schema-scoped browser and server clients
-supabase/migrations/     Numbered, idempotent SQL migrations
+supabase/migrations/     Timestamped @up/@down migrations (npm run db:push)
 database/init/           Original bootstrap SQL (boards, collab, documents, storage policies)
-scripts/run-sqls.js      Migration runner (npm run db:push)
 ```
 
 ## Deployment
@@ -118,6 +122,7 @@ This codebase follows a consistent set of patterns. Read these before contributi
 
 - [`MODULE_CONVENTIONS.md`](MODULE_CONVENTIONS.md) — how to build a workspace screen
 - [`SUPABASE_CONVENTIONS.md`](SUPABASE_CONVENTIONS.md) — the data-layer playbook
+- [`MIGRATION_CONVENTIONS.md`](MIGRATION_CONVENTIONS.md) — schema changes and `@geiger/orm`
 - [`PROJECT_ACCESS.md`](PROJECT_ACCESS.md) — the project-scoped RLS access model
 - [`crafting.md`](crafting.md) — UI craft and quality bar
 

@@ -1,3 +1,7 @@
+-- Imported from 0003_abilities.sql by geiger-orm.
+-- No @down section — this migration cannot be rolled back.
+
+-- @up
 -- Abilities (role-based action authorization)
 -- ---------------------------------------------------------------------------
 -- Ported from geiger-flow (0003_abilities + 0004_tasks_abilities). Classifies

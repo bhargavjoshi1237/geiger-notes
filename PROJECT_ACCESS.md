@@ -46,7 +46,7 @@ this repo only references them.
 | Concern | File |
 |---|---|
 | Migrations | `supabase/migrations/0001_relocate_personal.sql`, `0002_project_boards.sql`, `0003_abilities.sql` |
-| Migration runner | `scripts/run-sqls.js` (`npm run db:push` / `db:clean`) |
+| Migration runner | `@geiger/orm` (`npm run db:push` / `db:rollback`) |
 | Browser client | `lib/supabase/client.js` |
 | Current user | `lib/supabase/user.js` |
 | Schema-scoped client + config guard | `supabase/components/notes-client.js` (`notesClient()`, `isSupabaseConfigured()`) |
