@@ -18,6 +18,8 @@ import HostTab from "../colab/HostTab";
 import MembersTab from "../colab/MembersTab";
 import JoinTab from "../colab/JoinTab";
 import MergeTab from "../colab/MergeTab";
+import MeetTab from "../colab/MeetTab";
+import MeetStage from "../meet/meet_stage";
 
 export default function CollaborateDilouge({
   id,
@@ -43,6 +45,10 @@ export default function CollaborateDilouge({
   const [mergeSessions, setMergeSessions] = useState([]);
   const [selectedMergeSession, setSelectedMergeSession] = useState(null);
   const [mergeDiff, setMergeDiff] = useState(null);
+  // The live meeting, when there is one: { roomId, code, isHost }. Independent
+  // of the collab session — a meeting can run with no session, and a session can
+  // run with no meeting.
+  const [meeting, setMeeting] = useState(null);
 
   useEffect(() => {
     async function getUser() {
@@ -285,7 +291,31 @@ export default function CollaborateDilouge({
     toast.info("Session ended");
   };
 
+  // Starting or joining a meeting closes the dialog and hands the screen to the
+  // meeting stage, which covers the workspace while the call is live.
+  const enterMeeting = (details) => {
+    setMeeting(details);
+    onOpenChange(false);
+  };
+
   return (
+    <>
+      {meeting ? (
+        <MeetStage
+          roomId={meeting.roomId}
+          code={meeting.code}
+          isHost={meeting.isHost}
+          me={{
+            id: currentUser?.id,
+            name:
+              currentUser?.user_metadata?.full_name ||
+              currentUser?.email ||
+              "Guest",
+          }}
+          onClose={() => setMeeting(null)}
+        />
+      ) : null}
+
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         container={dialogContainer}
@@ -327,6 +357,8 @@ export default function CollaborateDilouge({
           {[
             { id: "host", label: isSessionActive ? "Session" : "Host" },
             { id: "members", label: "Members" },
+            // Always available: a meeting doesn't depend on a session.
+            { id: "meet", label: "Meeting" },
             (!isSessionActive || !isHost) && { id: "join", label: "Join" },
             !isSessionActive && { id: "merge", label: "Merge" },
           ]
@@ -374,6 +406,14 @@ export default function CollaborateDilouge({
             />
           )}
 
+          {activeTab === "meet" && (
+            <MeetTab
+              isSessionActive={isSessionActive}
+              sessionData={sessionData}
+              onJoined={enterMeeting}
+            />
+          )}
+
           {activeTab === "join" && (
             <JoinTab
               isSessionActive={isSessionActive}
@@ -410,5 +450,6 @@ export default function CollaborateDilouge({
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
