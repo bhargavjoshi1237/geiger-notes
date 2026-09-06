@@ -32,7 +32,11 @@ export function ProjectProvider({ children }) {
     }
 
     const supabase = createClient();
+    // Scope to public explicitly: the browser client is a singleton shared
+    // with the notes-schema factory, so an unscoped query can inherit
+    // Accept-Profile: notes and fail with PGRST205.
     const { data, error } = await supabase
+      .schema("public")
       .from("projects")
       .select("*")
       .eq("id", id)
