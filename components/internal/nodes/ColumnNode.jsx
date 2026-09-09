@@ -234,8 +234,8 @@ const ColumnCard = ({ item, onChange, onToggle, onRemove }) => {
         <CommentCardBody item={item} onChange={onChange} />
       ) : (
         <div
-          className={`flex w-full gap-2.5 ${
-            item.kind === "todo" ? "items-center p-6" : "items-start p-4"
+          className={`flex w-full items-center gap-2.5 ${
+            item.kind === "todo" ? "p-6" : "p-4"
           }`}
         >
           {item.kind === "todo" && (
@@ -247,7 +247,7 @@ const ColumnCard = ({ item, onChange, onToggle, onRemove }) => {
                 nodrag flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm border-2 transition-colors
                 ${
                   item.checked
-                    ? "border-emerald-500 bg-emerald-500 text-black"
+                    ? "border-primary bg-primary text-primary-foreground"
                     : "border-foreground/70 text-transparent hover:border-foreground"
                 }
               `}
@@ -272,7 +272,7 @@ const ColumnCard = ({ item, onChange, onToggle, onRemove }) => {
                 onChange={(e) => onChange(item.id, { text: e.target.value })}
                 placeholder={KIND_PLACEHOLDER[item.kind] ?? KIND_PLACEHOLDER.text}
                 className={`
-                  w-full resize-none whitespace-pre-wrap bg-transparent font-sans outline-none placeholder:text-muted-foreground
+                  block w-full resize-none whitespace-pre-wrap bg-transparent font-sans outline-none placeholder:text-muted-foreground
                   ${item.kind === "todo" ? "text-sm" : ""}
                   ${item.checked ? "text-muted-foreground line-through" : "text-foreground"}
                 `}
@@ -289,7 +289,7 @@ const ColumnCard = ({ item, onChange, onToggle, onRemove }) => {
               target="_blank"
               rel="noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="nodrag mt-0.5 shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+              className="nodrag shrink-0 text-muted-foreground transition-colors hover:text-foreground"
               title="Open link"
             >
               <ExternalLink className="h-3.5 w-3.5" />

@@ -172,7 +172,7 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
                   nodrag flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm border-2 transition-colors
                   ${
                     item.checked
-                      ? "border-emerald-500 bg-emerald-500 text-black"
+                      ? "border-primary bg-primary text-primary-foreground"
                       : "border-foreground/70 text-transparent hover:border-foreground"
                   }
                 `}
