@@ -153,11 +153,7 @@ const LinkNode = ({ id, data, selected, dragging }) => {
             opacity: 0,
           }}
         />
-        {/* Using Center handle for connection logic often seen in Milanote clones, 
-             but CustomNode used Left/Right/Center. I'll stick to CustomNode's pattern mostly 
-             but simpler for LinkNode as it usually connects from sides? 
-             Actually CustomNode had a Center target handle covering the whole node 
-             and a Right source handle. I will replicate that. */}
+        {/* Center target + right source handles, mirroring CustomNode. */}
 
         <Handle
           type="target"

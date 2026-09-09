@@ -20,6 +20,8 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
   const [isVisible, setIsVisible] = React.useState(false);
   const isConnecting = connection.inProgress;
 
+  const outline = data.outline || { enabled: false };
+
   React.useEffect(() => {
     requestAnimationFrame(() => setIsVisible(true));
   }, []);
@@ -71,6 +73,8 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
   const handleRemoveItem = (itemId) => {
     updateData((d) => {
       const next = (d.items || items).filter((it) => it.id !== itemId);
+      // Keep one empty row so the list never renders without an editing target.
+      if (next.length === 0) return { items: [{ id: makeItemId(), text: "", checked: false }] };
       return { items: next };
     });
   };
@@ -111,6 +115,11 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
         `}
         style={{
           backgroundColor: data.backgroundColor || "var(--node-default)",
+          ...(outline.enabled
+            ? {
+                borderColor: outline.color,
+              }
+            : {}),
         }}
       >
         <NodeResizeControl
@@ -148,6 +157,15 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
           </div>
         </NodeResizeControl>
 
+        {outline.enabled && (
+          <div
+            className="flex items-center gap-2 h-5 absolute left-4 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-background shadow-sm transform -translate-y-1/2 transition-all duration-300"
+            style={{ backgroundColor: outline.color }}
+          >
+            {outline.name}
+          </div>
+        )}
+
         <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-2 border-b border-border/50">
           <TextEditingTrait className="flex-1">
             <input
@@ -184,7 +202,12 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
                 <Check className="w-3 h-3" strokeWidth={3} />
               </button>
 
-              <TextEditingTrait className="flex-1">
+              <TextEditingTrait
+                className="flex-1"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddItem();
+                }}
+              >
                 <input
                   type="text"
                   value={item.text}

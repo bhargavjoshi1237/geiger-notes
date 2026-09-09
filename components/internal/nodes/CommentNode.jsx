@@ -1,30 +1,41 @@
 import React, { memo } from "react";
-import { Handle, Position, useReactFlow } from "@xyflow/react";
-import { ArrowRight, Send } from "lucide-react";
+import {
+  Handle,
+  Position,
+  NodeResizeControl,
+  useReactFlow,
+  useConnection,
+} from "@xyflow/react";
+import { ArrowRight } from "lucide-react";
 import Reactions from "../ui/Reactions";
-import TextEditingTrait from "./traits/TextEditingTrait";
+import CommentComposer, { useCommentAuthor } from "../ui/CommentComposer";
+import ResizeHandle from "@/components/ui/ResizeHandle";
 
-const Avatar = ({ initials, className }) => (
-  <div
-    className={`w-8 h-8 rounded-full bg-[#FACC15] text-black flex items-center justify-center text-xs font-bold ${className}`}
-  >
-    {initials}
-  </div>
-);
-
-const CommentNode = ({ id, data, selected }) => {
+const CommentNode = ({ id, data, selected, dragging }) => {
   const { setNodes } = useReactFlow();
+  const connection = useConnection();
+  const [isVisible, setIsVisible] = React.useState(false);
+  const isConnecting = connection.inProgress;
+
+  const outline = data.outline || { enabled: false };
+
   const [comment, setComment] = React.useState(data?.label || "");
+  const [lastLabel, setLastLabel] = React.useState(data?.label || "");
+  const author = useCommentAuthor(data);
 
   React.useEffect(() => {
-    setComment(data?.label || "");
-  }, [data?.label]);
+    requestAnimationFrame(() => setIsVisible(true));
+  }, []);
 
-  const handleChange = (e) => {
-    setComment(e.target.value);
-  };
+  // Reset the draft when the stored comment changes elsewhere (e.g. realtime).
+  if ((data?.label || "") !== lastLabel) {
+    setLastLabel(data?.label || "");
+    setComment(data?.label || "");
+  }
 
   const handleSend = () => {
+    const authorId = author.userId ?? data?.avatarUserId ?? null;
+    const authorName = author.userName ?? data?.authorName ?? null;
     setNodes((nodes) =>
       nodes.map((n) => {
         if (n.id === id) {
@@ -33,6 +44,9 @@ const CommentNode = ({ id, data, selected }) => {
             data: {
               ...n.data,
               label: comment,
+              // Stamp the commenter so collaborators see their face, not ours.
+              avatarUserId: authorId,
+              authorName,
             },
           };
         }
@@ -64,56 +78,115 @@ const CommentNode = ({ id, data, selected }) => {
   };
 
   return (
-    <div className="relative group">
+    <>
       <div
         className={`
-          relative flex items-center p-3 gap-3 min-w-[300px] bg-comment-bg rounded-lg shadow-lg transition-all duration-200
-          ${selected ? "ring-2 ring-blue-500" : "hover:ring-1 hover:ring-border"}
+            relative flex flex-col w-full h-full min-h-[68px] min-w-[300px] group rounded-lg
+            transition-all duration-300 ease-out
+            ${selected ? "border-2 border-foreground" : "border-2 border-transparent hover:border-border"}
+            ${dragging ? "shadow-2xl shadow-black/50 z-50" : ""}
+            ${isVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-2 scale-95"}
         `}
-      >
-        <Avatar initials="JJ" className="shrink-0" />
-
-        <div className="flex-1 relative flex items-center">
-          <TextEditingTrait
-            className="w-full"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSend();
+        style={{
+          backgroundColor: data.backgroundColor || "var(--comment-bg)",
+          ...(outline.enabled
+            ? {
+                borderColor: outline.color,
               }
-            }}
+            : {}),
+        }}
+      >
+        <NodeResizeControl
+          minWidth={300}
+          minHeight={68}
+          className="!bg-transparent !border-none"
+          position="bottom-right"
+          style={{
+            opacity: 1,
+            pointerEvents: "all",
+          }}
+          onResizeEnd={(_, params) => {
+            setNodes((nodes) =>
+              nodes.map((n) => {
+                if (n.id === id) {
+                  return {
+                    ...n,
+                    width: Math.round(params.width / 15) * 15,
+                    height: Math.round(params.height / 15) * 15,
+                    position: {
+                      x: Math.round(params.x / 15) * 15,
+                      y: Math.round(params.y / 15) * 15,
+                    },
+                  };
+                }
+                return n;
+              }),
+            );
+          }}
+        >
+          <div
+            className={`transition-opacity duration-200 ${selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
           >
-            <input
-              type="text"
-              className="w-full bg-comment-input text-foreground text-sm rounded px-3 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
-              placeholder="Write a comment..."
-              value={comment}
-              onChange={handleChange}
-            />
-          </TextEditingTrait>
-          <button
-            onClick={handleSend}
-            className="absolute right-2 text-blue-400 hover:text-blue-300 text-xs font-medium transition-colors"
+            <ResizeHandle />
+          </div>
+        </NodeResizeControl>
+
+        {outline.enabled && (
+          <div
+            className="flex items-center gap-2 h-5 absolute left-4 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-background shadow-sm transform -translate-y-1/2 transition-all duration-300"
+            style={{ backgroundColor: outline.color }}
           >
-            Send
-          </button>
+            {outline.name}
+          </div>
+        )}
+
+        <div className="flex h-full w-full flex-1 items-center overflow-hidden">
+          <CommentComposer
+            author={author}
+            value={comment}
+            onChange={setComment}
+            onSend={handleSend}
+          />
         </div>
+
+        <Reactions
+          reactions={data.reactions}
+          onReactionClick={handleReactionClick}
+        />
 
         <Handle
           type="target"
-          position={Position.Left}
-          className="!w-2 !h-2 !bg-muted-foreground !border-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          position={Position.Center}
+          className={`
+            !w-full !h-full !border-0 !rounded-none !bg-transparent absolute !inset-0 !transform-none
+            ${isConnecting ? "pointer-events-auto z-50" : "pointer-events-none -z-10"}
+          `}
+          style={{
+            top: 0,
+            left: 0,
+            opacity: 0,
+          }}
         />
         <Handle
           type="source"
           position={Position.Right}
-          className="!w-2 !h-2 !bg-muted-foreground !border-0 opacity-0 group-hover:opacity-100 transition-opacity"
-        />
+          className={`
+    !w-2 !h-2 !bg-foreground !border-0
+    absolute !top-0 !-right-[1px]
+    flex items-center justify-center
+
+    origin-top-right
+    transition-transform duration-200 hover:scale-[2.5]
+
+    !translate-x-0 !translate-y-0
+    group/handle
+    ${selected ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
+  `}
+        >
+          <ArrowRight className="w-[10px] h-[10px] opacity-0 group-hover/handle:opacity-100 transition-opacity duration-200 text-background -rotate-45" />
+        </Handle>
       </div>
-      <Reactions
-        reactions={data.reactions}
-        onReactionClick={handleReactionClick}
-      />
-    </div>
+    </>
   );
 };
 

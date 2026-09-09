@@ -17,6 +17,12 @@ import FileNode from "@/components/internal/nodes/FileNode";
 import CalendarNode from "@/components/internal/nodes/calendar/CalendarNode";
 import CheckboxNode from "@/components/internal/nodes/CheckboxNode";
 import TableNode from "@/components/internal/nodes/TableNode";
+import ColumnNode, {
+  absorbDraggedNode,
+  COLUMN_DEFAULT_SIZE,
+  columnNodeDefaults,
+  dropIntoColumnAtPoint,
+} from "@/components/internal/nodes/ColumnNode";
 import { useLandingPlaygroundLogic } from "@/lib/hooks/useLandingPlaygroundLogic";
 import "@xyflow/react/dist/style.css";
 
@@ -72,6 +78,13 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
         x: event.clientX,
         y: event.clientY,
       });
+
+      // Drops landing on a column become column items instead of loose nodes.
+      const absorbedDrop = dropIntoColumnAtPoint(rfInstance.getNodes(), position, type);
+      if (absorbedDrop) {
+        setNodes(absorbedDrop);
+        return;
+      }
 
       if (type === "board") {
         const boardId = `playground-board-${Date.now()}`;
@@ -186,6 +199,18 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
         return;
       }
 
+      if (type === "column") {
+        const newNode = {
+          id: `node-${Date.now()}`,
+          type: "column",
+          position,
+          data: columnNodeDefaults(),
+          style: { ...COLUMN_DEFAULT_SIZE },
+        };
+        setNodes((nds) => nds.concat(newNode));
+        return;
+      }
+
       const newNode = {
         id: `node-${Date.now()}`,
         type,
@@ -229,6 +254,19 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
   const selectedEdge = useMemo(() => edges.find((e) => e.selected), [edges]);
   const selectedNode = useMemo(() => nodes.find((n) => n.selected), [nodes]);
 
+  // Dropping a text-like node onto a column folds it into the column.
+  const handleNodeDragStop = React.useCallback(
+    (event, node) => {
+      const absorbed = absorbDraggedNode(rfInstance?.getNodes?.() ?? nodes, node);
+      if (absorbed) {
+        setNodes(absorbed);
+        return;
+      }
+      onNodeDragStop(event, node);
+    },
+    [rfInstance, nodes, setNodes, onNodeDragStop],
+  );
+
   const updateEdge = React.useCallback(
     (edgeId, updates) => {
       setEdges((eds) =>
@@ -267,6 +305,7 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
       calendar: CalendarNode,
       todo: CheckboxNode,
       table: TableNode,
+      column: ColumnNode,
     }),
     [],
   );
@@ -322,7 +361,7 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onNodeDragStop={onNodeDragStop}
+        onNodeDragStop={handleNodeDragStop}
         onMove={onMove}
         onInit={setRfInstance}
         onPaneClick={onPaneClick}

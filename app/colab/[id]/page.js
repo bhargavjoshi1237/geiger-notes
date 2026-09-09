@@ -15,6 +15,12 @@ import CommentNode from '@/components/internal/nodes/CommentNode';
 import LinkNode from '@/components/internal/nodes/LinkNode';
 import CheckboxNode from '@/components/internal/nodes/CheckboxNode';
 import TableNode from '@/components/internal/nodes/TableNode';
+import ColumnNode, {
+    absorbDraggedNode,
+    COLUMN_DEFAULT_SIZE,
+    columnNodeDefaults,
+    dropIntoColumnAtPoint,
+} from '@/components/internal/nodes/ColumnNode';
 import UserDrawer from '@/components/internal/layout/UserDrawer';
 
 export default function CollabPage({ params }) {
@@ -61,6 +67,7 @@ export default function CollabPage({ params }) {
         link: LinkNode,
         todo: CheckboxNode,
         table: TableNode,
+        column: ColumnNode,
     }), []);
 
     const edgeTypes = useMemo(() => ({
@@ -106,6 +113,56 @@ export default function CollabPage({ params }) {
                 y: event.clientY,
             });
 
+            // Drops landing on a column become column items instead of loose nodes.
+            const absorbedDrop = dropIntoColumnAtPoint(rfInstance.getNodes(), position, type);
+            if (absorbedDrop) {
+                setNodes(absorbedDrop);
+                return;
+            }
+
+            if (type === 'todo') {
+                const newNode = {
+                    id: `node-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                    type: 'todo',
+                    position,
+                    data: {
+                        title: 'To-do',
+                        items: [{ id: `todo-${Date.now()}`, text: '', checked: false }],
+                    },
+                };
+                setNodes((nds) => nds.concat(newNode));
+                return;
+            }
+
+            if (type === 'table') {
+                const newNode = {
+                    id: `node-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                    type: 'table',
+                    position,
+                    data: {
+                        columns: ['Column 1', 'Column 2'],
+                        rows: [
+                            ['', ''],
+                            ['', ''],
+                        ],
+                    },
+                };
+                setNodes((nds) => nds.concat(newNode));
+                return;
+            }
+
+            if (type === 'column') {
+                const newNode = {
+                    id: `node-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                    type: 'column',
+                    position,
+                    data: columnNodeDefaults(),
+                    style: { ...COLUMN_DEFAULT_SIZE },
+                };
+                setNodes((nds) => nds.concat(newNode));
+                return;
+            }
+
             const newNode = {
                 id: `node-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
                 type,
@@ -141,6 +198,16 @@ export default function CollabPage({ params }) {
         }
         lastPaneClick.current = currentTime;
     }, [settings.doubleClickToInsert, rfInstance, setNodes, role]);
+
+    // Dropping a text-like node onto a column folds it into the column.
+    const handleNodeDragStop = React.useCallback((event, node) => {
+        const absorbed = absorbDraggedNode(rfInstance?.getNodes?.() ?? nodes, node);
+        if (absorbed) {
+            setNodes(absorbed);
+            return;
+        }
+        onNodeDragStop(event, node);
+    }, [rfInstance, nodes, setNodes, onNodeDragStop]);
 
     return (
         <div className={`flex flex-col h-screen w-screen overflow-hidden ${shellBgClass} text-foreground`}>
@@ -189,7 +256,7 @@ export default function CollabPage({ params }) {
                             onEdgesChange={onEdgesChange}
                             onConnect={onConnect}
                             onSelectionChange={onSelectionChange}
-                            onNodeDragStop={onNodeDragStop}
+                            onNodeDragStop={handleNodeDragStop}
                             onEdgeUpdate={onEdgeUpdate}
                             onEdgeUpdateEnd={onEdgeUpdateEnd}
                             onInit={setRfInstance}
