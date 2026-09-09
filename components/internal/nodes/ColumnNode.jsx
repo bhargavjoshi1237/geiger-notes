@@ -233,18 +233,22 @@ const ColumnCard = ({ item, onChange, onToggle, onRemove }) => {
       {isComment ? (
         <CommentCardBody item={item} onChange={onChange} />
       ) : (
-        <div className="flex w-full items-start gap-2.5 p-4">
+        <div
+          className={`flex w-full gap-2.5 ${
+            item.kind === "todo" ? "items-center p-6" : "items-start p-4"
+          }`}
+        >
           {item.kind === "todo" && (
             <button
               type="button"
               onClick={() => onToggle(item.id)}
               title={item.checked ? "Mark as not done" : "Mark as done"}
               className={`
-                nodrag mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors
+                nodrag flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm border-2 transition-colors
                 ${
                   item.checked
                     ? "border-emerald-500 bg-emerald-500 text-black"
-                    : "border-muted-foreground/40 text-transparent hover:border-muted-foreground"
+                    : "border-foreground/70 text-transparent hover:border-foreground"
                 }
               `}
             >
@@ -269,6 +273,7 @@ const ColumnCard = ({ item, onChange, onToggle, onRemove }) => {
                 placeholder={KIND_PLACEHOLDER[item.kind] ?? KIND_PLACEHOLDER.text}
                 className={`
                   w-full resize-none whitespace-pre-wrap bg-transparent font-sans outline-none placeholder:text-muted-foreground
+                  ${item.kind === "todo" ? "text-sm" : ""}
                   ${item.checked ? "text-muted-foreground line-through" : "text-foreground"}
                 `}
                 data-gramm="false"

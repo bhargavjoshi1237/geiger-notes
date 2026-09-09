@@ -6,7 +6,7 @@ import {
   useReactFlow,
   useConnection,
 } from "@xyflow/react";
-import { ArrowRight, Check, Plus, X } from "lucide-react";
+import { ArrowRight, Check, X } from "lucide-react";
 import Reactions from "../ui/Reactions";
 import ResizeHandle from "@/components/ui/ResizeHandle";
 import TextEditingTrait from "./traits/TextEditingTrait";
@@ -26,11 +26,10 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
     requestAnimationFrame(() => setIsVisible(true));
   }, []);
 
-  const title = data?.title ?? "To-do";
   const items =
     Array.isArray(data?.items) && data.items.length > 0
       ? data.items
-      : [{ id: "todo-default", text: "New task", checked: false }];
+      : [{ id: "todo-default", text: "", checked: false }];
 
   const updateData = (updater) => {
     setNodes((nodes) =>
@@ -38,11 +37,6 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
         n.id === id ? { ...n, data: { ...n.data, ...updater(n.data) } } : n,
       ),
     );
-  };
-
-  const handleTitleChange = (e) => {
-    const value = e.target.value;
-    updateData(() => ({ title: value }));
   };
 
   const handleToggle = (itemId) => {
@@ -100,8 +94,6 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
       }),
     );
   };
-
-  const completed = items.filter((it) => it.checked).length;
 
   return (
     <>
@@ -166,44 +158,30 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-2 border-b border-border/50">
-          <TextEditingTrait className="flex-1">
-            <input
-              type="text"
-              value={title}
-              onChange={handleTitleChange}
-              placeholder="Untitled list"
-              className="w-full bg-transparent text-foreground text-sm font-semibold focus:outline-none placeholder:text-muted-foreground"
-            />
-          </TextEditingTrait>
-          <span className="shrink-0 text-[11px] text-muted-foreground tabular-nums">
-            {completed}/{items.length}
-          </span>
-        </div>
-
-        <div className="flex-1 flex flex-col py-1 overflow-y-auto">
+        <div className="flex flex-col gap-3 p-6">
           {items.map((item) => (
             <div
               key={item.id}
-              className="flex items-center gap-2.5 px-4 py-1.5 group/item"
+              className="group/item flex items-center gap-2.5"
             >
               <button
                 type="button"
                 onClick={() => handleToggle(item.id)}
+                title={item.checked ? "Mark as not done" : "Mark as done"}
                 className={`
-                  nodrag shrink-0 w-[18px] h-[18px] rounded-[5px] border flex items-center justify-center transition-colors
+                  nodrag flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm border-2 transition-colors
                   ${
                     item.checked
-                      ? "bg-emerald-500 border-emerald-500 text-black"
-                      : "border-muted-foreground/40 text-transparent hover:border-muted-foreground"
+                      ? "border-emerald-500 bg-emerald-500 text-black"
+                      : "border-foreground/70 text-transparent hover:border-foreground"
                   }
                 `}
               >
-                <Check className="w-3 h-3" strokeWidth={3} />
+                <Check className="h-3 w-3" strokeWidth={3} />
               </button>
 
               <TextEditingTrait
-                className="flex-1"
+                className="min-w-0 flex-1"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleAddItem();
                 }}
@@ -223,23 +201,14 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
               <button
                 type="button"
                 onClick={() => handleRemoveItem(item.id)}
-                className="nodrag shrink-0 text-muted-foreground hover:text-red-400 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                className="nodrag shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-red-400 group-hover/item:opacity-100"
                 title="Remove"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="h-3.5 w-3.5" />
               </button>
             </div>
           ))}
         </div>
-
-        <button
-          type="button"
-          onClick={handleAddItem}
-          className="nodrag flex items-center gap-1.5 px-4 py-2 text-xs text-muted-foreground hover:text-foreground border-t border-border/50 transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Add item
-        </button>
 
         <Reactions
           reactions={data.reactions}

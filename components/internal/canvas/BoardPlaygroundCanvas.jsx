@@ -174,7 +174,6 @@ export default function BoardPlaygroundCanvas({ className = "" }) {
           type: "todo",
           position,
           data: {
-            title: "To-do",
             items: [{ id: `todo-${Date.now()}`, text: "", checked: false }],
           },
         };
