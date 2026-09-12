@@ -16,8 +16,7 @@ const CanvasSkeleton = () => {
       </div>
 
       <div className="absolute bottom-10 right-10 flex items-center gap-2 text-muted-foreground text-sm font-medium animate-pulse">
-        <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"></div>
-        Loading Canvas...
+        <LogoLoading size={96} />
       </div>
     </div>
   );
