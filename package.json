@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@geiger/orm": "github:bhargavjoshi1237/geiger-orm#master",
-    "@geiger/ui": "github:bhargavjoshi1237/geiger-ui#4c63351780f17ae1304fefc3de2a87058ca1f1f2",
+    "@geiger/ui": "github:bhargavjoshi1237/geiger-ui#7be8afc13d554a91c5c7aebbe95c21e7a7fa67ee",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-avatar": "^1.1.11",
