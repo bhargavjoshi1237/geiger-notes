@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@geiger/ui";
 import { Play, LucideDoorClosed, Copy, Check } from "lucide-react";
 
 export default function HostTab({

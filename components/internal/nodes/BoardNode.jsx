@@ -8,7 +8,7 @@ import {
 } from "@xyflow/react";
 import * as LucideIcons from "lucide-react";
 import { ArrowRight } from "lucide-react";
-import ResizeHandle from "@/components/ui/ResizeHandle";
+import { ResizeHandle } from "@geiger/ui";
 
 const BoardNode = ({ id, data, selected, dragging }) => {
   const { setNodes } = useReactFlow();

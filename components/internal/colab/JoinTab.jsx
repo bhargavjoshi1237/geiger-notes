@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@geiger/ui";
 import { LogIn, LucideLogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 

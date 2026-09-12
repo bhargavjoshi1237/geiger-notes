@@ -12,13 +12,17 @@ import {
   Calendar,
   LifeBuoy,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Badge,
+  Button,
+  Input,
+  LogoLoading,
+} from "@geiger/ui";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { LogoLoading } from "@geiger/ui";
 import { toast } from "sonner";
 import { GroupLabel } from "./SettingsPrimitives";
 

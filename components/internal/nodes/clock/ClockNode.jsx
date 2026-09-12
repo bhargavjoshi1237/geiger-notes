@@ -7,7 +7,7 @@ import {
   useConnection,
 } from "@xyflow/react";
 import { ArrowRight } from "lucide-react";
-import ResizeHandle from "@/components/ui/ResizeHandle";
+import { ResizeHandle } from "@geiger/ui";
 
 const ClockNode = ({ id, data, selected, dragging }) => {
   const { setNodes } = useReactFlow();

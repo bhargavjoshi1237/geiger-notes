@@ -1,6 +1,6 @@
 import React from "react";
 import { Send } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@geiger/ui";
 import { CachedAvatarImage } from "@/components/cached-avatar-image";
 import { getUser, getUserCached, getProfileImageUrl } from "@/lib/supabase/user";
 import TextEditingTrait from "@/components/internal/nodes/traits/TextEditingTrait";

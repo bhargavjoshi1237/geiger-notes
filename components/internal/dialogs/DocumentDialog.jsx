@@ -8,7 +8,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+  LogoLoading,
+  Toggle,
+} from "@geiger/ui";
 import {
   Bold,
   Italic,
@@ -19,8 +21,6 @@ import {
   Quote,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Toggle } from "@/components/ui/toggle";
-import { LogoLoading } from "@geiger/ui";
 
 const Toolbar = ({ editor }) => {
   if (!editor) {

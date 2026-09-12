@@ -12,11 +12,7 @@ import {
   PartyPopper,
   Flame,
 } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
 import { SidebarButton } from "../SidebarPrimitives";
 
 const defaultReactions = [

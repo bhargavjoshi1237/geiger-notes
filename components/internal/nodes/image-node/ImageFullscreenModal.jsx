@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@geiger/ui";
 import DrawingToolbar from "./DrawingToolbar";
 import { downloadImage } from "./downloadImage";
 

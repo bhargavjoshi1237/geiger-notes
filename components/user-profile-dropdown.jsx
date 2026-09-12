@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { HomeIcon, LogOut } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { CachedAvatarImage } from "@/components/cached-avatar-image";
 import {
+  Avatar,
+  AvatarFallback,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@geiger/ui";
+import { CachedAvatarImage } from "@/components/cached-avatar-image";
 import { logout } from "@/app/login/actions";
 import { clearProfileImageCache } from "@/lib/profile-image-cache";
 

@@ -1,13 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Input, Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
 
 export const COLORS = [
   "#e2e2e2",

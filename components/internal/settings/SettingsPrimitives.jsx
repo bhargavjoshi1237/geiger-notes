@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@geiger/ui";
 
 // Small uppercase group heading used to break a section into logical groups.
 export function GroupLabel({ children, className = "" }) {

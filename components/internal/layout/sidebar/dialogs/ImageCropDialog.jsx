@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { X, Check, RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@geiger/ui";
 
 export default function ImageCropDialog({ open, onOpenChange, src, onSave }) {
   const canvasRef = useRef(null);

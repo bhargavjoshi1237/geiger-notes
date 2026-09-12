@@ -9,7 +9,7 @@ import {
 import { ArrowRight } from "lucide-react";
 import Reactions from "../ui/Reactions";
 import CommentComposer, { useCommentAuthor } from "../ui/CommentComposer";
-import ResizeHandle from "@/components/ui/ResizeHandle";
+import { ResizeHandle } from "@geiger/ui";
 
 const CommentNode = ({ id, data, selected, dragging }) => {
   const { setNodes } = useReactFlow();

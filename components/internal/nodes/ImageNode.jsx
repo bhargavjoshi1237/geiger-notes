@@ -17,7 +17,7 @@ import {
   DEFAULT_TRANSFORM,
   PLACEHOLDER_SRC,
 } from "./image-node";
-import ResizeHandle from "@/components/ui/ResizeHandle";
+import { ResizeHandle } from "@geiger/ui";
 
 const ImageNode = ({ id, data, selected, dragging }) => {
   const { setNodes } = useReactFlow();

@@ -1,14 +1,14 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { History, ArrowLeft, Undo, GitMerge } from "lucide-react";
 import {
   Avatar,
   AvatarFallback,
   AvatarGroup,
   AvatarGroupCount,
   AvatarImage,
-} from "@/components/ui/avatar";
+  Button,
+  ScrollArea,
+} from "@geiger/ui";
+import { History, ArrowLeft, Undo, GitMerge } from "lucide-react";
 export default function MergeTab({
   selectedMergeSession,
   mergeSessions,

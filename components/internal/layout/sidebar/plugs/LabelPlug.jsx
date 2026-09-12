@@ -2,13 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Type } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Input, Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
 import { SidebarButton } from "../SidebarPrimitives";
 
 export const LabelPlug = ({

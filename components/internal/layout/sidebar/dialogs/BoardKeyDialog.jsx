@@ -2,15 +2,15 @@
 
 import React, { useState } from "react";
 import {
+  Button,
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+  DialogHeader,
+  DialogTitle,
+  Input,
+} from "@geiger/ui";
 import { Lock } from "lucide-react";
 
 // Prompts for a board's access key before entering a keyed board.

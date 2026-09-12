@@ -9,7 +9,7 @@ import {
 import { ArrowRight, Check, ExternalLink, Plus, X } from "lucide-react";
 import Reactions from "../ui/Reactions";
 import CommentComposer, { useCommentAuthor } from "../ui/CommentComposer";
-import ResizeHandle from "@/components/ui/ResizeHandle";
+import { ResizeHandle } from "@geiger/ui";
 import TextEditingTrait from "./traits/TextEditingTrait";
 
 // Sidebar drag types the column accepts, plus the item kind each one creates.

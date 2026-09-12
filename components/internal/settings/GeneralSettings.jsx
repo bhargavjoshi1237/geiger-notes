@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Sparkles, RotateCcw, Boxes } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@geiger/ui";
 import { GroupLabel, ToggleRow } from "./SettingsPrimitives";
 
 export default function GeneralSettings({

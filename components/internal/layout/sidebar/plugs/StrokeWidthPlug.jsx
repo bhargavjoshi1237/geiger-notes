@@ -2,12 +2,7 @@
 
 import React from "react";
 import { AlignJustify } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
+import { Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
 import { SidebarButton } from "../SidebarPrimitives";
 
 const STROKE_WIDTHS = [

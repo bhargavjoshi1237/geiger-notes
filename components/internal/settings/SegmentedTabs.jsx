@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@geiger/ui";
 import { cn } from "@/lib/utils";
 
 export function SegmentedTabs({

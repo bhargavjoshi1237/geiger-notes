@@ -11,7 +11,7 @@ import {
 import { FileText, ArrowRight } from "lucide-react";
 import DocumentDialog from "@/components/internal/dialogs/DocumentDialog";
 import Reactions from "../ui/Reactions";
-import ResizeHandle from "@/components/ui/ResizeHandle";
+import { ResizeHandle } from "@geiger/ui";
 
 const DocumentNode = ({ id, data, selected, dragging }) => {
   const { setNodes } = useReactFlow();

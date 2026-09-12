@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AvatarImage } from "@/components/ui/avatar";
+import { AvatarImage } from "@geiger/ui";
 import { getCachedProfileImageUrl } from "@/lib/profile-image-cache";
 
 export function CachedAvatarImage({ src, cacheKey, ...props }) {

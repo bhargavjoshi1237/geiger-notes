@@ -1,1 +1,1 @@
-export { default } from "@/components/ui/ResizeHandle";
+export { ResizeHandle as default } from "@geiger/ui";

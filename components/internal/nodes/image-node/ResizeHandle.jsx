@@ -1,21 +1,4 @@
-// Re-export from shared location for backward compatibility
-export { default } from "@/components/ui/ResizeHandle";
-  return (
-    <div className="absolute bottom-1 right-1 p-1">
-      <svg width="10" height="10" viewBox="0 0 10 10" className="opacity-50">
-        <path
-          d="M 6 10 L 10 6 L 10 10 Z"
-          fill="currentColor"
-          className="text-muted-foreground"
-        />
-        <path
-          d="M 2 10 L 10 2 L 10 4 L 4 10 Z"
-          fill="currentColor"
-          className="text-muted-foreground"
-        />
-      </svg>
-    </div>
-  );
-};
-
-export default ResizeHandle;
+// Re-export from shared location for backward compatibility.
+// The previous version of this file also carried a stray, unreachable copy of
+// the component body with no enclosing function -- it did not parse. Removed.
+export { ResizeHandle as default } from "@geiger/ui";

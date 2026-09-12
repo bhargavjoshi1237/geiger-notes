@@ -9,7 +9,7 @@ import {
 } from "@xyflow/react";
 import { ArrowRight } from "lucide-react";
 import Reactions from "../../ui/Reactions";
-import ResizeHandle from "@/components/ui/ResizeHandle";
+import { ResizeHandle } from "@geiger/ui";
 import DayStyle from "./styles/DayStyle";
 import MonthStyle from "./styles/MonthStyle";
 import EventsStyle from "./styles/EventsStyle";

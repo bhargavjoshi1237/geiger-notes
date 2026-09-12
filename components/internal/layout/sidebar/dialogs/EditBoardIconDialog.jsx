@@ -2,13 +2,13 @@
 
 import React, { useState } from "react";
 import {
+  Button,
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@geiger/ui";
 import * as LucideIcons from "lucide-react";
 import ColorPicker from "../../../edges/ColorePicker";
 

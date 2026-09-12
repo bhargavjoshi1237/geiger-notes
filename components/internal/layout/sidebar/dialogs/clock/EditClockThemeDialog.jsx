@@ -2,17 +2,18 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+  Switch,
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@geiger/ui";
 import ColorPicker from "../../../../edges/ColorePicker";
 import { Settings2, Clock, Monitor, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const ColorField = ({ label, value, onChange }) => (
   <div className="flex items-center justify-between py-1.5 group/color">

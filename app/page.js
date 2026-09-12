@@ -7,13 +7,13 @@ import {
   Users,
   Wifi,
 } from "lucide-react";
-import Footer from "@/components/ui/footer";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+  Footer,
+} from "@geiger/ui";
 import { Header } from "@/components/header";
 import { createClient } from "@/utils/supabase/server";
 import LandingBoardShowcase from "@/components/LandingBoardShowcase";

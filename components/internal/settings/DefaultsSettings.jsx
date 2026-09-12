@@ -6,8 +6,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Switch } from "@/components/ui/switch";
+  Switch,
+} from "@geiger/ui";
 import { Spline, MousePointer2 } from "lucide-react";
 import ColorPicker from "../edges/ColorePicker";
 import ToolbarOptions from "./ToolbarOptions";

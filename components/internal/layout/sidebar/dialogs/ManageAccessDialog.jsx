@@ -2,30 +2,29 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  Badge,
+  Button,
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
+  DialogHeader,
+  DialogTitle,
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger,
+  Input,
+  Label,
+  LogoLoading,
+  ScrollArea,
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@geiger/ui";
 import { ChevronDown, Loader2, Lock, Unlock, Users } from "lucide-react";
 import { toast } from "sonner";
 import { getUser } from "@/lib/supabase/user";
-import { LogoLoading } from "@geiger/ui";
 import {
   ACCESS_LEVEL_LABELS,
   DEFAULT_LEVEL_OPTIONS,

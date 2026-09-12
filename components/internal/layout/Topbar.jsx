@@ -18,8 +18,7 @@ import CollaborateDilouge from "./CollaborateDilouge";
 import DigitalClock from "./DigitalClock";
 import NotificationDropdown from "./NotificationDropdown";
 import AppDialog from "./AppDialog";
-import ThemeToggle from "@/components/ui/theme-toggle";
-import Logo from "@/components/ui/logo";
+import { Logo, ThemeToggle } from "@geiger/ui";
 
 export default function Topbar({
   id,

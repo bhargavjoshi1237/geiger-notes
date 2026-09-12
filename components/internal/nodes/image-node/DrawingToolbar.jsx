@@ -2,7 +2,7 @@
 
 import React from "react";
 import { X, Pencil, Eraser, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@geiger/ui";
 import { PRESET_COLORS, PRESET_SIZES } from "./constants";
 
 const DrawingToolbar = ({

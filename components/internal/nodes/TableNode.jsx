@@ -8,7 +8,7 @@ import {
 } from "@xyflow/react";
 import { ArrowRight, Plus, X } from "lucide-react";
 import Reactions from "../ui/Reactions";
-import ResizeHandle from "@/components/ui/ResizeHandle";
+import { ResizeHandle } from "@geiger/ui";
 import TextEditingTrait from "./traits/TextEditingTrait";
 
 const DEFAULT_COLUMNS = ["Column 1", "Column 2"];

@@ -2,15 +2,15 @@
 
 import React, { useState } from "react";
 import {
+  Button,
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+  Input,
+} from "@geiger/ui";
 
 export default function EditBoardNameDialog({
   open,
