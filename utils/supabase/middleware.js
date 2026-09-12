@@ -26,11 +26,37 @@ function isStaticAssetPath(pathname) {
   return /\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map|txt|xml|json|woff|woff2|ttf|otf)$/i.test(pathname)
 }
 
+// Workspace routes whose first paint is a prerendered shell. Proxy runs ahead of
+// the CDN, so calling getUser() here would put a Supabase round-trip in front of
+// every cached response. These get a local cookie-presence check instead: enough
+// to bounce a signed-out visitor to /login without leaving the edge, while the
+// browser client does the real verification and RLS enforces access per query.
+const SHELL_ROUTE = /^(?:\/notes)?\/(?:project\/[^/]+|[^/]+\/home)$/
+
+function hasAuthCookie(request) {
+  return request.cookies
+    .getAll()
+    .some(({ name }) => /^sb-.+-auth-token(\.\d+)?$/.test(name))
+}
+
+function redirectToLogin(request) {
+  const loginUrl = new URL('/login', request.nextUrl.origin)
+  const returnTo = `${request.nextUrl.pathname}${request.nextUrl.search}`
+  loginUrl.searchParams.set('next', returnTo)
+  return NextResponse.redirect(loginUrl)
+}
+
 export async function updateSession(request) {
   const pathname = normalizePathname(request.nextUrl.pathname)
 
   if (isStaticAssetPath(pathname)) {
     return NextResponse.next({ request })
+  }
+
+  if (SHELL_ROUTE.test(pathname)) {
+    return hasAuthCookie(request)
+      ? NextResponse.next({ request })
+      : redirectToLogin(request)
   }
 
   let supabaseResponse = NextResponse.next({
@@ -77,10 +103,7 @@ export async function updateSession(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const loginUrl = new URL('/login', request.nextUrl.origin)
-    const returnTo = `${request.nextUrl.pathname}${request.nextUrl.search}`
-    loginUrl.searchParams.set('next', returnTo)
-    return NextResponse.redirect(loginUrl)
+    return redirectToLogin(request)
   }
 
   return supabaseResponse
