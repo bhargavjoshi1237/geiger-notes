@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { LogoLoading } from "@geiger/ui";
 import { toast } from "sonner";
 import { GroupLabel } from "./SettingsPrimitives";
 
@@ -118,7 +119,7 @@ export default function AccountSettings() {
   if (loading)
     return (
       <div className="flex h-40 items-center justify-center">
-        <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+        <LogoLoading size={48} />
       </div>
     );
 

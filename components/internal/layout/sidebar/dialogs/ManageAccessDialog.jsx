@@ -25,6 +25,7 @@ import {
 import { ChevronDown, Loader2, Lock, Unlock, Users } from "lucide-react";
 import { toast } from "sonner";
 import { getUser } from "@/lib/supabase/user";
+import { LogoLoading } from "@geiger/ui";
 import {
   ACCESS_LEVEL_LABELS,
   DEFAULT_LEVEL_OPTIONS,
@@ -197,7 +198,7 @@ export default function ManageAccessDialog({
 
         {loading ? (
           <div className="flex items-center justify-center py-12 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <LogoLoading size={48} />
           </div>
         ) : !canManage ? (
           <div className="rounded-lg border border-border bg-surface-card p-4 text-sm text-muted-foreground">
