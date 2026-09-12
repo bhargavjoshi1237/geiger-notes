@@ -32,10 +32,6 @@ export default function ProjectWorkspacePage() {
   useEffect(() => {
     let active = true;
 
-    // getClaims() verifies the JWT locally against the cached signing key, so
-    // the id we scope the canvas by usually costs no network round-trip at all;
-    // it only falls back to the auth server for legacy symmetric-secret tokens.
-    // RLS is what actually enforces access, so a locally-read id is safe here.
     const resolveUserId = async () => {
       const supabase = createClient();
 
@@ -43,7 +39,6 @@ export default function ProjectWorkspacePage() {
         const { data } = await supabase.auth.getClaims();
         if (data?.claims?.sub) return data.claims.sub;
       } catch {
-        // fall through to the auth server
       }
 
       try {
@@ -56,10 +51,6 @@ export default function ProjectWorkspacePage() {
 
     resolveUserId().then((id) => {
       if (!active) return;
-
-      // The proxy only checks that an auth cookie exists, so an expired session
-      // still reaches this shell. Nothing here can recover it — send them to log
-      // in rather than leaving the loading frame up forever.
       if (!id) {
         const returnTo = `${window.location.pathname}${window.location.search}`;
         router.replace(`/login?next=${encodeURIComponent(returnTo)}`);
