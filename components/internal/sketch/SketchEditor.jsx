@@ -13,6 +13,10 @@ import { invalidateSketchCache } from "./preview-context";
 import LinkPickerDialog from "./LinkPickerDialog";
 import { backdropFileId, loadBackdropImage } from "./backdrop";
 import { describeSkipped } from "@/lib/sketch/to-board-nodes";
+import { reconcileElements } from "@/lib/sketch/reconcile";
+import { useSketchPresence } from "@/lib/sketch/useSketchPresence";
+import CollaboratorStack from "./CollaboratorStack";
+import { createClient } from "@/utils/supabase/client";
 
 // Lazy-load Excalidraw (browser-only, no SSR) so the board bundle never pays
 // for it; the CSS import above only executes inside this lazily-loaded surface.
@@ -37,7 +41,16 @@ const ExcalidrawFooter = nextDynamic(
 // Autosave debounce in ms — saves 2.5s after the last change.
 const SAVE_DEBOUNCE_MS = 2500;
 
-function SaveStatus({ status }) {
+function SaveStatus({ status, live }) {
+  // While someone else holds the write, "Unsaved changes" would be a lie — the
+  // scene is converging live and every client still flushes on unmount.
+  if (live)
+    return (
+      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+        Live
+      </span>
+    );
   if (status === "saving")
     return (
       <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -99,6 +112,11 @@ export default function SketchEditor({
 
   const excalidrawApiRef = useRef(null);
   const backdropSeededRef = useRef(false);
+  // Broadcasts that arrive before the row finishes loading are queued, not
+  // dropped — otherwise a join mid-stroke loses whatever landed first.
+  const pendingRemoteRef = useRef([]);
+  const loadedRef = useRef(false);
+  const [me, setMe] = useState(null);
 
   const saveTimer = useRef(null);
   // Latest canvas state in refs so the debounced callback always has fresh data.
@@ -112,6 +130,29 @@ export default function SketchEditor({
   }, [saveStatus]);
 
   const base = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+  useEffect(() => {
+    let active = true;
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => {
+        const user = data?.user;
+        if (!active || !user) return;
+        setMe({
+          id: user.id,
+          name:
+            user.user_metadata?.full_name ||
+            user.user_metadata?.name ||
+            user.email ||
+            "Guest",
+          avatar: user.user_metadata?.avatar_url || null,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Load the sketch row. The parent keys this component by sketchId, so the
   // initial loading state covers each open and the effect only resolves it.
@@ -129,6 +170,7 @@ export default function SketchEditor({
         elementsRef.current = parseField(row.elements, []);
         appStateRef.current = parseField(row.app_state, {});
         filesRef.current = parseField(row.files, {});
+        loadedRef.current = true;
         setLoading(false);
       })
       .catch((err) => {
@@ -142,6 +184,48 @@ export default function SketchEditor({
       active = false;
     };
   }, [sketchId, base]);
+
+  // Remote elements converge by Excalidraw's own version/nonce ordering. The
+  // API is not mounted (or the row not loaded) at join time, so queue until it
+  // is and drain in order.
+  const applyRemoteElements = useCallback((incoming) => {
+    const api = excalidrawApiRef.current;
+    if (!api || !loadedRef.current) {
+      pendingRemoteRef.current.push(incoming);
+      return;
+    }
+    const merged = reconcileElements(api.getSceneElements(), incoming);
+    api.updateScene({ elements: merged });
+    elementsRef.current = merged;
+  }, []);
+
+  // After a dropped connection the local scene may have drifted, so take the
+  // row as the base again and reconcile what is live on top of it.
+  const reloadAndReconcile = useCallback(() => {
+    fetch(`${base}/api/sketches?id=${sketchId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((row) => {
+        const api = excalidrawApiRef.current;
+        if (!row || !api) return;
+        const merged = reconcileElements(
+          parseField(row.elements, []),
+          api.getSceneElements()
+        );
+        api.updateScene({ elements: merged });
+        elementsRef.current = merged;
+      })
+      .catch((err) => console.error("[Sketch] Reconnect reload error:", err));
+  }, [sketchId, base]);
+
+  const collaborationEnabled = Boolean(projectId);
+  const { collaborators, connected, isWriter, broadcastPointer, broadcastElements } =
+    useSketchPresence({
+      sketchId,
+      enabled: collaborationEnabled && !loading && !loadError,
+      me,
+      onRemoteElements: applyRemoteElements,
+      onReconnect: reloadAndReconcile,
+    });
 
   const persist = useCallback(
     async (elements, appState, files) => {
@@ -164,10 +248,23 @@ export default function SketchEditor({
   );
 
   const persistRef = useRef(persist);
+  const isWriterRef = useRef(true);
+  const canEditRef = useRef(canEdit);
+  const broadcastPointerRef = useRef(null);
+  const broadcastElementsRef = useRef(null);
 
   useEffect(() => {
     persistRef.current = persist;
   }, [persist]);
+
+  // handleChange/handlePointerUpdate are handed to Excalidraw once, so the
+  // live collaboration values reach them through refs.
+  useEffect(() => {
+    canEditRef.current = canEdit;
+    isWriterRef.current = isWriter && canEdit;
+    broadcastPointerRef.current = broadcastPointer;
+    broadcastElementsRef.current = broadcastElements;
+  }, [isWriter, canEdit, broadcastPointer, broadcastElements]);
 
   // Debounced autosave.
   const handleChange = useCallback((elements, appState, files) => {
@@ -195,10 +292,26 @@ export default function SketchEditor({
         : { id: single?.id ?? null, link: single?.link ?? null }
     );
 
+    // Watching is allowed; editing is not — a view-only member broadcasts no
+    // element changes.
+    if (canEditRef.current) broadcastElementsRef.current?.(elements);
+
     clearTimeout(saveTimer.current);
+    // Only one client writes while a room exists; everyone still flushes on
+    // unmount, so a dying writer tab is not a lost drawing.
+    if (!isWriterRef.current) return;
     saveTimer.current = setTimeout(() => {
       persistRef.current(elements, appState, files);
     }, SAVE_DEBOUNCE_MS);
+  }, []);
+
+  const handlePointerUpdate = useCallback(({ pointer }) => {
+    if (!pointer) return;
+    broadcastPointerRef.current?.(
+      pointer.x,
+      pointer.y,
+      appStateRef.current?.selectedElementIds || {}
+    );
   }, []);
 
   // Manual save.
@@ -383,6 +496,28 @@ export default function SketchEditor({
     }
   };
 
+  // Excalidraw renders remote cursors, labels and selection highlights from
+  // this map, so none of that is built here.
+  useEffect(() => {
+    const api = excalidrawApiRef.current;
+    if (!api || !collaborationEnabled) return;
+    api.updateScene({
+      collaborators: new Map(
+        collaborators
+          .filter((person) => person.pointer)
+          .map((person) => [
+            person.userId,
+            {
+              username: person.name,
+              pointer: person.pointer,
+              selectedElementIds: person.selectedElementIds,
+              color: { background: person.color, stroke: person.color },
+            },
+          ])
+      ),
+    });
+  }, [collaborators, collaborationEnabled]);
+
   // Same-origin links navigate in-app; anything else falls through to
   // Excalidraw's default new-tab behaviour.
   const handleLinkOpen = useCallback(
@@ -564,7 +699,8 @@ export default function SketchEditor({
         <div className="flex-1" />
 
         <div className="flex shrink-0 items-center gap-3">
-          <SaveStatus status={saveStatus} />
+          {connected && <CollaboratorStack collaborators={collaborators} />}
+          <SaveStatus status={saveStatus} live={connected && !isWriter} />
           {canEdit && (
             <button
               onClick={handleManualSave}
@@ -585,7 +721,13 @@ export default function SketchEditor({
           onLinkOpen={handleLinkOpen}
           excalidrawAPI={(api) => {
             excalidrawApiRef.current = api;
+            const queued = pendingRemoteRef.current;
+            if (queued.length) {
+              pendingRemoteRef.current = [];
+              for (const batch of queued) applyRemoteElements(batch);
+            }
           }}
+          onPointerUpdate={collaborationEnabled ? handlePointerUpdate : undefined}
           viewModeEnabled={!canEdit}
         >
           {canEdit && (

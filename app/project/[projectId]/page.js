@@ -16,6 +16,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import WorkspaceShell from "@/components/internal/canvas/WorkspaceShell";
 import { useProject } from "@/context/project-context";
 import { createClient } from "@/utils/supabase/client";
+import { canEditProjectSketch } from "@/lib/supabase/sketch-access";
 
 const BoardCanvas = nextDynamic(
   () => import("@/components/internal/canvas/BoardCanvas"),
@@ -47,6 +48,8 @@ export default function ProjectWorkspacePage() {
   const activeBoardId = searchParams.get("board");
   const [userId, setUserId] = useState(null);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
+  // Advisory: a sketches.view-only member gets the editor in view mode.
+  const [canEditSketch, setCanEditSketch] = useState(true);
 
   const setBoardParam = useCallback(
     (boardId) => {
@@ -120,6 +123,17 @@ export default function ProjectWorkspacePage() {
     };
   }, [router]);
 
+  useEffect(() => {
+    if (!sketchId || !project?.id) return;
+    let active = true;
+    canEditProjectSketch(project.id).then((allowed) => {
+      if (active) setCanEditSketch(allowed);
+    });
+    return () => {
+      active = false;
+    };
+  }, [sketchId, project?.id]);
+
   const onBreadcrumbClick = (boardId) => {
     if (boardId === null) {
       setBreadcrumbs([]);
@@ -159,7 +173,7 @@ export default function ProjectWorkspacePage() {
         key={sketchId}
         sketchId={sketchId}
         projectId={project.id}
-        canEdit
+        canEdit={canEditSketch}
         onBack={closeSketch}
       />
     );
