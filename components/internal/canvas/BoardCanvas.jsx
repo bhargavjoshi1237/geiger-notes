@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   ReactFlow,
   Background,
@@ -22,6 +23,8 @@ import CommentNode from "@/components/internal/nodes/CommentNode";
 import LinkNode from "@/components/internal/nodes/LinkNode";
 import BoardNode from "@/components/internal/nodes/BoardNode";
 import DocumentNode from "@/components/internal/nodes/DocumentNode";
+import SketchNode from "@/components/internal/nodes/SketchNode";
+import { SketchPreviewProvider } from "@/components/internal/sketch/preview-context";
 import ImageNode from "@/components/internal/nodes/ImageNode";
 import FileNode from "@/components/internal/nodes/FileNode";
 import ClockNode from "@/components/internal/nodes/clock/ClockNode";
@@ -45,6 +48,7 @@ export default function BoardCanvas({
   onNavigate,
   breadcrumbs,
   onBreadcrumbClick,
+  onBoardNameResolved,
 }) {
   const { theme } = useTheme();
 
@@ -76,6 +80,7 @@ export default function BoardCanvas({
     isInitialized,
     isLoading,
     isSyncing,
+    boardName,
     panOnDrag,
     selectionOnDrag,
     panOnScroll,
@@ -127,6 +132,27 @@ export default function BoardCanvas({
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const lastPaneClick = React.useRef(0);
   const toggleSidebar = React.useCallback(() => setSidebarOpen((v) => !v), []);
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Report the resolved board name up so a cold ?board=<id> load can show a
+  // single-level breadcrumb without a second fetch.
+  React.useEffect(() => {
+    if (boardId && boardName) onBoardNameResolved?.(boardId, boardName);
+  }, [boardId, boardName, onBoardNameResolved]);
+
+  // Keep the rest of the query string (notably ?board=) so closing the editor
+  // returns to the board the sketch was opened from.
+  const openSketch = React.useCallback(
+    (sketchId) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("sketch", sketchId);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [router, pathname, searchParams]
+  );
 
   const onDragOver = React.useCallback((event) => {
     event.preventDefault();
@@ -216,6 +242,38 @@ export default function BoardCanvas({
         } catch (err) {
           console.error(err);
           toast.error("Failed to create document");
+        }
+        return;
+      }
+
+      if (type === "sketch") {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/api/sketches`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: "Untitled Sketch",
+                ...(projectId ? { projectId } : {}),
+              }),
+            },
+          );
+
+          if (!response.ok) throw new Error("Failed to create sketch");
+          const sketchData = await response.json();
+
+          const newNode = {
+            id: `node-${Date.now()}`,
+            type: "sketch",
+            position,
+            data: { label: "Untitled Sketch", sketchId: sketchData.id },
+            style: { width: 320, height: 240 },
+          };
+          setNodes((nds) => nds.concat(newNode));
+        } catch (err) {
+          console.error(err);
+          toast.error("Failed to create sketch");
         }
         return;
       }
@@ -401,6 +459,7 @@ export default function BoardCanvas({
       link: LinkNode,
       board: BoardNode,
       document: DocumentNode,
+      sketch: SketchNode,
       image: ImageNode,
       file: FileNode,
       clock: ClockNode,
@@ -506,6 +565,7 @@ export default function BoardCanvas({
           !isInitialized || isLoading ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
       >
+        <SketchPreviewProvider nodes={nodes} onOpenSketch={openSketch}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -551,6 +611,7 @@ export default function BoardCanvas({
             />
           )}
         </ReactFlow>
+        </SketchPreviewProvider>
       </div>
 
       <div className="absolute top-0 left-0 right-0 z-40">
