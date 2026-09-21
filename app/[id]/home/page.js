@@ -11,12 +11,20 @@ const SketchEditor = nextDynamic(
     { ssr: false, loading: () => <WorkspaceShell /> }
 );
 
+const DocumentDialog = nextDynamic(
+    () => import('@/components/internal/dialogs/DocumentDialog'),
+    { ssr: false }
+);
+
 export default function Home({ params }) {
     const { id } = React.use(params);
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const sketchId = searchParams.get('sketch');
+    // A ?document=<id> link (from a sketch element) opens the document over the
+    // board it was linked from.
+    const documentId = searchParams.get('document');
     // The open sub-board lives in the URL so it survives a refresh and can be
     // linked to; the ancestor trail stays in state (a cold deep link shows one level).
     const activeBoardId = searchParams.get('board');
@@ -29,6 +37,13 @@ export default function Home({ params }) {
         else params.delete('board');
         const qs = params.toString();
         router.push(qs ? `${pathname}?${qs}` : pathname);
+    }, [router, pathname, searchParams]);
+
+    const closeDocument = useCallback(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('document');
+        const qs = params.toString();
+        router.replace(qs ? `${pathname}?${qs}` : pathname);
     }, [router, pathname, searchParams]);
 
     const closeSketch = useCallback(() => {
@@ -81,14 +96,19 @@ export default function Home({ params }) {
     }
 
     return (
-        <BoardCanvas 
-            key={activeBoardId || 'home'} // Forces unmount/remount when board changes
-            id={id}
-            boardId={activeBoardId}
-            onNavigate={handleNavigate}
-            breadcrumbs={breadcrumbs}
-            onBreadcrumbClick={onBreadcrumbClick}
-            onBoardNameResolved={handleBoardNameResolved}
-        />
+        <>
+            <BoardCanvas 
+                key={activeBoardId || 'home'} // Forces unmount/remount when board changes
+                id={id}
+                boardId={activeBoardId}
+                onNavigate={handleNavigate}
+                breadcrumbs={breadcrumbs}
+                onBreadcrumbClick={onBreadcrumbClick}
+                onBoardNameResolved={handleBoardNameResolved}
+            />
+            {documentId && (
+                <DocumentDialog isOpen onClose={closeDocument} documentId={documentId} />
+            )}
+        </>
     );
 }

@@ -4,11 +4,13 @@ import "@excalidraw/excalidraw/index.css";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import nextDynamic from "next/dynamic";
-import { ArrowLeft, Save, Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Save, Check, Link2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { LogoLoading } from "@geiger/ui";
 import { invalidateSketchCache } from "./preview-context";
+import LinkPickerDialog from "./LinkPickerDialog";
 
 // Lazy-load Excalidraw (browser-only, no SSR) so the board bundle never pays
 // for it; the CSS import above only executes inside this lazily-loaded surface.
@@ -22,6 +24,12 @@ const ExcalidrawComponent = nextDynamic(
       </div>
     ),
   }
+);
+
+// Excalidraw's own UI slot, pulled from the same lazily-loaded chunk.
+const ExcalidrawFooter = nextDynamic(
+  async () => (await import("@excalidraw/excalidraw")).Footer,
+  { ssr: false }
 );
 
 // Autosave debounce in ms — saves 2.5s after the last change.
@@ -63,6 +71,7 @@ function parseField(field, fallback) {
 }
 
 export default function SketchEditor({ sketchId, projectId, canEdit = true, onBack }) {
+  const router = useRouter();
   const { resolvedTheme } = useTheme();
   const colorMode = resolvedTheme === "dark" ? "dark" : "light";
   const [saveStatus, setSaveStatus] = useState("saved");
@@ -71,6 +80,12 @@ export default function SketchEditor({ sketchId, projectId, canEdit = true, onBa
   const [loadError, setLoadError] = useState(false);
   const [sketchName, setSketchName] = useState("Untitled Sketch");
   const [editingName, setEditingName] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  // The single selected element, tracked for the link action. Null whenever the
+  // selection is empty or covers more than one element.
+  const [selection, setSelection] = useState({ id: null, link: null });
+
+  const excalidrawApiRef = useRef(null);
 
   const saveTimer = useRef(null);
   // Latest canvas state in refs so the debounced callback always has fresh data.
@@ -147,6 +162,19 @@ export default function SketchEditor({ sketchId, projectId, canEdit = true, onBa
     appStateRef.current = appState;
     filesRef.current = files;
     setSaveStatus("unsaved");
+
+    const selectedIds = Object.keys(appState?.selectedElementIds || {}).filter(
+      (key) => appState.selectedElementIds[key]
+    );
+    const single =
+      selectedIds.length === 1
+        ? elements.find((el) => el.id === selectedIds[0] && !el.isDeleted)
+        : null;
+    setSelection((prev) =>
+      prev.id === (single?.id ?? null) && prev.link === (single?.link ?? null)
+        ? prev
+        : { id: single?.id ?? null, link: single?.link ?? null }
+    );
 
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
@@ -235,6 +263,50 @@ export default function SketchEditor({ sketchId, projectId, canEdit = true, onBa
     }
   };
 
+  // Same-origin links navigate in-app; anything else falls through to
+  // Excalidraw's default new-tab behaviour.
+  const handleLinkOpen = useCallback(
+    (element, event) => {
+      const url = element?.link;
+      if (!url) return;
+      let target;
+      try {
+        target = new URL(url, window.location.origin);
+      } catch {
+        return;
+      }
+      if (target.origin !== window.location.origin) return;
+
+      // Excalidraw checks the synthetic and the native event separately;
+      // missing either opens a stray tab alongside the in-app navigation.
+      event.preventDefault();
+      event.detail?.nativeEvent?.preventDefault();
+      router.push(target.pathname + target.search);
+    },
+    [router]
+  );
+
+  const setSelectedElementLink = useCallback(
+    (url) => {
+      const api = excalidrawApiRef.current;
+      if (!api || !selection.id) return;
+      // Bumping version keeps the element ordered correctly against realtime
+      // reconciliation and costs nothing now.
+      api.updateScene({
+        elements: api
+          .getSceneElements()
+          .map((el) =>
+            el.id === selection.id
+              ? { ...el, link: url, version: (el.version ?? 0) + 1 }
+              : el
+          ),
+      });
+      setSelection((prev) => ({ ...prev, link: url }));
+      setLinkDialogOpen(false);
+    },
+    [selection.id]
+  );
+
   const handleBack = useCallback(() => {
     clearTimeout(saveTimer.current);
     if (saveStatusRef.current === "unsaved") {
@@ -247,8 +319,6 @@ export default function SketchEditor({ sketchId, projectId, canEdit = true, onBa
     invalidateSketchCache(sketchId);
     onBack?.();
   }, [sketchId, onBack]);
-
-  void projectId;
 
   if (loading) {
     return (
@@ -342,9 +412,41 @@ export default function SketchEditor({ sketchId, projectId, canEdit = true, onBa
           initialData={initialData}
           theme={colorMode}
           onChange={handleChange}
+          onLinkOpen={handleLinkOpen}
+          excalidrawAPI={(api) => {
+            excalidrawApiRef.current = api;
+          }}
           viewModeEnabled={!canEdit}
-        />
+        >
+          {canEdit && (
+            <ExcalidrawFooter>
+              <button
+                onClick={() => setLinkDialogOpen(true)}
+                disabled={!selection.id}
+                title={
+                  selection.id
+                    ? "Link the selected shape to a board, sketch or document"
+                    : "Select a single shape to link it"
+                }
+                className="ml-2 flex items-center gap-1.5 rounded-lg border border-border bg-surface-subtle px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Link2 className="h-3 w-3" />
+                {selection.link ? "Edit link" : "Link to Notes"}
+              </button>
+            </ExcalidrawFooter>
+          )}
+        </ExcalidrawComponent>
       </div>
+
+      <LinkPickerDialog
+        open={linkDialogOpen}
+        onOpenChange={setLinkDialogOpen}
+        sketchId={sketchId}
+        projectId={projectId}
+        currentLink={selection.link}
+        onPick={(target) => setSelectedElementLink(target.url)}
+        onRemove={() => setSelectedElementLink(null)}
+      />
     </div>
   );
 }
