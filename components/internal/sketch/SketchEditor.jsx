@@ -5,13 +5,14 @@ import "@excalidraw/excalidraw/index.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import nextDynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Check, Link2 } from "lucide-react";
+import { ArrowLeft, Save, Check, Link2, Workflow } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { LogoLoading } from "@geiger/ui";
 import { invalidateSketchCache } from "./preview-context";
 import LinkPickerDialog from "./LinkPickerDialog";
 import { backdropFileId, loadBackdropImage } from "./backdrop";
+import { describeSkipped } from "@/lib/sketch/to-board-nodes";
 
 // Lazy-load Excalidraw (browser-only, no SSR) so the board bundle never pays
 // for it; the CSS import above only executes inside this lazily-loaded surface.
@@ -88,6 +89,10 @@ export default function SketchEditor({
   const [sketchName, setSketchName] = useState("Untitled Sketch");
   const [editingName, setEditingName] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [pushing, setPushing] = useState(false);
+  // Every selected element id, for the push-to-board action (the link action
+  // needs exactly one; this one takes any number).
+  const [selectedIds, setSelectedIds] = useState([]);
   // The single selected element, tracked for the link action. Null whenever the
   // selection is empty or covers more than one element.
   const [selection, setSelection] = useState({ id: null, link: null });
@@ -171,12 +176,18 @@ export default function SketchEditor({
     filesRef.current = files;
     setSaveStatus("unsaved");
 
-    const selectedIds = Object.keys(appState?.selectedElementIds || {}).filter(
+    const liveSelection = Object.keys(appState?.selectedElementIds || {}).filter(
       (key) => appState.selectedElementIds[key]
     );
+    setSelectedIds((prev) =>
+      prev.length === liveSelection.length &&
+      prev.every((id, i) => id === liveSelection[i])
+        ? prev
+        : liveSelection
+    );
     const single =
-      selectedIds.length === 1
-        ? elements.find((el) => el.id === selectedIds[0] && !el.isDeleted)
+      liveSelection.length === 1
+        ? elements.find((el) => el.id === liveSelection[0] && !el.isDeleted)
         : null;
     setSelection((prev) =>
       prev.id === (single?.id ?? null) && prev.link === (single?.link ?? null)
@@ -416,6 +427,56 @@ export default function SketchEditor({
     [selection.id]
   );
 
+  // The push is a copy, not a move: the sketch is untouched by it, and the
+  // board is appended to server-side while it is unmounted.
+  const parentBoardKnown = Boolean(sketch?.metadata?.parentScope);
+  const handlePushToBoard = useCallback(async () => {
+    if (pushing || !selectedIds.length) return;
+    setPushing(true);
+    try {
+      // The route reads the row, so land any pending edits first.
+      clearTimeout(saveTimer.current);
+      if (saveStatusRef.current === "unsaved") {
+        await persistRef.current(
+          elementsRef.current,
+          appStateRef.current,
+          filesRef.current
+        );
+      }
+
+      const res = await fetch(`${base}/api/sketches/push-to-board`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sketchId, elementIds: selectedIds }),
+      });
+      const result = await res.json().catch(() => ({}));
+
+      if (res.status === 404) {
+        toast.error("That board no longer exists");
+        return;
+      }
+      if (!res.ok) throw new Error(result.error || "Push failed");
+
+      if (!result.nodes && !result.edges) {
+        toast.error("Nothing in the selection could be converted");
+      } else {
+        toast.success(
+          `Added ${result.nodes} node${result.nodes === 1 ? "" : "s"} and ` +
+            `${result.edges} edge${result.edges === 1 ? "" : "s"} to ${result.boardName}`
+        );
+      }
+
+      // One extra toast for the whole batch, never one per skipped element.
+      const summary = describeSkipped(result.skipped ?? []);
+      if (summary) toast.info(summary);
+    } catch (err) {
+      console.error("[Sketch] Push error:", err);
+      toast.error("Couldn't push to the board");
+    } finally {
+      setPushing(false);
+    }
+  }, [pushing, selectedIds, sketchId, base]);
+
   const handleBack = useCallback(() => {
     clearTimeout(saveTimer.current);
     if (saveStatusRef.current === "unsaved") {
@@ -541,6 +602,19 @@ export default function SketchEditor({
               >
                 <Link2 className="h-3 w-3" />
                 {selection.link ? "Edit link" : "Link to Notes"}
+              </button>
+              <button
+                onClick={handlePushToBoard}
+                disabled={!selectedIds.length || !parentBoardKnown || pushing}
+                title={
+                  !parentBoardKnown
+                    ? "No host board"
+                    : "Turn the selected shapes into nodes on the host board"
+                }
+                className="ml-2 flex items-center gap-1.5 rounded-lg border border-border bg-surface-subtle px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Workflow className="h-3 w-3" />
+                {pushing ? "Pushing…" : "Push to board"}
               </button>
             </ExcalidrawFooter>
           )}

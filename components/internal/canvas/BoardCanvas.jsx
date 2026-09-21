@@ -256,6 +256,12 @@ export default function BoardCanvas({
               body: JSON.stringify({
                 name: "Untitled Sketch",
                 ...(projectId ? { projectId } : {}),
+                // Records the host board so a push lands on the right canvas;
+                // a null parentBoardId means the root/home canvas.
+                metadata: {
+                  parentBoardId: boardId ?? null,
+                  parentScope: projectId ? "project" : "personal",
+                },
               }),
             },
           );
@@ -380,7 +386,7 @@ export default function BoardCanvas({
 
       setNodes((nds) => nds.concat(newNode));
     },
-    [rfInstance, setNodes, projectId, canEdit],
+    [rfInstance, setNodes, projectId, boardId, canEdit],
   );
 
   const onPaneClick = React.useCallback(
