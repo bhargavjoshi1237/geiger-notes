@@ -3,7 +3,6 @@
 import React, { memo } from "react";
 import {
   NodeResizeControl,
-  useReactFlow,
   Handle,
   Position,
   useConnection,
@@ -11,38 +10,39 @@ import {
 import { ArrowRight } from "lucide-react";
 import {
   ImageFullscreenModal,
-  useDrawing,
   useImageModal,
   DEFAULT_CAPTION,
   DEFAULT_TRANSFORM,
   PLACEHOLDER_SRC,
 } from "./image-node";
+import { useSketchPreview } from "../sketch/preview-context";
+import { withoutBackdrop } from "../sketch/backdrop";
 import { ResizeHandle } from "@geiger/ui";
 
-const ImageNode = ({ id, data, selected, dragging }) => {
-  const { setNodes } = useReactFlow();
+const ImageNode = ({ data, selected, dragging }) => {
   const connection = useConnection();
   const isConnecting = connection.inProgress;
   const src = data.src || PLACEHOLDER_SRC;
   const alt = data.alt || "Image Node";
   const caption = data.caption || DEFAULT_CAPTION;
   const transform = data.transform || DEFAULT_TRANSFORM;
-  const isDrawing = data.isDrawing || false;
-  const drawingData = data.drawing || null;
-  const drawing = useDrawing({ id, isDrawing, drawingData, setNodes });
+
+  // The annotation rides the shared sketch preview batch; the locked photo is
+  // filtered out so it is not drawn on top of the <img> below.
+  const { status: annotationStatus, svg: annotationSvg } = useSketchPreview(
+    data.annotationSketchId,
+    withoutBackdrop,
+  );
+  const annotation = annotationStatus === "ready" ? annotationSvg : null;
 
   const {
     isFullResOpen,
     mounted,
     imgDims,
-    isSizeOpen,
-    isColorOpen,
-    setIsSizeOpen,
-    setIsColorOpen,
     handleDoubleClick,
     closeFullRes,
     handleImageLoad,
-  } = useImageModal({ isDrawing });
+  } = useImageModal();
 
   return (
     <>
@@ -82,11 +82,10 @@ const ImageNode = ({ id, data, selected, dragging }) => {
             className="w-full h-full object-fill pointer-events-none select-none"
           />
 
-          {drawingData && (
-            <img
-              src={drawingData}
-              alt="drawing"
-              className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none"
+          {annotation && (
+            <div
+              className="absolute inset-0 w-full h-full pointer-events-none select-none [&>svg]:h-full [&>svg]:w-full"
+              dangerouslySetInnerHTML={{ __html: annotation }}
             />
           )}
         </div>
@@ -146,11 +145,7 @@ const ImageNode = ({ id, data, selected, dragging }) => {
         imgDims={imgDims}
         closeFullRes={closeFullRes}
         handleImageLoad={handleImageLoad}
-        drawing={{ ...drawing, isDrawing, drawingData }}
-        isSizeOpen={isSizeOpen}
-        isColorOpen={isColorOpen}
-        setIsSizeOpen={setIsSizeOpen}
-        setIsColorOpen={setIsColorOpen}
+        annotation={annotation}
       />
     </>
   );

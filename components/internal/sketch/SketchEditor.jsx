@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { LogoLoading } from "@geiger/ui";
 import { invalidateSketchCache } from "./preview-context";
 import LinkPickerDialog from "./LinkPickerDialog";
+import { backdropFileId, loadBackdropImage } from "./backdrop";
 
 // Lazy-load Excalidraw (browser-only, no SSR) so the board bundle never pays
 // for it; the CSS import above only executes inside this lazily-loaded surface.
@@ -70,7 +71,13 @@ function parseField(field, fallback) {
   return field;
 }
 
-export default function SketchEditor({ sketchId, projectId, canEdit = true, onBack }) {
+export default function SketchEditor({
+  sketchId,
+  projectId,
+  canEdit = true,
+  onBack,
+  backdrop: backdropProp,
+}) {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const colorMode = resolvedTheme === "dark" ? "dark" : "light";
@@ -86,6 +93,7 @@ export default function SketchEditor({ sketchId, projectId, canEdit = true, onBa
   const [selection, setSelection] = useState({ id: null, link: null });
 
   const excalidrawApiRef = useRef(null);
+  const backdropSeededRef = useRef(false);
 
   const saveTimer = useRef(null);
   // Latest canvas state in refs so the debounced callback always has fresh data.
@@ -242,6 +250,107 @@ export default function SketchEditor({ sketchId, projectId, canEdit = true, onBa
     window.addEventListener("beforeunload", saveOnUnload);
     return () => window.removeEventListener("beforeunload", saveOnUnload);
   }, [sketchId, base]);
+
+  // Seed the image backdrop once, on the first open of an empty annotation
+  // sketch. After the first autosave the photo lives in the row's files and
+  // this does nothing.
+  useEffect(() => {
+    if (!sketch || !canEdit || backdropSeededRef.current) return;
+    const backdrop = backdropProp || sketch.metadata?.backdrop;
+    if (!backdrop?.url) return;
+    if (parseField(sketch.elements, []).length) return;
+
+    backdropSeededRef.current = true;
+    let cancelled = false;
+
+    (async () => {
+      const api = excalidrawApiRef.current;
+      if (!api) return;
+
+      // The photo first, then any legacy annotation on top at the same size;
+      // both locked so neither can be dragged or deleted by accident.
+      const layers = [{ url: backdrop.url, prefix: "backdrop" }];
+      if (sketch.metadata?.legacyDrawing) {
+        layers.push({ url: sketch.metadata.legacyDrawing, prefix: "legacy" });
+      }
+
+      const loaded = [];
+      for (const layer of layers) {
+        try {
+          const image = await loadBackdropImage(layer.url);
+          loaded.push({ ...image, id: backdropFileId(layer.url, layer.prefix) });
+        } catch (err) {
+          console.error("[Sketch] Backdrop load error:", err);
+          // The photo failing is worth saying; a legacy layer failing is not
+          // worth a toast — data.drawing on the node stays the original copy.
+          if (layer.prefix === "backdrop") {
+            toast.error("Couldn't load the image into the annotation");
+            return;
+          }
+        }
+      }
+      if (cancelled || !loaded.length) return;
+
+      const { width, height } = loaded[0];
+      api.addFiles(
+        loaded.map((image) => ({
+          id: image.id,
+          dataURL: image.dataURL,
+          mimeType: image.mimeType,
+          created: Date.now(),
+        }))
+      );
+      api.updateScene({
+        elements: loaded.map((image, index) => ({
+          type: "image",
+          id: image.id,
+          fileId: image.id,
+          x: 0,
+          y: 0,
+          width,
+          height,
+          angle: 0,
+          locked: true,
+          seed: Math.floor(Math.random() * 2 ** 31),
+          version: 1,
+          versionNonce: Math.floor(Math.random() * 2 ** 31),
+          index: `a${index}`,
+          strokeColor: "transparent",
+          backgroundColor: "transparent",
+          fillStyle: "solid",
+          strokeWidth: 1,
+          strokeStyle: "solid",
+          roughness: 0,
+          opacity: 100,
+          groupIds: [],
+          frameId: null,
+          roundness: null,
+          boundElements: [],
+          updated: Date.now(),
+          link: null,
+          isDeleted: false,
+          status: "saved",
+          scale: [1, 1],
+        })),
+      });
+      api.scrollToContent(undefined, { fitToContent: true });
+
+      // The photo is in the scene's files now; drop the duplicate copy of the
+      // legacy dataURL from metadata so it isn't stored twice.
+      if (sketch.metadata?.legacyDrawing) {
+        const { legacyDrawing: _dropped, ...rest } = sketch.metadata;
+        fetch(`${base}/api/sketches`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: sketchId, metadata: rest }),
+        }).catch(() => {});
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sketch, canEdit, backdropProp, sketchId, base]);
 
   // Inline rename.
   const handleNameSave = async () => {

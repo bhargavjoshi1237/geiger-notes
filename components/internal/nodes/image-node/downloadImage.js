@@ -1,4 +1,7 @@
-export function downloadImage({ src, drawingData, transform }) {
+// Composite the photo with its annotation and hand the user a PNG. The
+// annotation arrives as rendered SVG markup (the sketch preview), which is
+// rasterized through a blob URL before it is drawn over the photo.
+export function downloadImage({ src, annotation, transform }) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const img = new Image();
@@ -21,16 +24,25 @@ export function downloadImage({ src, drawingData, transform }) {
       link.click();
     };
 
-    if (drawingData) {
-      const drawImg = new Image();
-      drawImg.onload = () => {
-        ctx.drawImage(drawImg, 0, 0, canvas.width, canvas.height);
-        triggerDownload();
-      };
-      drawImg.src = drawingData;
-    } else {
+    if (!annotation) {
       triggerDownload();
+      return;
     }
+
+    const url = URL.createObjectURL(
+      new Blob([annotation], { type: "image/svg+xml;charset=utf-8" }),
+    );
+    const overlay = new Image();
+    overlay.onload = () => {
+      ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      triggerDownload();
+    };
+    overlay.onerror = () => {
+      URL.revokeObjectURL(url);
+      triggerDownload();
+    };
+    overlay.src = url;
   };
 
   img.src = src;

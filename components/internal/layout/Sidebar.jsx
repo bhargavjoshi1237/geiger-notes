@@ -98,6 +98,7 @@ export default function Sidebar({
             selectedNode={nodeToRender}
             onUpdateNode={onUpdateNode}
             onBack={onDeselectNode}
+            projectId={projectId}
           />
         )}
       </div>

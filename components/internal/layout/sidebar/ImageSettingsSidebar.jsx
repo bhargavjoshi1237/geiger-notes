@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Type,
   Crop,
@@ -18,15 +19,21 @@ import ImageCropDialog from "./dialogs/ImageCropDialog";
 import ImageChangeDialog from "./dialogs/ImageChangeDialog";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
+import { PLACEHOLDER_SRC } from "@/components/internal/nodes/image-node";
 
 export default function ImageSettingsSidebar({
   selectedNode,
   onUpdateNode,
   onBack,
+  projectId,
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isCaptionDialogOpen, setIsCaptionDialogOpen] = useState(false);
   const [isCropDialogOpen, setIsCropDialogOpen] = useState(false);
   const [isChangeDialogOpen, setIsChangeDialogOpen] = useState(false);
+  const [isAnnotating, setIsAnnotating] = useState(false);
 
   if (!selectedNode || selectedNode.type !== "image") return null;
 
@@ -73,10 +80,54 @@ export default function ImageSettingsSidebar({
     }
   };
 
-  const toggleDrawing = () => {
-    const isDrawing = selectedNode.data.isDrawing || false;
-    updateData({ isDrawing: !isDrawing });
-    toast.info(isDrawing ? "Drawing mode disabled" : "Drawing mode enabled");
+  // Annotating opens the shared sketch editor with the photo as a locked
+  // backdrop; the marks live in notes.sketches so they stay editable.
+  const openAnnotation = async () => {
+    if (isAnnotating) return;
+    const openSketch = (id) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("sketch", id);
+      router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const existing = selectedNode.data.annotationSketchId;
+    if (existing) {
+      openSketch(existing);
+      return;
+    }
+
+    setIsAnnotating(true);
+    try {
+      const label = selectedNode.data.caption?.text || selectedNode.data.label || "Image";
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/api/sketches`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: `${label} — annotation`,
+            ...(projectId ? { projectId } : {}),
+            metadata: {
+              backdrop: { url: selectedNode.data.src || PLACEHOLDER_SRC },
+              // Preserved so existing strokes come back as a locked layer.
+              ...(selectedNode.data.drawing
+                ? { legacyDrawing: selectedNode.data.drawing }
+                : {}),
+            },
+          }),
+        },
+      );
+
+      if (!response.ok) throw new Error("Failed to create annotation");
+      const sketch = await response.json();
+      updateData({ annotationSketchId: sketch.id });
+      openSketch(sketch.id);
+    } catch (error) {
+      console.error("Annotate error:", error);
+      toast.error("Failed to open the annotation");
+    } finally {
+      setIsAnnotating(false);
+    }
   };
 
   const handleCropSave = (croppedDataUrl) => {
@@ -187,7 +238,7 @@ export default function ImageSettingsSidebar({
     }
   };
 
-  const imageSrc = selectedNode.data.src || "https://placehold.co/600x400";
+  const imageSrc = selectedNode.data.src || PLACEHOLDER_SRC;
 
   return (
     <>
@@ -236,9 +287,8 @@ export default function ImageSettingsSidebar({
 
           <ActionPlug
             icon={Pencil}
-            label="Draw"
-            active={selectedNode.data.isDrawing}
-            onClick={toggleDrawing}
+            label="Annotate"
+            onClick={openAnnotation}
           />
         </SidebarSection>
       </SidebarShell>

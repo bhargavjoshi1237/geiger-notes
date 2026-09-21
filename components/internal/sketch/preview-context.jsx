@@ -30,6 +30,7 @@ const svgCache = new Map();
 export function invalidateSketchCache(id) {
   if (!id) return;
   svgCache.delete(id);
+  svgCache.delete(`${id}:filtered`);
 }
 
 function parseElements(value) {
@@ -63,11 +64,15 @@ export function SketchPreviewProvider({ nodes = [], onOpenSketch = null, childre
   const [pendingIds, setPendingIds] = useState(() => new Set());
   const fetchedRef = useRef(new Set());
 
+  // Sketch nodes and annotated image nodes share one batch fetch, so an
+  // annotated image costs no extra request.
   const sketchIds = useMemo(() => {
     const ids = new Set();
     for (const node of nodes) {
-      const sketchId = node?.data?.sketchId;
-      if (node?.type === "sketch" && sketchId) ids.add(sketchId);
+      if (node?.type === "sketch" && node?.data?.sketchId) ids.add(node.data.sketchId);
+      if (node?.type === "image" && node?.data?.annotationSketchId) {
+        ids.add(node.data.annotationSketchId);
+      }
     }
     return [...ids];
   }, [nodes]);
@@ -103,6 +108,7 @@ export function SketchPreviewProvider({ nodes = [], onOpenSketch = null, childre
   const invalidateSketch = useCallback((id) => {
     if (!id) return;
     svgCache.delete(id);
+    svgCache.delete(`${id}:filtered`);
     fetchedRef.current.delete(id);
     setRows((prev) => {
       if (!prev.has(id)) return prev;
@@ -124,7 +130,10 @@ export function SketchPreviewProvider({ nodes = [], onOpenSketch = null, childre
   );
 }
 
-export function useSketchPreview(sketchId) {
+// filterElements drops elements from the rendered SVG without touching the
+// stored scene — image annotation uses it to leave the locked photo out of the
+// overlay so the photo is not drawn twice.
+export function useSketchPreview(sketchId, filterElements = null) {
   const { rows, pendingIds, invalidateSketch, onOpenSketch } = useContext(SketchPreviewContext);
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === "dark" ? "dark" : "light";
@@ -133,16 +142,21 @@ export function useSketchPreview(sketchId) {
 
   const row = sketchId ? rows.get(sketchId) : undefined;
   const loading = sketchId ? pendingIds.has(sketchId) : false;
-  const elements = useMemo(() => parseElements(row?.elements), [row?.elements]);
+  const allElements = useMemo(() => parseElements(row?.elements), [row?.elements]);
+  const elements = useMemo(
+    () => (filterElements ? allElements.filter(filterElements) : allElements),
+    [allElements, filterElements]
+  );
   const files = useMemo(() => parseFiles(row?.files), [row?.files]);
   const updatedAt = row?.updated_at ?? null;
+  const cacheKey = sketchId ? `${sketchId}${filterElements ? ":filtered" : ""}` : null;
 
-  const cached = sketchId ? svgCache.get(sketchId) : undefined;
+  const cached = cacheKey ? svgCache.get(cacheKey) : undefined;
   const cacheValid =
     cached && cached.updatedAt === updatedAt && cached.theme === theme;
   const renderedValid =
     rendered &&
-    rendered.sketchId === sketchId &&
+    rendered.cacheKey === cacheKey &&
     rendered.updatedAt === updatedAt &&
     rendered.theme === theme;
   const displaySvg = cacheValid ? cached.svg : renderedValid ? rendered.svg : null;
@@ -160,8 +174,8 @@ export function useSketchPreview(sketchId) {
           files,
         });
         const markup = new XMLSerializer().serializeToString(el);
-        svgCache.set(sketchId, { updatedAt, theme, svg: markup });
-        setRendered({ sketchId, updatedAt, theme, svg: markup });
+        svgCache.set(cacheKey, { updatedAt, theme, svg: markup });
+        setRendered({ cacheKey, updatedAt, theme, svg: markup });
         setFailed(false);
       } catch (err) {
         console.error("[Sketch] Preview render error:", err);
@@ -171,7 +185,7 @@ export function useSketchPreview(sketchId) {
     return () => {
       cancelled = true;
     };
-  }, [sketchId, row, elements, files, theme, updatedAt, cacheValid]);
+  }, [sketchId, cacheKey, row, elements, files, theme, updatedAt, cacheValid]);
 
   if (!sketchId || (!row && loading)) return { status: "loading", svg: null, row: null, invalidateSketch, onOpenSketch };
   if (!row) return { status: "missing", svg: null, row: null, invalidateSketch, onOpenSketch };
@@ -182,8 +196,8 @@ export function useSketchPreview(sketchId) {
   return { status: "ready", svg: displaySvg, row, invalidateSketch, onOpenSketch };
 }
 
-export function SketchPreviewSurface({ sketchId }) {
-  const { status, svg } = useSketchPreview(sketchId);
+export function SketchPreviewSurface({ sketchId, filterElements = null }) {
+  const { status, svg } = useSketchPreview(sketchId, filterElements);
 
   if (status === "loading") {
     return (

@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { createPortal } from "react-dom";
 import { X, Download } from "lucide-react";
 import { Button } from "@geiger/ui";
-import DrawingToolbar from "./DrawingToolbar";
 import { downloadImage } from "./downloadImage";
 
 const ImageFullscreenModal = ({
@@ -17,50 +16,13 @@ const ImageFullscreenModal = ({
   imgDims,
   closeFullRes,
   handleImageLoad,
-  drawing,
-  isSizeOpen,
-  isColorOpen,
-  setIsSizeOpen,
-  setIsColorOpen,
+  annotation,
 }) => {
-  const {
-    tool,
-    setTool,
-    brushSize,
-    setBrushSize,
-    brushColor,
-    setBrushColor,
-    canvasRef,
-    redrawCanvas,
-    toggleDrawing,
-    clearDrawing,
-    startDrawing,
-    draw,
-    stopDrawing,
-  } = drawing;
-
-  const isDrawing = drawing.isDrawing;
-  const drawingData = drawing.drawingData;
-
-  useEffect(() => {
-    if (isFullResOpen && canvasRef.current && drawingData) {
-      redrawCanvas(canvasRef.current, drawingData);
-    }
-  }, [isFullResOpen, drawingData, imgDims, canvasRef, redrawCanvas]);
-
-  useEffect(() => {
-    if (canvasRef.current && imgDims.w > 0 && imgDims.h > 0) {
-      canvasRef.current.width = imgDims.w;
-      canvasRef.current.height = imgDims.h;
-      if (drawingData) redrawCanvas(canvasRef.current, drawingData);
-    }
-  }, [imgDims, drawingData, canvasRef, redrawCanvas]);
-
   if (!isFullResOpen || !mounted) return null;
 
   const handleDownload = (e) => {
     e.stopPropagation();
-    downloadImage({ src, drawingData, transform });
+    downloadImage({ src, annotation, transform });
   };
 
   return createPortal(
@@ -90,22 +52,6 @@ const ImageFullscreenModal = ({
         </Button>
       </div>
 
-      <DrawingToolbar
-        isDrawing={isDrawing}
-        tool={tool}
-        brushSize={brushSize}
-        brushColor={brushColor}
-        isSizeOpen={isSizeOpen}
-        isColorOpen={isColorOpen}
-        setTool={setTool}
-        setBrushSize={setBrushSize}
-        setBrushColor={setBrushColor}
-        setIsSizeOpen={setIsSizeOpen}
-        setIsColorOpen={setIsColorOpen}
-        toggleDrawing={toggleDrawing}
-        clearDrawing={clearDrawing}
-      />
-
       <div
         className="relative shadow-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -116,7 +62,7 @@ const ImageFullscreenModal = ({
           transition: "transform 0.3s ease",
         }}
       >
-        <img src={src} className="hidden" onLoad={handleImageLoad} />
+        <img src={src} className="hidden" onLoad={handleImageLoad} alt="" />
 
         {imgDims.w > 0 && (
           <>
@@ -125,14 +71,12 @@ const ImageFullscreenModal = ({
               alt={alt}
               className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none rounded-sm"
             />
-            <canvas
-              ref={canvasRef}
-              className={`absolute inset-0 w-full h-full z-10 rounded-sm ${isDrawing ? "cursor-crosshair pointer-events-auto" : "pointer-events-none"}`}
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={stopDrawing}
-              onMouseLeave={stopDrawing}
-            />
+            {annotation && (
+              <div
+                className="absolute inset-0 w-full h-full z-10 pointer-events-none select-none [&>svg]:h-full [&>svg]:w-full"
+                dangerouslySetInnerHTML={{ __html: annotation }}
+              />
+            )}
           </>
         )}
       </div>

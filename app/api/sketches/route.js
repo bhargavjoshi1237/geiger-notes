@@ -14,7 +14,7 @@ export async function POST(request) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { name, description, projectId } = body;
+    const { name, description, projectId, metadata } = body;
 
     const payload = projectId
       ? {
@@ -30,10 +30,12 @@ export async function POST(request) {
           created_by: user.id,
         };
 
+    if (metadata && typeof metadata === "object") payload.metadata = metadata;
+
     const { data, error } = await supabase
       .from("sketches")
       .insert(payload)
-      .select("id, name")
+      .select("id, name, metadata")
       .single();
 
     if (error) {
@@ -138,17 +140,20 @@ export async function PUT(request) {
     }
 
     const body = await request.json();
-    const { id, elements, app_state, files, name } = body;
+    const { id, elements, app_state, files, name, metadata } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing ID" }, { status: 400 });
     }
 
+    // Emit a column only when its key is present, so autosave, rename and a
+    // metadata patch all share this one handler.
     const patch = {};
     if ("elements" in body) patch.elements = elements;
     if ("app_state" in body) patch.app_state = app_state;
     if ("files" in body) patch.files = files;
     if ("name" in body) patch.name = name;
+    if ("metadata" in body) patch.metadata = metadata;
 
     const { data, error } = await supabase
       .from("sketches")

@@ -1,28 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 
-export function useImageModal({ isDrawing }) {
+export function useImageModal() {
   const [isFullResOpen, setIsFullResOpen] = useState(false);
   const [imgDims, setImgDims] = useState({ w: 0, h: 0 });
-  const [isSizeOpen, setIsSizeOpen] = useState(false);
-  const [isColorOpen, setIsColorOpen] = useState(false);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const isInitialMount = useRef(true);
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    if (isDrawing) {
-      setIsFullResOpen(true);
-    }
-  }, [isDrawing]);
 
   const handleDoubleClick = useCallback((e) => {
     e.preventDefault();
@@ -33,8 +20,6 @@ export function useImageModal({ isDrawing }) {
   const closeFullRes = useCallback((e) => {
     if (e) e.stopPropagation();
     setIsFullResOpen(false);
-    setIsSizeOpen(false);
-    setIsColorOpen(false);
   }, []);
 
   const handleImageLoad = useCallback((e) => {
@@ -55,10 +40,6 @@ export function useImageModal({ isDrawing }) {
     isFullResOpen,
     mounted,
     imgDims,
-    isSizeOpen,
-    isColorOpen,
-    setIsSizeOpen,
-    setIsColorOpen,
     handleDoubleClick,
     closeFullRes,
     handleImageLoad,
