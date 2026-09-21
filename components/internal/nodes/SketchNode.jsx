@@ -1,0 +1,141 @@
+"use client";
+
+import React, { memo } from "react";
+import {
+  Handle,
+  Position,
+  NodeResizeControl,
+  useReactFlow,
+  useConnection,
+} from "@xyflow/react";
+import Reactions from "../ui/Reactions";
+import { ResizeHandle } from "@geiger/ui";
+import { SketchPreviewSurface, useSketchPreview } from "../sketch/preview-context";
+
+const SketchNode = ({ id, data, selected, dragging }) => {
+  const { setNodes } = useReactFlow();
+  const connection = useConnection();
+  const { onOpenSketch } = useSketchPreview(data.sketchId);
+  const isConnecting = connection.inProgress;
+
+  const outline = data.outline || { enabled: false };
+  const sketchId = data.sketchId;
+
+  const handleDoubleClick = React.useCallback(
+    (e) => {
+      e.stopPropagation();
+      if (!sketchId) return;
+      if (typeof onOpenSketch === "function") onOpenSketch(sketchId);
+    },
+    [sketchId, onOpenSketch]
+  );
+
+  const handleReactionClick = (emoji) => {
+    setNodes((nodes) =>
+      nodes.map((n) => {
+        if (n.id === id) {
+          const currentReactions = n.data.reactions || {};
+          const newCount = (currentReactions[emoji] || 0) + 1;
+          return {
+            ...n,
+            data: {
+              ...n.data,
+              reactions: {
+                ...currentReactions,
+                [emoji]: newCount,
+              },
+            },
+          };
+        }
+        return n;
+      })
+    );
+  };
+
+  return (
+    <div
+      onDoubleClick={handleDoubleClick}
+      className={`
+          relative flex flex-col w-full h-full min-h-[240px] min-w-[320px] group
+          transition-all duration-300 ease-out
+          bg-surface-dialog shadow-lg
+          ${selected ? "border-2 border-foreground" : "border-2 border-transparent hover:border-border"}
+          ${dragging ? "shadow-2xl shadow-black/50 z-50" : ""}
+      `}
+      style={{
+        ...(outline.enabled
+          ? {
+              borderColor: outline.color,
+            }
+          : {}),
+      }}
+    >
+      <NodeResizeControl
+        minWidth={320}
+        minHeight={240}
+        className="!bg-transparent !border-none"
+        position="bottom-right"
+        style={{ opacity: 1, pointerEvents: "all" }}
+      >
+        <div
+          className={`transition-opacity duration-200 ${selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+        >
+          <ResizeHandle />
+        </div>
+      </NodeResizeControl>
+
+      {outline.enabled && (
+        <div
+          className="flex items-center gap-2 h-5 absolute left-4 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-background shadow-sm transform -translate-y-1/2 transition-all duration-300"
+          style={{ backgroundColor: outline.color }}
+        >
+          {outline.name}
+        </div>
+      )}
+
+      <div className="flex-1 w-full min-h-0 cursor-pointer">
+        <SketchPreviewSurface sketchId={sketchId} />
+      </div>
+
+      <div className="flex w-full items-center justify-between px-4 py-2 gap-3 border-t border-border/50">
+        <span className="text-sm font-medium text-foreground truncate font-sans">
+          {data.label || "Untitled Sketch"}
+        </span>
+        <span className="text-xs text-muted-foreground truncate font-sans shrink-0">
+          Double-click to edit
+        </span>
+      </div>
+
+      <Reactions
+        reactions={data.reactions}
+        onReactionClick={handleReactionClick}
+      />
+
+      <Handle
+        type="target"
+        position={Position.Center}
+        className={`
+          !w-full !h-full !border-0 !rounded-none !bg-transparent absolute !inset-0 !transform-none
+          ${isConnecting ? "pointer-events-auto z-50" : "pointer-events-none -z-10"}
+        `}
+        style={{
+          top: 0,
+          left: 0,
+          opacity: 0,
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Left}
+        className={`
+          !w-2 !h-2 !bg-muted-foreground !border-0 
+          absolute !top-[52%] !-translate-y-[50%] !-left-[1px]
+          transition-opacity duration-200
+          ${selected ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
+        `}
+      />
+    </div>
+  );
+};
+
+export default memo(SketchNode);
