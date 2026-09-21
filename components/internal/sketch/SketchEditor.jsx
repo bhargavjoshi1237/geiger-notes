@@ -112,6 +112,9 @@ export default function SketchEditor({
 
   const excalidrawApiRef = useRef(null);
   const backdropSeededRef = useRef(false);
+  // The Excalidraw chunk mounts after the row usually loads; one-shot setup
+  // like backdrop seeding must wait for the API, not just the row.
+  const [apiReady, setApiReady] = useState(false);
   // Broadcasts that arrive before the row finishes loading are queued, not
   // dropped — otherwise a join mid-stroke loses whatever landed first.
   const pendingRemoteRef = useRef([]);
@@ -379,18 +382,17 @@ export default function SketchEditor({
   // sketch. After the first autosave the photo lives in the row's files and
   // this does nothing.
   useEffect(() => {
-    if (!sketch || !canEdit || backdropSeededRef.current) return;
+    if (!sketch || !canEdit || !apiReady || backdropSeededRef.current) return;
     const backdrop = backdropProp || sketch.metadata?.backdrop;
     if (!backdrop?.url) return;
     if (parseField(sketch.elements, []).length) return;
 
+    const api = excalidrawApiRef.current;
+    if (!api) return;
     backdropSeededRef.current = true;
     let cancelled = false;
 
     (async () => {
-      const api = excalidrawApiRef.current;
-      if (!api) return;
-
       // The photo first, then any legacy annotation on top at the same size;
       // both locked so neither can be dragged or deleted by accident.
       const layers = [{ url: backdrop.url, prefix: "backdrop" }];
@@ -474,7 +476,7 @@ export default function SketchEditor({
     return () => {
       cancelled = true;
     };
-  }, [sketch, canEdit, backdropProp, sketchId, base]);
+  }, [sketch, canEdit, apiReady, backdropProp, sketchId, base]);
 
   // Inline rename.
   const handleNameSave = async () => {
@@ -721,6 +723,7 @@ export default function SketchEditor({
           onLinkOpen={handleLinkOpen}
           excalidrawAPI={(api) => {
             excalidrawApiRef.current = api;
+            setApiReady(true);
             const queued = pendingRemoteRef.current;
             if (queued.length) {
               pendingRemoteRef.current = [];
