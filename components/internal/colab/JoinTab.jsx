@@ -1,7 +1,6 @@
 import React from "react";
-import { Button } from "@geiger/ui";
+import { Button, cn } from "@geiger/ui";
 import { LogIn, LucideLogIn } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export default function JoinTab({
   isSessionActive,

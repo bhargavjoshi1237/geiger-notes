@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from "@geiger/ui";
+import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, cn } from "@geiger/ui";
 import { Settings2, X, Lightbulb, Moon, LucideSquareMenu, LucideSun, LucideCheckCheck } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { WEEKDAY_LABELS, WEEKDAY_LABELS_SUNDAY, getMonthCells, getMonthCellsSunday } from "../../../../nodes/calendar/constants";
 import { daySizing, monthSizing, eventsSizing, themeColors } from "../../../../nodes/calendar/sizing";
 

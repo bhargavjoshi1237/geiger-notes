@@ -140,7 +140,7 @@ export async function PUT(request) {
     }
 
     const body = await request.json();
-    const { id, elements, app_state, files, name, metadata } = body;
+    const { id, elements, app_state, files, name, description, metadata } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing ID" }, { status: 400 });
@@ -153,6 +153,7 @@ export async function PUT(request) {
     if ("app_state" in body) patch.app_state = app_state;
     if ("files" in body) patch.files = files;
     if ("name" in body) patch.name = name;
+    if ("description" in body) patch.description = description || null;
     if ("metadata" in body) patch.metadata = metadata;
 
     const { data, error } = await supabase

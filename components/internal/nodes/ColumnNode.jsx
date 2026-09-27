@@ -222,7 +222,7 @@ const ColumnCard = ({ item, onChange, onToggle, onRemove }) => {
 
   return (
     <div
-      className="group/card relative flex w-full border-2 border-transparent transition-colors hover:border-border"
+      className="node-chrome node-card group/card relative flex w-full border-2 border-transparent transition-colors hover:border-border"
       style={{
         minHeight: CARD_MIN_HEIGHT,
         backgroundColor:
@@ -383,7 +383,7 @@ const ColumnNode = ({ id, data, selected, dragging }) => {
     <>
       <div
         className={`
-            relative flex flex-col w-full h-full group
+            node-chrome relative flex flex-col w-full h-full group
             transition-all duration-300 ease-out
             ${selected ? "border-2 border-foreground" : "border-2 border-transparent hover:border-border"}
             ${dragging ? "shadow-2xl shadow-black/50 z-50" : ""}
@@ -463,7 +463,7 @@ const ColumnNode = ({ id, data, selected, dragging }) => {
         <div className="nopan nowheel scrollbar-subtle flex min-h-0 shrink grow basis-auto flex-col gap-3 overflow-y-auto px-4 pb-4">
           {items.length === 0 ? (
             <div
-              className="w-full border-2 border-transparent"
+              className="node-chrome node-card w-full border-2 border-transparent"
               style={{
                 minHeight: CARD_MIN_HEIGHT,
                 backgroundColor: "var(--node-default)",

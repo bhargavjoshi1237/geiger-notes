@@ -114,12 +114,15 @@ export default function BoardCanvas({
               strokeWidth: d.strokeWidth || 2,
               strokeDasharray: d.dashed ? "6 6" : undefined,
             },
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              width: 20,
-              height: 20,
-              color: stroke,
-            },
+            markerEnd:
+              d.arrowhead === false
+                ? undefined
+                : {
+                    type: MarkerType.ArrowClosed,
+                    width: 20,
+                    height: 20,
+                    color: stroke,
+                  },
           },
           eds
         )
@@ -127,6 +130,9 @@ export default function BoardCanvas({
     },
     [settings.defaultEdge, setEdges]
   );
+
+  const gridSize = settings.gridSize || 15;
+  const scrollZooms = settings.scrollMode === "zoom";
 
   const [rfInstance, setRfInstance] = React.useState(null);
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
@@ -313,6 +319,22 @@ export default function BoardCanvas({
             src: null,
           },
           style: { width: 200, height: 80 },
+        };
+        setNodes((nds) => nds.concat(newNode));
+        return;
+      }
+
+      if (type === "calendar") {
+        const newNode = {
+          id: `node-${Date.now()}`,
+          type: "calendar",
+          position,
+          data: {
+            calendarTheme: "light",
+            calendarStyle: "default",
+            backgroundColor: "#2a2a2a",
+          },
+          style: { width: 200, height: 200 },
         };
         setNodes((nds) => nds.concat(newNode));
         return;
@@ -567,6 +589,7 @@ export default function BoardCanvas({
       </div>
 
       <div
+        data-node-style={settings.nodeStyle || "classic"}
         className={`absolute inset-0 transition-opacity duration-1000 ${
           !isInitialized || isLoading ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
@@ -598,14 +621,21 @@ export default function BoardCanvas({
           deleteKeyCode={canEdit ? ["Backspace", "Delete"] : null}
           panOnDrag={isMobile ? true : panOnDrag}
           selectionOnDrag={isMobile ? false : selectionOnDrag}
-          panOnScroll={panOnScroll}
-          zoomOnScroll={zoomOnScroll}
+          panOnScroll={panOnScroll && !scrollZooms}
+          zoomOnScroll={zoomOnScroll || scrollZooms}
           zoomOnDoubleClick={false}
           selectionMode={SelectionMode.Partial}
           snapToGrid={!!settings.snapToGrid}
-          snapGrid={[15, 15]}
+          snapGrid={[gridSize, gridSize]}
         >
-          <Background color="var(--canvas-dots)" gap={12} size={1} variant="dots" />
+          {settings.canvasBackground !== "none" && (
+            <Background
+              color="var(--canvas-dots)"
+              gap={gridSize}
+              size={settings.canvasBackground === "cross" ? 6 : 1}
+              variant={settings.canvasBackground || "dots"}
+            />
+          )}
           {settings.showMinimap && (
             <MiniMap
               pannable

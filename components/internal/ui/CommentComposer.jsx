@@ -46,8 +46,6 @@ export function useCommentAuthor(data) {
   };
 }
 
-// The comment row itself — avatar, input and send. Shared by the standalone
-// comment node and the comment cards inside a column so both look identical.
 export default function CommentComposer({ author, value, onChange, onSend }) {
   return (
     <div className="flex w-full items-center gap-3 p-4">
@@ -84,10 +82,9 @@ export default function CommentComposer({ author, value, onChange, onSend }) {
           type="button"
           onClick={onSend}
           title="Send comment"
-          className="nodrag absolute right-2 flex items-center gap-1 text-xs font-medium text-blue-400 transition-colors hover:text-blue-300"
+          className="nodrag absolute right-2 flex items-center gap-1 text-xs font-medium text-zinc-400 transition-colors hover:text-blue-300"
         >
           <Send className="h-3.5 w-3.5" />
-          Send
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import "@excalidraw/excalidraw/index.css";
+import "./excalidraw-theme.css";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import nextDynamic from "next/dynamic";
@@ -9,6 +10,8 @@ import { ArrowLeft, Save, Check, Link2, Workflow } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { LogoLoading } from "@geiger/ui";
+import Topbar from "@/components/internal/layout/Topbar";
+import { useUserSettings } from "@/lib/settings/useUserSettings";
 import { invalidateSketchCache } from "./preview-context";
 import LinkPickerDialog from "./LinkPickerDialog";
 import { backdropFileId, loadBackdropImage } from "./backdrop";
@@ -25,7 +28,7 @@ const ExcalidrawComponent = nextDynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex flex-1 items-center justify-center bg-background">
+      <div className="absolute inset-0 flex items-center justify-center bg-background">
         <LogoLoading size={72} />
       </div>
     ),
@@ -73,6 +76,14 @@ function SaveStatus({ status, live }) {
   );
 }
 
+// Dark mode draws the canvas through invert(93%), so #fafafa lands on our #161616 background.
+const CANVAS_BG = { light: "#ffffff", dark: "#fafafa" };
+const DEFAULT_CANVAS_BGS = [undefined, null, "", "#ffffff", "#fff", "#fafafa"];
+
+function canvasBackground(stored, theme) {
+  return DEFAULT_CANVAS_BGS.includes(stored) ? CANVAS_BG[theme] : stored;
+}
+
 function parseField(field, fallback) {
   if (!field) return fallback;
   if (typeof field === "string") {
@@ -85,16 +96,34 @@ function parseField(field, fallback) {
   return field;
 }
 
+// Drops runtime-only appState: collaborators is a Map that JSON turns into {}, which crashes Excalidraw on load.
+function toStoredAppState(appState) {
+  if (!appState || typeof appState !== "object") return {};
+  const { collaborators, ...rest } = appState;
+  return rest;
+}
+
 export default function SketchEditor({
   sketchId,
   projectId,
   canEdit = true,
   onBack,
   backdrop: backdropProp,
+  breadcrumbs,
+  onBreadcrumbClick,
 }) {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const colorMode = resolvedTheme === "dark" ? "dark" : "light";
+  const {
+    settings,
+    setSetting: handleSettingsChange,
+    save: saveSettings,
+    discard: discardSettings,
+    reset: resetSettings,
+    isDirty: settingsDirty,
+    isSaving: settingsSaving,
+  } = useUserSettings();
   const [saveStatus, setSaveStatus] = useState("saved");
   const [sketch, setSketch] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -237,7 +266,7 @@ export default function SketchEditor({
         const res = await fetch(`${base}/api/sketches`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: sketchId, elements, app_state: appState, files }),
+          body: JSON.stringify({ id: sketchId, elements, app_state: toStoredAppState(appState), files }),
         });
         if (!res.ok) throw new Error("Save failed");
         setSaveStatus("saved");
@@ -331,7 +360,7 @@ export default function SketchEditor({
         const payload = JSON.stringify({
           id: sketchId,
           elements: elementsRef.current,
-          app_state: appStateRef.current,
+          app_state: toStoredAppState(appStateRef.current),
           files: filesRef.current,
         });
         fetch(`${base}/api/sketches`, {
@@ -352,7 +381,7 @@ export default function SketchEditor({
       const payload = JSON.stringify({
         id: sketchId,
         elements: elementsRef.current,
-        app_state: appStateRef.current,
+        app_state: toStoredAppState(appStateRef.current),
         files: filesRef.current,
       });
       try {
@@ -614,7 +643,16 @@ export default function SketchEditor({
     }
   }, [pushing, selectedIds, sketchId, base]);
 
-  const handleBack = useCallback(() => {
+  // Keep the canvas on the app background when the theme flips, unless the user picked a colour.
+  useEffect(() => {
+    const api = excalidrawApiRef.current;
+    if (!apiReady || !api) return;
+    const current = api.getAppState().viewBackgroundColor;
+    const next = canvasBackground(current, colorMode);
+    if (next !== current) api.updateScene({ appState: { viewBackgroundColor: next } });
+  }, [apiReady, colorMode]);
+
+  const flushBeforeLeave = useCallback(() => {
     clearTimeout(saveTimer.current);
     if (saveStatusRef.current === "unsaved") {
       persistRef.current(
@@ -624,8 +662,20 @@ export default function SketchEditor({
       );
     }
     invalidateSketchCache(sketchId);
-    onBack?.();
-  }, [sketchId, onBack]);
+  }, [sketchId]);
+
+  // "Notes" with no trail (e.g. a deep link) returns to the board the sketch came from.
+  const handleBreadcrumbClick = useCallback(
+    (boardId) => {
+      flushBeforeLeave();
+      if (onBreadcrumbClick && (boardId !== null || breadcrumbs?.length)) {
+        onBreadcrumbClick(boardId);
+      } else {
+        onBack?.();
+      }
+    },
+    [flushBeforeLeave, onBreadcrumbClick, breadcrumbs, onBack]
+  );
 
   if (loading) {
     return (
@@ -650,10 +700,12 @@ export default function SketchEditor({
     );
   }
 
+  const storedAppState = toStoredAppState(parseField(sketch.app_state, {}));
   const initialData = {
     elements: parseField(sketch.elements, []),
     appState: {
-      ...parseField(sketch.app_state, {}),
+      ...storedAppState,
+      viewBackgroundColor: canvasBackground(storedAppState.viewBackgroundColor, colorMode),
       theme: colorMode,
     },
     files: parseField(sketch.files, {}),
@@ -662,58 +714,60 @@ export default function SketchEditor({
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
-      <div className="z-20 flex h-12 shrink-0 items-center gap-3 border-b border-border bg-background px-4">
-        <button
-          onClick={handleBack}
-          className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Board
-        </button>
-
-        <div className="h-4 w-px shrink-0 bg-border" />
-
-        {editingName && canEdit ? (
-          <input
-            autoFocus
-            value={sketchName}
-            onChange={(e) => setSketchName(e.target.value)}
-            onBlur={handleNameSave}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleNameSave();
-              if (e.key === "Escape") {
-                setSketchName(sketch.name || "Untitled Sketch");
-                setEditingName(false);
-              }
-            }}
-            className="w-52 min-w-0 rounded-md border border-border bg-surface-hover px-2 py-0.5 text-sm font-medium text-foreground focus:outline-none"
-          />
-        ) : (
-          <button
-            onClick={() => canEdit && setEditingName(true)}
-            title={canEdit ? "Click to rename" : undefined}
-            className="max-w-xs min-w-0 truncate text-sm font-medium text-foreground transition-colors hover:text-foreground"
-          >
-            {sketchName}
-          </button>
-        )}
-
-        <div className="flex-1" />
-
-        <div className="flex shrink-0 items-center gap-3">
-          {connected && <CollaboratorStack collaborators={collaborators} />}
-          <SaveStatus status={saveStatus} live={connected && !isWriter} />
-          {canEdit && (
+      <Topbar
+        settings={settings}
+        onSettingsChange={handleSettingsChange}
+        onSettingsSave={saveSettings}
+        onSettingsDiscard={discardSettings}
+        onSettingsReset={resetSettings}
+        settingsDirty={settingsDirty}
+        settingsSaving={settingsSaving}
+        breadcrumbs={breadcrumbs}
+        onBreadcrumbClick={handleBreadcrumbClick}
+        showHistory={false}
+        showCollaborate={false}
+        title={
+          editingName && canEdit ? (
+            <input
+              autoFocus
+              value={sketchName}
+              onChange={(e) => setSketchName(e.target.value)}
+              onBlur={handleNameSave}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleNameSave();
+                if (e.key === "Escape") {
+                  setSketchName(sketch.name || "Untitled Sketch");
+                  setEditingName(false);
+                }
+              }}
+              className="w-52 min-w-0 rounded-md border border-border bg-surface-hover px-2 py-0.5 text-sm font-medium text-foreground focus:outline-none"
+            />
+          ) : (
             <button
-              onClick={handleManualSave}
-              className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-subtle px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+              onClick={() => canEdit && setEditingName(true)}
+              title={canEdit ? "Click to rename" : undefined}
+              className="max-w-xs min-w-0 truncate p-1 text-sm font-medium text-foreground"
             >
-              <Save className="h-3 w-3" />
-              Save
+              {sketchName}
             </button>
-          )}
-        </div>
-      </div>
+          )
+        }
+        actions={
+          <>
+            {connected && <CollaboratorStack collaborators={collaborators} />}
+            <SaveStatus status={saveStatus} live={connected && !isWriter} />
+            {canEdit && (
+              <button
+                onClick={handleManualSave}
+                className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-subtle px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+              >
+                <Save className="h-3 w-3" />
+                Save
+              </button>
+            )}
+          </>
+        }
+      />
 
       <div className="relative flex-1">
         <ExcalidrawComponent

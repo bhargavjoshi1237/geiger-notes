@@ -49,7 +49,7 @@ const CustomNode = ({ id, data, selected, dragging }) => {
     <>
       <div
         className={`
-            relative flex flex-col w-full h-full min-h-[68px] min-w-[338px] group
+            node-chrome relative flex flex-col w-full h-full min-h-[68px] min-w-[338px] group
             transition-all duration-300 ease-out
             ${selected ? "border-2 border-foreground" : "border-2 border-transparent hover:border-border"}
             ${dragging ? "shadow-2xl shadow-black/50 z-50" : ""}

@@ -7,27 +7,9 @@ import {
   useConnection,
 } from "@xyflow/react";
 import { Link, ArrowRight } from "lucide-react";
+import { ResizeHandle } from "@geiger/ui";
 import Reactions from "../ui/Reactions";
 import TextEditingTrait from "./traits/TextEditingTrait";
-
-const ResizeHandle = () => {
-  return (
-    <div className="absolute bottom-1 right-1 p-1">
-      <svg width="10" height="10" viewBox="0 0 10 10" className="opacity-50">
-        <path
-          d="M 6 10 L 10 6 L 10 10 Z"
-          fill="currentColor"
-          className="text-muted-foreground"
-        />
-        <path
-          d="M 2 10 L 10 2 L 10 4 L 4 10 Z"
-          fill="currentColor"
-          className="text-muted-foreground"
-        />
-      </svg>
-    </div>
-  );
-};
 
 const LinkNode = ({ id, data, selected, dragging }) => {
   const { setNodes } = useReactFlow();
@@ -65,7 +47,7 @@ const LinkNode = ({ id, data, selected, dragging }) => {
     <>
       <div
         className={`
-            relative flex flex-col w-full h-full min-h-[68px] min-w-[338px] group
+            node-chrome relative flex flex-col w-full h-full min-h-[68px] min-w-[338px] group
             transition-all duration-300 ease-out
             ${selected ? "border-2 border-foreground" : "border-2 border-transparent hover:border-border"}
             ${dragging ? "shadow-2xl shadow-black/50 z-50" : ""}

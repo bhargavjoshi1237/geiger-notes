@@ -271,6 +271,218 @@
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
+/* ─── Node styles ([data-node-style] on the canvas, .node-chrome on each node root; "classic" = no overrides) ─── */
+/* Unlayered, so these win over the nodes' Tailwind border/shadow utilities; inline outline colours still win. */
+[data-node-style="soft"] {
+  --node-select: #3b82f6;
+}
+[data-node-style="soft"] .node-chrome {
+  border-width: 1px;
+  border-color: var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 2px 8px rgb(0 0 0 / 0.06);
+}
+[data-node-style="soft"] .node-chrome:hover {
+  border-color: var(--ring);
+}
+[data-node-style="soft"] .react-flow__node.selected .node-chrome:not(.node-card) {
+  border-color: var(--node-select);
+  box-shadow: 0 0 0 1px var(--node-select), 0 4px 12px rgb(0 0 0 / 0.1);
+}
+
+[data-node-style="outline"] {
+  --node-default: var(--background);
+}
+[data-node-style="outline"] .node-chrome {
+  border-width: 1.5px;
+  border-color: var(--muted-foreground);
+  border-radius: 6px;
+  box-shadow: none;
+}
+[data-node-style="outline"] .node-chrome:hover {
+  border-color: var(--foreground);
+}
+[data-node-style="outline"] .react-flow__node.selected .node-chrome:not(.node-card) {
+  border-width: 2px;
+  border-color: var(--foreground);
+}
+
+[data-node-style="sketch"] .node-chrome {
+  border-width: 2px;
+  border-color: color-mix(in oklab, var(--foreground) 65%, transparent);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  box-shadow: 2px 3px 0 color-mix(in oklab, var(--foreground) 12%, transparent);
+}
+[data-node-style="sketch"] .node-chrome,
+[data-node-style="sketch"] .node-chrome :is(p, span, textarea, input, a, td, th) {
+  font-family: "Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive;
+}
+[data-node-style="sketch"] .node-chrome:hover {
+  border-color: var(--foreground);
+}
+[data-node-style="sketch"] .react-flow__node.selected .node-chrome:not(.node-card) {
+  border-color: var(--foreground);
+  border-style: dashed;
+}
+
+/* Sticky tints only the text-bearing "paper" nodes; media/board nodes keep their surfaces. */
+[data-node-style="sticky"] .node-chrome {
+  border-width: 0;
+  border-radius: 2px;
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.08), 0 6px 14px -4px rgb(0 0 0 / 0.25);
+}
+[data-node-style="sticky"] :is(.react-flow__node-custom, .react-flow__node-todo, .react-flow__node-link, .react-flow__node-table) .node-chrome {
+  --node-default: #fef08a;
+  --foreground: #292524;
+  --muted-foreground: #78716c;
+  --border: #e7d56a;
+  color: var(--foreground);
+}
+[data-node-style="sticky"] .react-flow__node.selected .node-chrome:not(.node-card) {
+  box-shadow: 0 0 0 2px var(--foreground), 0 10px 20px -4px rgb(0 0 0 / 0.3);
+}
+
+[data-node-style="brutalist"] .node-chrome {
+  border-width: 2px;
+  border-color: var(--foreground);
+  border-radius: 0;
+  box-shadow: 4px 4px 0 var(--foreground);
+}
+[data-node-style="brutalist"] .node-chrome:hover {
+  border-color: var(--foreground);
+}
+[data-node-style="brutalist"] .react-flow__node.selected .node-chrome:not(.node-card) {
+  box-shadow: 7px 7px 0 var(--foreground);
+  transform: translate(-2px, -2px);
+}
+
+[data-node-style="elevated"] .node-chrome {
+  border-color: transparent;
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.06), 0 12px 28px -6px rgb(0 0 0 / 0.22);
+}
+[data-node-style="elevated"] .node-chrome:hover {
+  border-color: transparent;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.08), 0 18px 36px -8px rgb(0 0 0 / 0.3);
+}
+[data-node-style="elevated"] .react-flow__node.selected .node-chrome:not(.node-card) {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 45%, transparent), 0 18px 36px -8px rgb(0 0 0 / 0.3);
+}
+
+[data-node-style="glass"] .node-chrome {
+  --node-default: color-mix(in oklab, var(--foreground) 7%, transparent);
+  --surface-dialog: color-mix(in oklab, var(--background) 70%, transparent);
+  border-width: 1px;
+  border-color: color-mix(in oklab, var(--foreground) 16%, transparent);
+  border-radius: 14px;
+  backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--foreground) 10%, transparent), 0 8px 24px -8px rgb(0 0 0 / 0.25);
+}
+[data-node-style="glass"] .node-chrome:hover {
+  border-color: color-mix(in oklab, var(--foreground) 28%, transparent);
+}
+[data-node-style="glass"] .react-flow__node.selected .node-chrome:not(.node-card) {
+  border-color: color-mix(in oklab, var(--foreground) 55%, transparent);
+}
+
+[data-node-style="bubble"] .node-chrome {
+  border-width: 2px;
+  border-color: transparent;
+  border-radius: 28px;
+  box-shadow: 0 4px 0 color-mix(in oklab, var(--foreground) 10%, transparent);
+}
+[data-node-style="bubble"] .node-chrome:hover {
+  border-color: var(--border);
+}
+[data-node-style="bubble"] .react-flow__node.selected .node-chrome:not(.node-card) {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 4px rgb(139 92 246 / 0.2);
+}
+
+[data-node-style="accent"] .node-chrome {
+  border-width: 1px 1px 1px 4px;
+  border-color: var(--border) var(--border) var(--border) #3b82f6;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+}
+[data-node-style="accent"] .node-chrome:hover {
+  border-color: var(--ring) var(--ring) var(--ring) #3b82f6;
+}
+[data-node-style="accent"] .react-flow__node.selected .node-chrome:not(.node-card) {
+  border-color: var(--foreground) var(--foreground) var(--foreground) #3b82f6;
+}
+
+[data-node-style="neon"] .node-chrome {
+  border-width: 1px;
+  border-color: rgb(34 211 238 / 0.6);
+  border-radius: 8px;
+  box-shadow: 0 0 6px rgb(34 211 238 / 0.35), inset 0 0 6px rgb(34 211 238 / 0.12);
+}
+[data-node-style="neon"] .node-chrome:hover {
+  border-color: rgb(34 211 238 / 0.9);
+}
+[data-node-style="neon"] .react-flow__node.selected .node-chrome:not(.node-card) {
+  border-color: #22d3ee;
+  box-shadow: 0 0 14px rgb(34 211 238 / 0.7), 0 0 32px rgb(34 211 238 / 0.3), inset 0 0 8px rgb(34 211 238 / 0.2);
+}
+
+/* Blueprint and Terminal repaint every surface a node can use, so text colours stay readable. */
+[data-node-style="blueprint"] .node-chrome {
+  --node-default: #1e3a8a;
+  --surface-dialog: #1e3a8a;
+  --comment-bg: #1e40af;
+  --foreground: #e0ecff;
+  --muted-foreground: #93b4f0;
+  --border: #3b5fc0;
+  color: var(--foreground);
+  border: 1.5px dashed #93b4f0;
+  border-radius: 0;
+  background-image: linear-gradient(rgb(147 180 240 / 0.12) 1px, transparent 1px), linear-gradient(90deg, rgb(147 180 240 / 0.12) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+[data-node-style="blueprint"] .node-chrome,
+[data-node-style="blueprint"] .node-chrome :is(p, span, textarea, input, a, td, th) {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+[data-node-style="blueprint"] .node-chrome:hover {
+  border-color: #e0ecff;
+}
+[data-node-style="blueprint"] .react-flow__node.selected .node-chrome:not(.node-card) {
+  border-style: solid;
+  border-color: #e0ecff;
+}
+
+[data-node-style="terminal"] .node-chrome {
+  --node-default: #0a0a0a;
+  --surface-dialog: #0a0a0a;
+  --comment-bg: #0f1a0f;
+  --foreground: #4ade80;
+  --muted-foreground: #22803f;
+  --border: #14532d;
+  color: var(--foreground);
+  border-width: 1px;
+  border-color: #166534;
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.35);
+}
+[data-node-style="terminal"] .node-chrome,
+[data-node-style="terminal"] .node-chrome :is(p, span, textarea, input, a, td, th) {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+[data-node-style="terminal"] .node-chrome:hover {
+  border-color: #22c55e;
+}
+[data-node-style="terminal"] .react-flow__node.selected .node-chrome:not(.node-card) {
+  border-color: #4ade80;
+  box-shadow: 0 0 0 1px #4ade80, 0 4px 14px rgb(0 0 0 / 0.35);
+}
+
+/* Media inside rounded styles follows the card's corners. */
+[data-node-style] .node-chrome :is(img, canvas) {
+  border-radius: inherit;
+}
+
 .scrollbar-subtle {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) transparent;

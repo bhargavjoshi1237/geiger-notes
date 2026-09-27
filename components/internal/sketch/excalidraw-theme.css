@@ -1,0 +1,57 @@
+/* Maps Excalidraw's UI variables onto the suite tokens so the editor matches the app in both themes. */
+/* The :root prefix outranks Excalidraw's own .excalidraw.theme--* rules regardless of load order. */
+
+:root .excalidraw,
+:root .excalidraw.theme--dark {
+  --ui-font: inherit;
+  --default-bg-color: var(--background);
+  --island-bg-color: var(--surface-dialog);
+  --popup-bg-color: var(--surface-dialog);
+  --popup-secondary-bg-color: var(--surface-hover);
+  --popup-text-color: var(--foreground);
+  --sidebar-bg-color: var(--surface-dialog);
+  --sidebar-border-color: var(--border);
+  --dialog-border-color: var(--border);
+  --default-border-color: var(--border);
+  --input-bg-color: var(--background);
+  --input-border-color: var(--border);
+  --input-hover-bg-color: var(--surface-hover);
+  --input-label-color: var(--foreground);
+  --text-primary-color: var(--foreground);
+  --keybinding-color: var(--muted-foreground);
+
+  /* Neutral brand accent instead of Excalidraw's violet */
+  --color-primary: var(--foreground);
+  --color-primary-darker: var(--foreground);
+  --color-primary-darkest: var(--foreground);
+  --color-primary-hover: var(--foreground);
+  --color-primary-light: var(--surface-hover);
+  --color-primary-light-darker: var(--surface-active);
+  --color-brand-hover: var(--foreground);
+  --color-brand-active: var(--foreground);
+  --color-surface-primary-container: var(--surface-hover);
+  --color-on-primary-container: var(--foreground);
+  --color-logo-text: var(--foreground);
+  --color-slider-track: var(--surface-hover);
+  --color-selection: var(--muted-foreground);
+
+  /* Surfaces */
+  --color-surface-lowest: var(--background);
+  --color-surface-low: var(--surface-dialog);
+  --color-surface-mid: var(--surface-dialog);
+  --color-surface-high: var(--surface-hover);
+  --color-on-surface: var(--foreground);
+  --color-border-outline: var(--muted-foreground);
+  --color-border-outline-variant: var(--border);
+  --button-gray-1: var(--surface-hover);
+  --button-gray-2: var(--surface-active);
+  --button-gray-3: var(--surface-active);
+  --button-hover-bg: var(--surface-hover);
+  --button-active-bg: var(--surface-active);
+}
+
+/* Islands (toolbar, properties panel, menus) get the suite border */
+:root .excalidraw .Island {
+  border: 1px solid var(--border);
+  box-shadow: none;
+}

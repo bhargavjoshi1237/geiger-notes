@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Undo2,
   Redo2,
@@ -18,6 +18,8 @@ import CollaborateDilouge from "./CollaborateDilouge";
 import DigitalClock from "./DigitalClock";
 import NotificationDropdown from "./NotificationDropdown";
 import AppDialog from "./AppDialog";
+import MeetStage from "../meet/meet_stage";
+import MeetTopbarStatus from "../meet/meet_topbar_status";
 import { Logo, ThemeToggle } from "@geiger/ui";
 
 export default function Topbar({
@@ -46,10 +48,22 @@ export default function Topbar({
   canUndo = false,
   canRedo = false,
   dialogContainer,
+  // Optional slots for non-board surfaces (e.g. the sketch editor).
+  title,
+  actions,
+  showHistory = true,
+  showCollaborate = true,
 }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCollaborateOpen, setIsCollaborateOpen] = useState(false);
   const [isAppOpen, setIsAppOpen] = useState(false);
+  // The live meeting ({ roomId, code, isHost, me, startedAt }); its stage docks under this bar.
+  const [meeting, setMeeting] = useState(null);
+  const [meetStats, setMeetStats] = useState({ total: 1, connected: false });
+  const enterMeeting = useCallback(
+    (details) => setMeeting({ ...details, startedAt: Date.now() }),
+    [],
+  );
 
   return (
     <>
@@ -87,7 +101,9 @@ export default function Topbar({
             onClick={() => onBreadcrumbClick && onBreadcrumbClick(null)}
             className="flex items-center gap-1 cursor-pointer group group-data-[collapsible=icon]:hidden md:border-l md:border-divider ml-1.5 pl-2 hidden sm:flex"
           >
-            <span className="text-foreground font-semibold text-sm ml-2.5">Notes</span>
+            <span className="text-foreground font-semibold text-sm ml-2.5">
+              Notes
+            </span>
           </div>
           {breadcrumbs &&
             breadcrumbs.map((crumb) => (
@@ -105,9 +121,32 @@ export default function Topbar({
                 </div>
               </React.Fragment>
             ))}
+          {title && (
+            <>
+              <LucideChevronRight className="w-4 h-4 text-ring" />
+              {title}
+            </>
+          )}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
+          {meeting && (
+            <>
+              <MeetTopbarStatus
+                startedAt={meeting.startedAt}
+                code={meeting.code}
+                total={meetStats.total}
+                connected={meetStats.connected}
+              />
+              <div className="hidden sm:block h-5 w-[1px] bg-divider mx-1"></div>
+            </>
+          )}
+          {actions && (
+            <>
+              <div className="flex items-center gap-3">{actions}</div>
+              <div className="hidden sm:block h-5 w-[1px] bg-divider mx-1"></div>
+            </>
+          )}
           {(settings?.showClock ?? true) && (
             <>
               <div className="hidden md:block">
@@ -116,60 +155,68 @@ export default function Topbar({
               <div className="hidden sm:block h-5 w-[1px] bg-divider mx-1"></div>
             </>
           )}
-          <div className="flex items-center gap-0 text-muted-foreground">
-            <button
-              onClick={onUndo}
-              disabled={!canUndo}
-              className="p-2 hover:bg-surface-hover rounded transition-colors hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground disabled:cursor-default"
-              title="Undo (Ctrl+Z)"
-            >
-              <Undo2 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={onRedo}
-              disabled={!canRedo}
-              className="p-2 hover:bg-surface-hover rounded transition-colors hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground disabled:cursor-default"
-              title="Redo (Ctrl+Shift+Z)"
-            >
-              <Redo2 className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="hidden sm:block h-5 w-[1px] bg-divider mx-1"></div>
-          <div className="flex items-center gap-0 sm:gap-1 text-muted-foreground">
-            <button
-              onClick={() => setIsCollaborateOpen(true)}
-              className={`relative group p-2 rounded-lg transition-all duration-300`}
-              title={
-                sessionData
-                  ? role === "host"
-                    ? "Hosting Session"
-                    : "Connected to Session"
-                  : "Collaborate"
-              }
-            >
-              {sessionData && (
-                <>
-                  <span
-                    className={`absolute inset-1 rounded-lg animate-ping opacity-20 ${
-                      role === "host" ? "bg-ring" : "bg-emerald-500"
-                    }`}
-                    style={{ animationDuration: "2s" }}
-                  ></span>
-                  <span className="absolute inset-0 rounded-lg"></span>
-                </>
-              )}
-              <div className="relative p-2 hover:bg-surface-hover rounded transition-colors hover:text-foreground">
-                <Users2
-                  className={`w-[18px] h-[18px] transition-transform duration-300 ${
-                    sessionData ? "drop-shadow-sm" : ""
-                  }`}
-                  strokeWidth={2}
-                />
+          {showHistory && (
+            <>
+              <div className="flex items-center gap-0 text-muted-foreground">
+                <button
+                  onClick={onUndo}
+                  disabled={!canUndo}
+                  className="p-2 hover:bg-surface-hover rounded transition-colors hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground disabled:cursor-default"
+                  title="Undo (Ctrl+Z)"
+                >
+                  <Undo2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={onRedo}
+                  disabled={!canRedo}
+                  className="p-2 hover:bg-surface-hover rounded transition-colors hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground disabled:cursor-default"
+                  title="Redo (Ctrl+Shift+Z)"
+                >
+                  <Redo2 className="w-4 h-4" />
+                </button>
               </div>
-            </button>
-          </div>
+              <div className="hidden sm:block h-5 w-[1px] bg-divider mx-1"></div>
+            </>
+          )}
+          {showCollaborate && (
+            <>
+              <div className="flex items-center gap-0 sm:gap-1 text-muted-foreground">
+                <button
+                  onClick={() => setIsCollaborateOpen(true)}
+                  className={`relative group p-2 rounded-lg transition-all duration-300`}
+                  title={
+                    sessionData
+                      ? role === "host"
+                        ? "Hosting Session"
+                        : "Connected to Session"
+                      : "Collaborate"
+                  }
+                >
+                  {sessionData && (
+                    <>
+                      <span
+                        className={`absolute inset-1 rounded-lg animate-ping opacity-20 ${
+                          role === "host" ? "bg-ring" : "bg-emerald-500"
+                        }`}
+                        style={{ animationDuration: "2s" }}
+                      ></span>
+                      <span className="absolute inset-0 rounded-lg"></span>
+                    </>
+                  )}
+                  <div className="relative p-2 hover:bg-surface-hover rounded transition-colors hover:text-foreground">
+                    <Users2
+                      className={`w-[18px] h-[18px] transition-transform duration-300 ${
+                        sessionData ? "drop-shadow-sm" : ""
+                      }`}
+                      strokeWidth={2}
+                    />
+                  </div>
+                </button>
+              </div>
 
-          <div className="hidden sm:block h-5 w-[1px] bg-divider mx-1"></div>
+              <div className="hidden sm:block h-5 w-[1px] bg-divider mx-1"></div>
+            </>
+          )}
 
           <div className="flex items-center gap-0 sm:gap-1">
             <ThemeToggle />
@@ -202,7 +249,7 @@ export default function Topbar({
                 <Bell className="w-[18px] h-[18px]" strokeWidth={2} />
                 {sessionData?.joiners &&
                   Object.values(sessionData.joiners).some(
-                    (j) => j.status === "requested"
+                    (j) => j.status === "requested",
                   ) &&
                   role === "host" && (
                     <div className="absolute top-[6px] right-[7px] w-2 h-2 rounded-sm bg-notification-dot border border-background"></div>
@@ -248,7 +295,18 @@ export default function Topbar({
         onLeaveSession={onLeaveSession}
         onMerge={onMerge}
         dialogContainer={dialogContainer}
+        onEnterMeeting={enterMeeting}
       />
+      {meeting && (
+        <MeetStage
+          roomId={meeting.roomId}
+          code={meeting.code}
+          isHost={meeting.isHost}
+          me={meeting.me}
+          onStatsChange={setMeetStats}
+          onClose={() => setMeeting(null)}
+        />
+      )}
       <AppDialog
         open={isAppOpen}
         onOpenChange={setIsAppOpen}

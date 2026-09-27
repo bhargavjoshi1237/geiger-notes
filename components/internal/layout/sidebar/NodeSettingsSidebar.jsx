@@ -10,12 +10,16 @@ import { EditCalendarThemePlug } from "./plugs/calendar/EditCalendarThemePlug";
 import { TextFormattingPlug } from "./plugs/TextFormattingPlug";
 import { DownloadBoardPlug } from "./plugs/DownloadBoardPlug";
 import { ManageAccessPlug } from "./plugs/ManageAccessPlug";
+import { EditSketchDetailsPlug } from "./plugs/sketch/EditSketchDetailsPlug";
+import { DownloadSketchPlug } from "./plugs/sketch/DownloadSketchPlug";
 import EditBoardNameDialog from "./dialogs/EditBoardNameDialog";
 import EditBoardIconDialog from "./dialogs/EditBoardIconDialog";
 import EditClockThemeDialog from "./dialogs/clock/EditClockThemeDialog";
 import EditCalendarThemeDialog from "./dialogs/calendar/EditCalendarThemeDialog";
 import DownloadBoardDialog from "./dialogs/DownloadBoardDialog";
 import ManageAccessDialog from "./dialogs/ManageAccessDialog";
+import EditSketchDetailsDialog from "./dialogs/sketch/EditSketchDetailsDialog";
+import DownloadSketchDialog from "./dialogs/sketch/DownloadSketchDialog";
 import { canManageBoard } from "@/lib/supabase/board-access";
 import { toast } from "sonner";
 
@@ -32,6 +36,8 @@ export default function NodeSettingsSidebar({
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
   const [isManageAccessOpen, setIsManageAccessOpen] = useState(false);
   const [canManageAccess, setCanManageAccess] = useState(false);
+  const [isSketchDetailsOpen, setIsSketchDetailsOpen] = useState(false);
+  const [isSketchDownloadOpen, setIsSketchDownloadOpen] = useState(false);
 
   const isProjectBoardNode =
     selectedNode?.type === "board" &&
@@ -94,6 +100,33 @@ export default function NodeSettingsSidebar({
     }
   };
 
+  // Name/description live on both the node (canvas label) and the sketches row (editor title).
+  const handleSaveSketchDetails = async (name, description) => {
+    updateData({ label: name, caption: description });
+    if (!selectedNode.data?.sketchId) return true;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/api/sketches`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: selectedNode.data.sketchId,
+            name,
+            description,
+          }),
+        },
+      );
+      if (!res.ok) throw new Error("Failed to update sketch");
+      toast.success("Sketch updated");
+      return true;
+    } catch (error) {
+      console.error(error);
+      toast.error("Couldn't save sketch details");
+      return false;
+    }
+  };
+
   const handleSaveBoardIcon = (iconData) => {
     updateData({
       iconName: iconData.iconName,
@@ -120,6 +153,15 @@ export default function NodeSettingsSidebar({
         )}
         {selectedNode.type === "board" && (
           <DownloadBoardPlug onDownload={() => setIsDownloadOpen(true)} />
+        )}
+        {selectedNode.type === "sketch" && (
+          <>
+            <EditSketchDetailsPlug
+              currentName={selectedNode.data.label}
+              onEdit={() => setIsSketchDetailsOpen(true)}
+            />
+            <DownloadSketchPlug onDownload={() => setIsSketchDownloadOpen(true)} />
+          </>
         )}
         {isProjectBoardNode && canManageAccess && (
           <ManageAccessPlug onManage={() => setIsManageAccessOpen(true)} />
@@ -177,6 +219,24 @@ export default function NodeSettingsSidebar({
               projectId={projectId}
             />
           )}
+        </>
+      )}
+
+      {selectedNode.type === "sketch" && (
+        <>
+          <EditSketchDetailsDialog
+            open={isSketchDetailsOpen}
+            onOpenChange={setIsSketchDetailsOpen}
+            initialName={selectedNode.data.label}
+            initialDescription={selectedNode.data.caption}
+            onSave={handleSaveSketchDetails}
+          />
+          <DownloadSketchDialog
+            open={isSketchDownloadOpen}
+            onOpenChange={setIsSketchDownloadOpen}
+            sketchId={selectedNode.data.sketchId}
+            sketchName={selectedNode.data.label}
+          />
         </>
       )}
 

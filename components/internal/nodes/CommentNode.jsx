@@ -81,7 +81,7 @@ const CommentNode = ({ id, data, selected, dragging }) => {
     <>
       <div
         className={`
-            relative flex flex-col w-full h-full min-h-[68px] min-w-[300px] group rounded-lg
+            node-chrome relative flex flex-col w-full h-full min-h-[68px] min-w-[300px] group rounded-lg
             transition-all duration-300 ease-out
             ${selected ? "border-2 border-foreground" : "border-2 border-transparent hover:border-border"}
             ${dragging ? "shadow-2xl shadow-black/50 z-50" : ""}

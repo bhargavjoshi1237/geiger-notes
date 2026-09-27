@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import { cn } from "@geiger/ui";
 import { Mic, MicOff, MonitorUp, WifiOff } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 // Deterministic accent per person, so a tile keeps the same colour across a
 // call without anyone having to store one.
@@ -30,17 +30,38 @@ export function initialsOf(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function Avatar({ name, id, size = "lg" }) {
+// Profile picture when the account has one, initials otherwise, with the person's name underneath.
+function Avatar({ name, id, avatarUrl, size = "lg" }) {
   const dimension = size === "xl" ? "h-24 w-24 text-2xl" : "h-14 w-14 text-base";
   return (
-    <div
-      className={cn(
-        "flex items-center justify-center rounded-full bg-gradient-to-br font-semibold text-foreground",
-        accentFor(id || name),
-        dimension,
+    <div className="flex flex-col items-center gap-2 px-3">
+      {avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={avatarUrl}
+          alt=""
+          referrerPolicy="no-referrer"
+          className={cn("rounded-full object-cover", dimension)}
+        />
+      ) : (
+        <div
+          className={cn(
+            "flex items-center justify-center rounded-full bg-gradient-to-br font-semibold text-foreground",
+            accentFor(id || name),
+            dimension,
+          )}
+        >
+          {initialsOf(name)}
+        </div>
       )}
-    >
-      {initialsOf(name)}
+      <span
+        className={cn(
+          "max-w-full truncate font-medium text-foreground",
+          size === "xl" ? "text-sm" : "text-xs",
+        )}
+      >
+        {name || "Guest"}
+      </span>
     </div>
   );
 }
@@ -52,6 +73,7 @@ export function VideoTile({
   stream,
   name,
   id,
+  avatarUrl,
   micOn = true,
   cameraOn = true,
   sharing = false,
@@ -84,8 +106,8 @@ export function VideoTile({
           ref={videoRef}
           autoPlay
           playsInline
-          // Never play your own microphone back into the room.
-          muted={isSelf}
+          // Sound plays through RemoteAudio, which stays mounted when the camera is off.
+          muted
           className={cn(
             "absolute inset-0 h-full w-full",
             // A shared screen must never be cropped; a face is better filling
@@ -96,7 +118,7 @@ export function VideoTile({
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
-          <Avatar name={name} id={id} size={big ? "xl" : "lg"} />
+          <Avatar name={name} id={id} avatarUrl={avatarUrl} size={big ? "xl" : "lg"} />
         </div>
       )}
 
@@ -122,6 +144,20 @@ export function VideoTile({
       </div>
     </div>
   );
+}
+
+// One hidden player per remote participant, independent of their tile, so audio survives camera-off and layout swaps.
+export function RemoteAudio({ stream }) {
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    if (el.srcObject !== stream) el.srcObject = stream || null;
+    if (stream) el.play().catch(() => {});
+  }, [stream]);
+
+  return <audio ref={audioRef} autoPlay className="hidden" />;
 }
 
 export default VideoTile;

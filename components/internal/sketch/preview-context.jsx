@@ -9,7 +9,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useTheme } from "next-themes";
 import { LogoLoading } from "@geiger/ui";
 import { PenTool } from "lucide-react";
 
@@ -21,7 +20,7 @@ const SketchPreviewContext = createContext({
 });
 
 // Memo cache: sketchId -> { updatedAt, theme, svg }. Reused unless the row's
-// updated_at or the resolved theme changed, so board navigation and node
+// updated_at or the theme changed, so board navigation and node
 // remounts re-render nothing.
 const svgCache = new Map();
 
@@ -135,8 +134,8 @@ export function SketchPreviewProvider({ nodes = [], onOpenSketch = null, childre
 // overlay so the photo is not drawn twice.
 export function useSketchPreview(sketchId, filterElements = null) {
   const { rows, pendingIds, invalidateSketch, onOpenSketch } = useContext(SketchPreviewContext);
-  const { resolvedTheme } = useTheme();
-  const theme = resolvedTheme === "dark" ? "dark" : "light";
+  // Always light so strokes keep their drawn colours on the white preview in both app themes.
+  const theme = "light";
   const [rendered, setRendered] = useState(null);
   const [failed, setFailed] = useState(false);
 
@@ -210,14 +209,14 @@ export function SketchPreviewSurface({ sketchId, filterElements = null }) {
   if (status === "missing") {
     return (
       <div className="flex h-full w-full items-center justify-center">
-        <span className="text-xs text-muted-foreground">Sketch unavailable</span>
+        <span className="text-xs text-neutral-500">Sketch unavailable</span>
       </div>
     );
   }
 
   if (status === "empty") {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-neutral-500">
         <PenTool className="h-6 w-6" />
         <span className="text-xs">Empty sketch</span>
       </div>

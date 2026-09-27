@@ -1,46 +1,26 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import {
-  Copy,
   Hand,
-  Maximize2,
   Mic,
   MicOff,
-  Minimize2,
   MonitorUp,
   PhoneOff,
-  Users,
   Video as VideoIcon,
   VideoOff,
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { cn } from "@/lib/utils";
 import { hasTurn } from "@/lib/meet/ice";
 import { useMeetRoom } from "@/lib/meet/useMeetRoom";
 import { trackToStream } from "@/lib/meet/useMediaTracks";
-import { VideoTile } from "./video_tile";
+import { cn } from "@geiger/ui";
+import { RemoteAudio, VideoTile } from "./video_tile";
 
-// The active meeting surface. Layout follows the geiger-chat call stage — the
-// tile grid, the round control bar, the elapsed timer — but every tile here is a
-// real MediaStream off the peer mesh rather than a placeholder.
-//
-// When anyone shares their screen the grid gives way to a presenter layout: the
-// share fills the stage and everyone else drops to a filmstrip, because a shared
-// screen is unreadable at grid size.
-
-function useElapsed(active) {
-  const [secs, setSecs] = useState(0);
-  useEffect(() => {
-    if (!active) return undefined;
-    const id = setInterval(() => setSecs((s) => s + 1), 1000);
-    return () => clearInterval(id);
-  }, [active]);
-  const mm = String(Math.floor(secs / 60)).padStart(2, "0");
-  const ss = String(secs % 60).padStart(2, "0");
-  return `${mm}:${ss}`;
-}
+// Active meeting surface: tile grid, or a presenter layout with a filmstrip while anyone shares their screen.
+// Docks into the workspace below the Topbar (which shows the call status) and right of the 64px sidebar.
 
 function ControlButton({ icon: Icon, label, active, danger, onClick, disabled }) {
   return (
@@ -64,11 +44,9 @@ function ControlButton({ icon: Icon, label, active, danger, onClick, disabled })
   );
 }
 
-export function MeetStage({ roomId, code, me, isHost, embedded = false, onClose }) {
+export function MeetStage({ roomId, code, me, isHost, onClose, onStatsChange }) {
   const room = useMeetRoom({ roomId, me });
   const [handRaised, setHandRaised] = useState(false);
-  const [expanded, setExpanded] = useState(!embedded);
-  const elapsed = useElapsed(true);
 
   // Own camera preview: always the camera, never the screen — looking at a
   // recursive picture of your own share helps nobody.
@@ -99,10 +77,9 @@ export function MeetStage({ roomId, code, me, isHost, embedded = false, onClose 
   const gridCols =
     total <= 2 ? "grid-cols-1 sm:grid-cols-2" : total <= 4 ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-3";
 
-  const copyCode = () => {
-    navigator.clipboard.writeText(code || "");
-    toast.success("Meeting code copied");
-  };
+  useEffect(() => {
+    onStatsChange?.({ total, connected: room.connected });
+  }, [total, room.connected, onStatsChange]);
 
   const leave = () => {
     room.leave();
@@ -120,8 +97,9 @@ export function MeetStage({ roomId, code, me, isHost, embedded = false, onClose 
     <VideoTile
       key="self"
       stream={selfStream}
-      name="You"
+      name={me?.name || "You"}
       id={me?.id}
+      avatarUrl={me?.avatarUrl}
       micOn={room.micOn}
       cameraOn={room.camOn}
       isSelf
@@ -129,70 +107,17 @@ export function MeetStage({ roomId, code, me, isHost, embedded = false, onClose 
     />
   );
 
-  return (
-    <div
-      className={cn(
-        "flex flex-col bg-background",
-        embedded && !expanded
-          ? "h-full overflow-hidden rounded-xl border border-border"
-          : "fixed inset-0 z-50",
-      )}
-    >
-      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex items-center gap-1.5 rounded-full bg-red-500/15 px-2 py-0.5 text-[11px] font-semibold text-red-400">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" /> LIVE
-          </span>
-          <div className="min-w-0">
-            <h2 className="truncate text-sm font-semibold text-foreground">Meeting</h2>
-            <p className="text-[11px] text-muted-foreground">
-              {elapsed} · {total} in call
-              {room.connected ? "" : " · connecting…"}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          {code ? (
-            <button
-              type="button"
-              onClick={copyCode}
-              title="Copy meeting code"
-              className="hidden items-center gap-1.5 rounded-md border border-border px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground sm:flex"
-            >
-              {code}
-              <Copy className="h-3 w-3" />
-            </button>
-          ) : null}
-          <button
-            type="button"
-            title="Participants"
-            aria-label="Participants"
-            className="hidden h-8 items-center gap-1 rounded-full px-2 text-muted-foreground hover:bg-surface-hover hover:text-foreground sm:flex"
-          >
-            <Users className="h-[18px] w-[18px]" />
-            <span className="text-xs">{total}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            title={expanded ? "Exit fullscreen" : "Fullscreen"}
-            aria-label={expanded ? "Exit fullscreen" : "Fullscreen"}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-surface-hover hover:text-foreground"
-          >
-            {expanded ? (
-              <Minimize2 className="h-[18px] w-[18px]" />
-            ) : (
-              <Maximize2 className="h-[18px] w-[18px]" />
-            )}
-          </button>
-        </div>
-      </div>
-
+  return createPortal(
+    <div className="fixed top-14 bottom-0 left-0 right-0 z-50 flex flex-col bg-background md:left-16">
       {room.error ? (
         <div className="border-b border-amber-500/20 bg-amber-500/10 px-4 py-2 text-xs text-amber-300">
           {room.error} You can still hear and see everyone else.
         </div>
       ) : null}
+
+      {remotes.map((p) => (
+        <RemoteAudio key={p.id} stream={room.remoteStreams.get(p.id)} />
+      ))}
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
         {presenter ? (
@@ -215,6 +140,7 @@ export function MeetStage({ roomId, code, me, isHost, embedded = false, onClose 
                     stream={room.remoteStreams.get(p.id)}
                     name={p.name}
                     id={p.id}
+                    avatarUrl={p.avatarUrl}
                     micOn={p.micOn}
                     cameraOn={p.camOn}
                     connectionState={room.peerStates.get(p.id)}
@@ -231,6 +157,7 @@ export function MeetStage({ roomId, code, me, isHost, embedded = false, onClose 
                 stream={room.remoteStreams.get(p.id)}
                 name={p.name}
                 id={p.id}
+                avatarUrl={p.avatarUrl}
                 micOn={p.micOn}
                 cameraOn={p.camOn}
                 sharing={p.sharing}
@@ -306,7 +233,8 @@ export function MeetStage({ roomId, code, me, isHost, embedded = false, onClose 
           </button>
         ) : null}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

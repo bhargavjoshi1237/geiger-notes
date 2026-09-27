@@ -8,6 +8,7 @@ import {
   useReactFlow,
   useConnection,
 } from "@xyflow/react";
+import { ArrowRight } from "lucide-react";
 import Reactions from "../ui/Reactions";
 import { ResizeHandle } from "@geiger/ui";
 import { SketchPreviewSurface, useSketchPreview } from "../sketch/preview-context";
@@ -56,7 +57,7 @@ const SketchNode = ({ id, data, selected, dragging }) => {
     <div
       onDoubleClick={handleDoubleClick}
       className={`
-          relative flex flex-col w-full h-full min-h-[240px] min-w-[320px] group
+          node-chrome relative flex flex-col w-full h-full min-h-[240px] min-w-[320px] group
           transition-all duration-300 ease-out
           bg-surface-dialog shadow-lg
           ${selected ? "border-2 border-foreground" : "border-2 border-transparent hover:border-border"}
@@ -93,17 +94,19 @@ const SketchNode = ({ id, data, selected, dragging }) => {
         </div>
       )}
 
-      <div className="flex-1 w-full min-h-0 cursor-pointer">
+      <div className="flex-1 w-full min-h-0 cursor-pointer bg-white">
         <SketchPreviewSurface sketchId={sketchId} />
       </div>
 
-      <div className="flex w-full items-center justify-between px-4 py-2 gap-3 border-t border-border/50">
+      <div className="flex w-full flex-col px-4 py-2 border-t border-border/50">
         <span className="text-sm font-medium text-foreground truncate font-sans">
           {data.label || "Untitled Sketch"}
         </span>
-        <span className="text-xs text-muted-foreground truncate font-sans shrink-0">
-          Double-click to edit
-        </span>
+        {data.caption ? (
+          <span className="text-xs text-muted-foreground truncate">
+            {data.caption}
+          </span>
+        ) : null}
       </div>
 
       <Reactions
@@ -126,14 +129,21 @@ const SketchNode = ({ id, data, selected, dragging }) => {
       />
       <Handle
         type="source"
-        position={Position.Left}
+        position={Position.Right}
         className={`
-          !w-2 !h-2 !bg-muted-foreground !border-0 
-          absolute !top-[52%] !-translate-y-[50%] !-left-[1px]
-          transition-opacity duration-200
+          !w-2 !h-2 !bg-foreground !border-0
+          absolute !top-0 !-right-[1px]
+          flex items-center justify-center
+          origin-top-right
+          transition-transform duration-200 hover:scale-[2.5]
+          !translate-x-0 !translate-y-0
+          group/handle
           ${selected ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
+          z-50
         `}
-      />
+      >
+        <ArrowRight className="w-[10px] h-[10px] opacity-0 group-hover/handle:opacity-100 transition-opacity duration-200 text-background -rotate-45" />
+      </Handle>
     </div>
   );
 };

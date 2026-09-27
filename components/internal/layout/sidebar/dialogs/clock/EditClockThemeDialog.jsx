@@ -10,10 +10,10 @@ import {
   Switch,
   ToggleGroup,
   ToggleGroupItem,
+  cn,
 } from "@geiger/ui";
 import ColorPicker from "../../../../edges/ColorePicker";
 import { Settings2, Clock, Monitor, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const ColorField = ({ label, value, onChange }) => (
   <div className="flex items-center justify-between py-1.5 group/color">

@@ -175,6 +175,8 @@ export default function ProjectWorkspacePage() {
         projectId={project.id}
         canEdit={canEditSketch}
         onBack={closeSketch}
+        breadcrumbs={breadcrumbs}
+        onBreadcrumbClick={onBreadcrumbClick}
       />
     );
   }

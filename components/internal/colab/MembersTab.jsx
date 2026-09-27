@@ -1,5 +1,5 @@
 import React from "react";
-import { Badge, Button, ScrollArea } from "@geiger/ui";
+import { Badge, Button, ScrollArea, cn } from "@geiger/ui";
 import {
   Users2,
   Check,
@@ -7,7 +7,6 @@ import {
   UserMinus,
   LucideDoorClosed,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export default function MembersTab({
   isSessionActive,

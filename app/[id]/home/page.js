@@ -91,6 +91,8 @@ export default function Home({ params }) {
                 sketchId={sketchId}
                 canEdit
                 onBack={closeSketch}
+                breadcrumbs={breadcrumbs}
+                onBreadcrumbClick={onBreadcrumbClick}
             />
         );
     }
