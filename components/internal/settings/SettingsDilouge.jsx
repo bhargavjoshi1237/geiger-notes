@@ -33,6 +33,8 @@ export default function SettingsDialog({
   edgeCount = 0,
   // Open board's appearance { value, onChange, boardKey, disabled }; omitted where there's no board row.
   boardAppearance,
+  // Open project id (null on personal boards) so the Account tab can mark it.
+  projectId,
 }) {
   const [activeTab, setActiveTab] = useState("general");
 
@@ -123,7 +125,7 @@ export default function SettingsDialog({
                   onSettingsChange={onSettingsChange}
                 />
               )}
-              {activeTab === "account" && <AccountSettings />}
+              {activeTab === "account" && <AccountSettings projectId={projectId} />}
             </div>
 
             {/* Footer — only the preference tabs need a save action */}

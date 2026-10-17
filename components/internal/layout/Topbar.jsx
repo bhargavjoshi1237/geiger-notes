@@ -26,6 +26,7 @@ import { createClient } from "@/utils/supabase/client";
 
 export default function Topbar({
   id,
+  projectId,
   settings,
   onSettingsChange,
   onSettingsSave,
@@ -354,6 +355,7 @@ export default function Topbar({
         edgeCount={Array.isArray(edges) ? edges.length : 0}
         dialogContainer={dialogContainer}
         boardAppearance={boardAppearance}
+        projectId={projectId}
       />
       <CollaborateDilouge
         id={id}

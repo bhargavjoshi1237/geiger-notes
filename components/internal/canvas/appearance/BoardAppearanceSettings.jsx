@@ -1,23 +1,8 @@
 "use client";
 
 import React from "react";
-import {
-  Upload,
-  Loader2,
-  Sun,
-  Moon,
-  MonitorSmartphone,
-  Ban,
-  PaintBucket,
-  Blend,
-  Image as ImageIcon,
-  Clapperboard,
-  Sparkles,
-  Check,
-  Play,
-  Youtube,
-} from "lucide-react";
-import { Input, SegmentedTabs, SettingRow, SettingsList, Switch } from "@geiger/ui";
+import { Upload, Loader2, Sun, Moon, MonitorSmartphone, Ban, Play, Youtube } from "lucide-react";
+import { Button, Input, SegmentedTabs, SettingRow, SettingsList, Switch } from "@geiger/ui";
 import { toast } from "sonner";
 import { SliderRow, ColorRow } from "@/components/internal/layout/sidebar/plugs/PlugControls";
 import { COLORS } from "@/components/internal/edges/ColorePicker";
@@ -36,8 +21,6 @@ import { MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, uploadBackdrop } from "@/lib/canvas/u
 
 const CANVAS_COLORS = ["#fafaf9", "#f1f5f9", "#fef3c7", "#ecfccb", "#e0f2fe", "#18181b", "#0f172a", "#1c1917", "#14532d", "#3b0764"];
 
-const TYPE_ICONS = { none: Ban, color: PaintBucket, gradient: Blend, image: ImageIcon, video: Clapperboard, animated: Sparkles };
-
 const MAJOR_GRID = [0, 4, 5, 8, 10].map((v) => ({ value: v, label: v ? `${v}` : "Off" }));
 
 const THEMES = [
@@ -48,10 +31,10 @@ const THEMES = [
 
 const thumb = (url) => url.replace("w=2400", "w=320");
 
-// Titled card that groups one part of the board's look.
+// Titled section that groups one part of the board's look.
 function Block({ title, description, children }) {
   return (
-    <div className="space-y-4 rounded-md border border-border bg-muted/30 p-4">
+    <section className="space-y-3">
       {title ? (
         <div>
           <p className="text-sm font-medium text-foreground">{title}</p>
@@ -59,7 +42,7 @@ function Block({ title, description, children }) {
         </div>
       ) : null}
       {children}
-    </div>
+    </section>
   );
 }
 
@@ -75,15 +58,15 @@ function Field({ label, aside, children }) {
   );
 }
 
-// Selectable preview tile: a visual swatch over a caption, with a check on the active choice.
-function PreviewTile({ active, onClick, title, label, icon: Icon, preview, previewClassName = "", previewStyle }) {
+// Selectable preview tile: a visual swatch over a caption.
+function PreviewTile({ active, onClick, title, label, preview, previewClassName = "", previewStyle }) {
   return (
     <button
       type="button"
       title={title || label}
       aria-pressed={active}
       onClick={onClick}
-      className={`group flex flex-col gap-1.5 rounded-md border p-1.5 text-left transition-colors ${
+      className={`group flex flex-col gap-1.5 rounded-lg border p-1.5 text-left transition-colors ${
         active ? "border-foreground bg-surface-active" : "border-border hover:border-ring hover:bg-surface-hover"
       }`}
     >
@@ -92,16 +75,10 @@ function PreviewTile({ active, onClick, title, label, icon: Icon, preview, previ
         style={previewStyle}
       >
         {preview}
-        {active && (
-          <span className="absolute right-1 top-1 rounded-full bg-foreground p-0.5 text-background shadow-sm">
-            <Check className="h-2.5 w-2.5" strokeWidth={3} />
-          </span>
-        )}
       </span>
       {label ? (
-        <span className={`flex items-center gap-1 px-0.5 text-[11px] ${active ? "font-medium text-foreground" : "text-muted-foreground"}`}>
-          {Icon ? <Icon className="h-3 w-3 shrink-0" strokeWidth={2} /> : null}
-          <span className="truncate">{label}</span>
+        <span className={`truncate px-0.5 text-[11px] ${active ? "font-medium text-foreground" : "text-muted-foreground"}`}>
+          {label}
         </span>
       ) : null}
     </button>
@@ -173,15 +150,16 @@ function UploadButton({ kind, boardKey, onUploaded }) {
   return (
     <>
       <input ref={input} type="file" accept={`${kind}/*`} className="hidden" onChange={onFile} />
-      <button
+      <Button
         type="button"
+        variant="outline"
         disabled={busy}
         onClick={() => input.current?.click()}
-        className="flex h-9 items-center justify-center gap-2 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-ring hover:text-foreground disabled:opacity-60"
+        className="h-9 text-xs text-muted-foreground hover:text-foreground"
       >
         {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-        Upload {kind}
-      </button>
+        {busy ? "Uploading…" : `Upload ${kind}`}
+      </Button>
     </>
   );
 }
@@ -380,14 +358,13 @@ export default function BoardAppearanceSettings({ appearance, onChange, boardKey
   const setPattern = (patch) => onChange((a) => ({ ...a, pattern: { ...a.pattern, ...patch } }));
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <Block title="Background" description="What sits behind your nodes.">
         <div className="grid grid-cols-6 gap-2">
           {BACKGROUND_TYPES.map((opt) => (
             <PreviewTile
               key={opt.value}
               label={opt.label}
-              icon={TYPE_ICONS[opt.value]}
               active={bg.type === opt.value}
               onClick={() => setBg({ type: opt.value })}
               previewClassName={opt.value === "none" ? "" : "bg-surface-strong"}
@@ -459,9 +436,9 @@ export default function BoardAppearanceSettings({ appearance, onChange, boardKey
               label="Spacing"
               aside={
                 appearance.pattern.gap ? (
-                  <button type="button" onClick={() => setPattern({ gap: null })} className="text-[11px] text-muted-foreground hover:text-foreground">
+                  <Button type="button" variant="ghost" size="xs" onClick={() => setPattern({ gap: null })} className="-my-1 text-muted-foreground">
                     Use grid size
-                  </button>
+                  </Button>
                 ) : null
               }
             >
@@ -478,13 +455,11 @@ export default function BoardAppearanceSettings({ appearance, onChange, boardKey
         )}
       </Block>
 
-      <Block>
-        <SettingRow
-          title="Canvas theme"
-          description="Force this board light or dark regardless of the app theme."
-          control={<SegmentedTabs tabs={THEMES} value={appearance.theme} onChange={(theme) => onChange((a) => ({ ...a, theme }))} />}
-        />
-      </Block>
+      <SettingRow
+        title="Theme"
+        description="Force this board light or dark."
+        control={<SegmentedTabs tabs={THEMES} value={appearance.theme} onChange={(theme) => onChange((a) => ({ ...a, theme }))} />}
+      />
     </div>
   );
 }

@@ -597,6 +597,7 @@ export default function BoardCanvas({
 
       <div className={`absolute top-0 left-0 right-0 z-40`}>
         <Topbar
+          projectId={projectId}
           id={id}
           settings={settings}
           onSettingsChange={handleSettingsChange}
