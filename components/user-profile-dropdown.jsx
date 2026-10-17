@@ -54,7 +54,7 @@ export function UserProfileDropdown({ user }) {
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="z-[100] w-[150px] min-w-[150px] max-w-[208px] bg-surface-dialog border-border shadow-xl"
+        className="z-[100] w-[150px] min-w-[150px] max-w-[208px] bg-background border-border shadow-xl"
         onCloseAutoFocus={(event) => event.preventDefault()}
       >
         <DropdownMenuGroup>
@@ -71,7 +71,7 @@ export function UserProfileDropdown({ user }) {
           <form action={logout} onSubmit={() => clearProfileImageCache()}>
             <DropdownMenuItem
               asChild
-              className="text-text-secondary focus:bg-surface-hover focus:text-foreground cursor-pointer gap-2"
+              className="text-muted-foreground focus:bg-surface-hover focus:text-foreground cursor-pointer gap-2"
             >
               <button type="submit" className="w-full">
                 <LogOut className="w-3.5 h-3.5" />

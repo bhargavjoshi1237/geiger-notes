@@ -10,10 +10,13 @@ import {
   FlipHorizontal,
   FlipVertical,
   Pencil,
+  MoreHorizontal,
   Image as LucideImage,
 } from "lucide-react";
-import { SidebarShell, SidebarSection } from "./SidebarPrimitives";
+import { SidebarShell } from "./SidebarPrimitives";
+import { NodeAppearancePlugs } from "./plugs/NodeAppearancePlugs";
 import { ActionPlug } from "./plugs/ActionPlug";
+import { PlugPopover, PlugSection, MenuRow } from "./plugs/PlugControls";
 import ImageCaptionDialog from "./dialogs/ImageCaptionDialog";
 import ImageCropDialog from "./dialogs/ImageCropDialog";
 import ImageChangeDialog from "./dialogs/ImageChangeDialog";
@@ -26,6 +29,7 @@ export default function ImageSettingsSidebar({
   onUpdateNode,
   onBack,
   projectId,
+  onNodeCommand,
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -243,54 +247,53 @@ export default function ImageSettingsSidebar({
   return (
     <>
       <SidebarShell onBack={onBack} title="Image">
-        <SidebarSection>
-          <ActionPlug
-            icon={LucideImage}
-            label="Change Image"
-            onClick={() => setIsChangeDialogOpen(true)}
-          />
-          <ActionPlug
-            icon={Type}
-            label="Edit Caption"
-            onClick={() => setIsCaptionDialogOpen(true)}
-          />
+        <ActionPlug
+          icon={LucideImage}
+          label="Change Image"
+          onClick={() => setIsChangeDialogOpen(true)}
+        />
+        <ActionPlug
+          icon={Type}
+          label="Edit Caption"
+          onClick={() => setIsCaptionDialogOpen(true)}
+        />
+        <ActionPlug
+          icon={Crop}
+          label="Crop"
+          onClick={() => setIsCropDialogOpen(true)}
+        />
+        <ActionPlug
+          icon={Pencil}
+          label="Annotate"
+          onClick={openAnnotation}
+        />
 
-          <div className="w-full h-[1px] bg-border my-1" />
+        <div className="w-full px-2 py-2">
+          <div className="w-full h-[1px] bg-divider/60" />
+        </div>
 
-          <ActionPlug
-            icon={RotateCcw}
-            label="Rotate Left"
-            onClick={() => handleRotate(-90)}
-          />
-          <ActionPlug
-            icon={RotateCw}
-            label="Rotate Right"
-            onClick={() => handleRotate(90)}
-          />
-          <ActionPlug
-            icon={FlipHorizontal}
-            label="Flip Horizontal"
-            onClick={() => handleFlip("horizontal")}
-          />
-          <ActionPlug
-            icon={FlipVertical}
-            label="Flip Vertical"
-            onClick={() => handleFlip("vertical")}
-          />
-          <ActionPlug
-            icon={Crop}
-            label="Crop"
-            onClick={() => setIsCropDialogOpen(true)}
-          />
-
-          <div className="w-full h-[1px] bg-border my-1" />
-
-          <ActionPlug
-            icon={Pencil}
-            label="Annotate"
-            onClick={openAnnotation}
-          />
-        </SidebarSection>
+        <PlugPopover icon={MoreHorizontal} label="More options" width="w-56">
+          <PlugSection label="Transform">
+            <div className="grid grid-cols-2 gap-1">
+              <MenuRow icon={RotateCcw} label="Rotate left" onClick={() => handleRotate(-90)} />
+              <MenuRow icon={RotateCw} label="Rotate right" onClick={() => handleRotate(90)} />
+              <MenuRow icon={FlipHorizontal} label="Flip H" title="Flip horizontal" onClick={() => handleFlip("horizontal")} />
+              <MenuRow icon={FlipVertical} label="Flip V" title="Flip vertical" onClick={() => handleFlip("vertical")} />
+            </div>
+          </PlugSection>
+          <div className="h-px bg-border" />
+          <PlugSection label="Node">
+            <div className="flex flex-col gap-0.5">
+              <NodeAppearancePlugs
+                node={selectedNode}
+                onUpdateNode={onUpdateNode}
+                onNodeCommand={onNodeCommand}
+                textControls={false}
+                layout="menu"
+              />
+            </div>
+          </PlugSection>
+        </PlugPopover>
       </SidebarShell>
 
       <ImageCaptionDialog

@@ -42,7 +42,7 @@ export default function ColorPicker({
           {COLORS.map((color) => (
             <button
               key={color}
-              className="w-8 h-8 rounded-lg border border-border/50 hover:scale-110 hover:border-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-8 h-8 rounded-lg border border-border/50 hover:scale-110 hover:border-foreground dark:hover:border-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-foreground/20 dark:focus:ring-white/20"
               style={{ backgroundColor: color }}
               onClick={() => onChange(color)}
             />

@@ -74,7 +74,7 @@ export default function MembersTab({
                           onClick={() =>
                             onAcceptRequest && onAcceptRequest(user.id)
                           }
-                          className="h-7 w-7 p-0 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/20"
+                          className="h-7 w-7 p-0 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-900/20"
                         >
                           <Check className="w-3.5 h-3.5" />
                         </Button>

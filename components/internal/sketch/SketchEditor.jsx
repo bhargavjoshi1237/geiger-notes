@@ -64,7 +64,7 @@ function SaveStatus({ status, live }) {
   if (status === "saved")
     return (
       <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Check className="h-3 w-3 text-emerald-400" />
+        <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
         Saved
       </span>
     );

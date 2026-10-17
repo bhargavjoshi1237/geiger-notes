@@ -11,23 +11,19 @@ import {
 } from "@geiger/ui";
 import { GroupLabel } from "./SettingsPrimitives";
 
-const BACKGROUNDS = [
-  { label: "Dots", value: "dots" },
-  { label: "Lines", value: "lines" },
-  { label: "Cross", value: "cross" },
-  { label: "None", value: "none" },
-];
-
-// Multiples of 15 so snapping stays aligned with the 15px node resize step.
-const GRID_SIZES = [
-  { label: "S", value: 15 },
-  { label: "M", value: 30 },
-  { label: "L", value: 45 },
-];
-
 const SCROLL_MODES = [
   { label: "Pan", value: "pan" },
   { label: "Zoom", value: "zoom" },
+];
+
+const DRAG_MODES = [
+  { label: "Select", value: "select" },
+  { label: "Hand", value: "pan" },
+];
+
+const SELECTION_MODES = [
+  { label: "Touch", value: "partial" },
+  { label: "Inside", value: "full" },
 ];
 
 export default function GeneralSettings({
@@ -93,6 +89,28 @@ export default function GeneralSettings({
             onCheckedChange={(c) => set("snapToGrid", c)}
           />
           <SettingRow
+            title="Default drag tool"
+            description="What dragging on empty canvas does when a board opens."
+            control={
+              <SegmentedTabs
+                tabs={DRAG_MODES}
+                value={settings.dragMode || "select"}
+                onChange={(v) => set("dragMode", v)}
+              />
+            }
+          />
+          <SettingRow
+            title="Box selection"
+            description="Select nodes the box touches, or only ones fully inside."
+            control={
+              <SegmentedTabs
+                tabs={SELECTION_MODES}
+                value={settings.selectionMode || "partial"}
+                onChange={(v) => set("selectionMode", v)}
+              />
+            }
+          />
+          <SettingRow
             title="Scroll wheel"
             description="Pan the canvas or zoom it when scrolling."
             control={
@@ -102,41 +120,6 @@ export default function GeneralSettings({
                 onChange={(v) => set("scrollMode", v)}
               />
             }
-          />
-        </SettingsList>
-      </div>
-
-      {/* Canvas */}
-      <div className="space-y-3 pt-6 border-t border-border/50">
-        <GroupLabel>Canvas</GroupLabel>
-        <SettingsList>
-          <SettingRow
-            title="Background"
-            description="Pattern drawn behind your board."
-            control={
-              <SegmentedTabs
-                tabs={BACKGROUNDS}
-                value={settings.canvasBackground || "dots"}
-                onChange={(v) => set("canvasBackground", v)}
-              />
-            }
-          />
-          <SettingRow
-            title="Grid size"
-            description="Spacing of the background pattern and snap grid."
-            control={
-              <SegmentedTabs
-                tabs={GRID_SIZES}
-                value={settings.gridSize || 15}
-                onChange={(v) => set("gridSize", v)}
-              />
-            }
-          />
-          <SettingRow
-            title="Show minimap"
-            description="Display an overview map in the corner of the canvas."
-            checked={!!settings.showMinimap}
-            onCheckedChange={(c) => set("showMinimap", c)}
           />
         </SettingsList>
       </div>
@@ -174,7 +157,7 @@ export default function GeneralSettings({
               Restore defaults
             </h4>
             <p className="text-xs text-muted-foreground">
-              Reset all General and Defaults preferences to their original
+              Reset all General, Canvas and Defaults preferences to their original
               values.
             </p>
           </div>

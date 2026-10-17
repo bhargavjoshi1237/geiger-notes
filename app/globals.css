@@ -121,8 +121,9 @@
   }
 }
 
-/* ─── Light Theme (default) ─── */
-:root {
+/* ─── Light Theme (default); .theme-light forces it on a subtree such as a board with a light override ─── */
+:root,
+.theme-light {
   --radius: 0.625rem;
 
   /* shadcn/ui core tokens (oklch - zinc base) */
@@ -544,4 +545,86 @@
   100% {
     left: 100%;
   }
+}
+
+/* ─── Per-node appearance (lib/canvas/node-appearance.js sets nx-* classes + --nx-* vars on .react-flow__node) ─── */
+.react-flow__node.nx-border :is(.node-chrome, .node-bare):not(.node-card) {
+  outline: var(--nx-border) !important;
+  outline-offset: 0;
+}
+.react-flow__node.nx-radius :is(.node-chrome, .node-bare):not(.node-card) {
+  border-radius: var(--nx-radius) !important;
+}
+.react-flow__node.nx-shadow :is(.node-chrome, .node-bare):not(.node-card) {
+  box-shadow: var(--nx-shadow) !important;
+}
+.react-flow__node.nx-font :is(.node-chrome, .node-bare),
+.react-flow__node.nx-font :is(.node-chrome, .node-bare) :is(p, span, textarea, input, td, th, li, a, h1, h2, h3, h4, button, div) {
+  font-family: var(--nx-font) !important;
+}
+.react-flow__node.nx-size :is(.node-chrome, .node-bare) :is(p, textarea, input, td, th, li, h1, h2, h3, h4) {
+  font-size: var(--nx-font-size) !important;
+}
+.react-flow__node.nx-text :is(.node-chrome, .node-bare) :is(p, span, textarea, input, td, th, li, a, h1, h2, h3, h4) {
+  color: var(--nx-text) !important;
+}
+.react-flow__node.nx-locked::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background-color: var(--surface-dialog);
+  border: 1px solid var(--border);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='10' rx='2'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 8 0v4'/%3E%3C/svg%3E");
+  background-size: 10px;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 40;
+}
+
+/* ─── Live canvas backgrounds (CanvasBackdrop animated presets) ─── */
+.canvas-live-aurora {
+  background:
+    radial-gradient(40% 50% at 20% 30%, color-mix(in oklab, #22d3ee 45%, transparent), transparent 70%),
+    radial-gradient(35% 45% at 80% 20%, color-mix(in oklab, #a78bfa 45%, transparent), transparent 70%),
+    radial-gradient(45% 50% at 60% 85%, color-mix(in oklab, #34d399 40%, transparent), transparent 70%),
+    var(--background);
+  background-size: 160% 160%;
+  filter: saturate(1.1);
+  animation: canvas-aurora 28s ease-in-out infinite alternate;
+}
+.canvas-live-drift {
+  background: linear-gradient(120deg, #312e81, #0f766e, #9d174d, #1e3a8a);
+  background-size: 400% 400%;
+  opacity: 0.85;
+  animation: canvas-drift 40s ease-in-out infinite;
+}
+.canvas-live-grain {
+  inset: -20px;
+  background-color: var(--background);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
+  animation: canvas-grain 1.2s steps(6) infinite;
+}
+@keyframes canvas-aurora {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 30% 100%; }
+}
+@keyframes canvas-drift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes canvas-grain {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-8px, 6px); }
+  50% { transform: translate(6px, -10px); }
+  75% { transform: translate(-4px, -6px); }
+  100% { transform: translate(0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .canvas-live-aurora, .canvas-live-drift, .canvas-live-grain { animation: none; }
 }

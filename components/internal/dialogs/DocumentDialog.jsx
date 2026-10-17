@@ -294,7 +294,7 @@ const DocumentEditor = ({ documentId, onClose, isOpen }) => {
       editorProps: {
         attributes: {
           class:
-            "prose prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[500px] text-foreground p-6",
+            "prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[500px] text-foreground p-6",
         },
       },
       onUpdate: ({ editor }) => {

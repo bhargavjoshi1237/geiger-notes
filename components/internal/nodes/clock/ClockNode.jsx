@@ -76,8 +76,8 @@ const ClockNode = ({ id, data, selected, dragging }) => {
   const centerDotColor = data.centerDotColor || "var(--node-default)";
   const borderColor = data.borderColor || "var(--border)";
 
-  const digitalTextColor = data.digitalTextColor || "#ffffff";
-  const digitalDateColor = data.digitalDateColor || "#a1a1aa";
+  const digitalTextColor = data.digitalTextColor || "var(--primary)";
+  const digitalDateColor = data.digitalDateColor || "var(--muted-foreground)";
   const digitalShowDate = data.digitalShowDate !== false;
   const digitalShowSeconds = data.digitalShowSeconds !== false;
   const circularSeconds = data.circularSeconds || false;
@@ -279,7 +279,7 @@ const ClockNode = ({ id, data, selected, dragging }) => {
                     className={`absolute inset-[8px] pointer-events-none ${showBackground ? "rounded-[12px]" : "rounded-full"}`}
                     style={{
                       padding: "4px",
-                      background: "rgba(255,255,255,0.06)",
+                      background: "color-mix(in oklab, var(--foreground) 6%, transparent)",
                       WebkitMask:
                         "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
                       WebkitMaskComposite: "xor",

@@ -21,6 +21,8 @@ import ManageAccessDialog from "./dialogs/ManageAccessDialog";
 import EditSketchDetailsDialog from "./dialogs/sketch/EditSketchDetailsDialog";
 import DownloadSketchDialog from "./dialogs/sketch/DownloadSketchDialog";
 import { canManageBoard } from "@/lib/supabase/board-access";
+import { NodeAppearancePlugs } from "./plugs/NodeAppearancePlugs";
+import { NODE_META, NODE_SETTINGS } from "@/components/internal/nodes/registry";
 import { toast } from "sonner";
 
 export default function NodeSettingsSidebar({
@@ -28,6 +30,7 @@ export default function NodeSettingsSidebar({
   onUpdateNode,
   onBack,
   projectId,
+  onNodeCommand,
 }) {
   const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const [isEditIconOpen, setIsEditIconOpen] = useState(false);
@@ -67,13 +70,9 @@ export default function NodeSettingsSidebar({
     });
   };
 
-  const currentColor = selectedNode.data?.backgroundColor || "#333333";
-
-  const handleAddReaction = (emoji) => {
-    const currentReactions = selectedNode.data?.reactions || {};
-    const newCount = (currentReactions[emoji] || 0) + 1;
-    updateData({ reactions: { ...currentReactions, [emoji]: newCount } });
-  };
+  const currentColor = selectedNode.data?.backgroundColor;
+  const TypeSettings = NODE_SETTINGS[selectedNode.type];
+  const showCardColor = NODE_META[selectedNode.type]?.cardColor !== false;
 
   const handleSaveBoardName = async (newName, newCaption) => {
     updateData({ label: newName, name: newName, caption: newCaption });
@@ -171,13 +170,13 @@ export default function NodeSettingsSidebar({
           <EditClockThemePlug onEdit={() => setIsEditClockThemeOpen(true)} />
         ) : selectedNode.type === "calendar" ? (
           <EditCalendarThemePlug onEdit={() => setIsEditCalendarThemeOpen(true)} />
-        ) : (
+        ) : showCardColor ? (
           <ColorPlug
             value={currentColor}
             onChange={(color) => updateData({ backgroundColor: color })}
             label="Card Color"
           />
-        )}
+        ) : null}
 
         {selectedNode.type === "custom" && (
           <TextFormattingPlug
@@ -185,6 +184,22 @@ export default function NodeSettingsSidebar({
             onChange={(updates) => updateData(updates)}
           />
         )}
+
+        {TypeSettings && (
+          <TypeSettings
+            node={selectedNode}
+            updateData={updateData}
+            updateNode={(patch) => onUpdateNode(selectedNode.id, patch)}
+          />
+        )}
+
+        <div className="w-8 h-px bg-divider/60 my-1" />
+        <NodeAppearancePlugs
+          node={selectedNode}
+          onUpdateNode={onUpdateNode}
+          onNodeCommand={onNodeCommand}
+          textControls={!["clock", "calendar", "image", "sticker"].includes(selectedNode.type)}
+        />
       </SidebarShell>
 
       {selectedNode.type === "board" && (

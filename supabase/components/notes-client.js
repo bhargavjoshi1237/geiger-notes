@@ -5,11 +5,14 @@
 // Keep this folder for small, shared helpers — not feature-specific data access.
 
 import { createClient } from "@/lib/supabase/client";
+import { isPlaygroundActive } from "@/lib/playground/mode";
 
 // True only when both Supabase env vars are present. Guard every DB call with it
 // so a missing env returns null/[]/false (the screen shows an empty state)
 // rather than crashing — there is no static sample-data fallback.
 export function isSupabaseConfigured() {
+  // The landing playground always has its in-memory database.
+  if (isPlaygroundActive()) return true;
   return Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY

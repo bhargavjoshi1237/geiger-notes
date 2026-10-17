@@ -5,41 +5,33 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   ReactFlow,
   Background,
+  BackgroundVariant,
   SelectionMode,
   MiniMap,
   addEdge,
-  MarkerType,
+  ConnectionLineType,
 } from "@xyflow/react";
 import { useUserSettings } from "@/lib/settings/useUserSettings";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import Sidebar from "@/components/internal/layout/Sidebar";
 import Topbar from "@/components/internal/layout/Topbar";
-import CustomNode from "@/components/internal/nodes/CustomNode";
 import CenterEdge from "@/components/internal/edges/CenterEdge";
 import { useHomeLogic } from "@/lib/wrapers/homepage/HomePage";
 import CanvasSkeleton from "@/components/internal/canvas/CanvasSkeleton";
-import CommentNode from "@/components/internal/nodes/CommentNode";
-import LinkNode from "@/components/internal/nodes/LinkNode";
-import BoardNode from "@/components/internal/nodes/BoardNode";
-import DocumentNode from "@/components/internal/nodes/DocumentNode";
-import SketchNode from "@/components/internal/nodes/SketchNode";
 import { SketchPreviewProvider } from "@/components/internal/sketch/preview-context";
-import ImageNode from "@/components/internal/nodes/ImageNode";
-import FileNode from "@/components/internal/nodes/FileNode";
-import ClockNode from "@/components/internal/nodes/clock/ClockNode";
-import CalendarNode from "@/components/internal/nodes/calendar/CalendarNode";
-import CheckboxNode from "@/components/internal/nodes/CheckboxNode";
-import TableNode from "@/components/internal/nodes/TableNode";
-import ColumnNode, {
-  absorbDraggedNode,
-  COLUMN_DEFAULT_SIZE,
-  columnNodeDefaults,
-  dropIntoColumnAtPoint,
-} from "@/components/internal/nodes/ColumnNode";
+import { absorbDraggedNode, dropIntoColumnAtPoint } from "@/components/internal/nodes/ColumnNode";
+import { NODE_TYPES, createLocalNode, newNodeId } from "@/components/internal/nodes/registry";
 import BoardKeyDialog from "@/components/internal/layout/sidebar/dialogs/BoardKeyDialog";
+import CanvasBackdrop from "@/components/internal/canvas/appearance/CanvasBackdrop";
 import { checkBoardEntry } from "@/lib/supabase/board-access";
+import { connectionLineStyleFor, newEdgeProps } from "@/lib/canvas/edge-style";
+import { hasBackdrop, resolvePattern } from "@/lib/canvas/appearance";
+import { useBoardAppearance } from "@/lib/canvas/useBoardAppearance";
+import { stackIndex } from "@/lib/canvas/node-appearance";
 import "@xyflow/react/dist/style.css";
+
+const EDGE_TYPES = { center: CenterEdge };
 
 export default function BoardCanvas({
   id,
@@ -50,7 +42,7 @@ export default function BoardCanvas({
   onBreadcrumbClick,
   onBoardNameResolved,
 }) {
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
   // Advisory access for the currently open board. Starts editable and tightens
   // once resolved; personal boards and the project home board stay editable.
@@ -75,7 +67,6 @@ export default function BoardCanvas({
     viewport,
     onNodesChange,
     onEdgesChange,
-    onNodeDragStop,
     onMove,
     isInitialized,
     isLoading,
@@ -100,35 +91,8 @@ export default function BoardCanvas({
   } = useUserSettings();
 
   const onConnect = React.useCallback(
-    (connection) => {
-      const d = settings.defaultEdge || {};
-      const stroke = d.stroke || "#71717a";
-      setEdges((eds) =>
-        addEdge(
-          {
-            ...connection,
-            type: "center",
-            animated: !!d.animated,
-            style: {
-              stroke,
-              strokeWidth: d.strokeWidth || 2,
-              strokeDasharray: d.dashed ? "6 6" : undefined,
-            },
-            markerEnd:
-              d.arrowhead === false
-                ? undefined
-                : {
-                    type: MarkerType.ArrowClosed,
-                    width: 20,
-                    height: 20,
-                    color: stroke,
-                  },
-          },
-          eds
-        )
-      );
-    },
-    [settings.defaultEdge, setEdges]
+    (connection) => setEdges((eds) => addEdge({ ...connection, ...newEdgeProps(settings.defaultEdge) }, eds)),
+    [settings.defaultEdge, setEdges],
   );
 
   const gridSize = settings.gridSize || 15;
@@ -138,6 +102,8 @@ export default function BoardCanvas({
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const lastPaneClick = React.useRef(0);
   const toggleSidebar = React.useCallback(() => setSidebarOpen((v) => !v), []);
+
+  const handMode = settings.dragMode === "pan";
 
   const router = useRouter();
   const pathname = usePathname();
@@ -157,7 +123,7 @@ export default function BoardCanvas({
       params.set("sketch", sketchId);
       router.push(`${pathname}?${params.toString()}`);
     },
-    [router, pathname, searchParams]
+    [router, pathname, searchParams],
   );
 
   const onDragOver = React.useCallback((event) => {
@@ -205,7 +171,7 @@ export default function BoardCanvas({
           const boardData = await response.json();
 
           const newNode = {
-            id: `node-${Date.now()}`,
+            id: newNodeId(),
             type: "board",
             position,
             data: {
@@ -238,7 +204,7 @@ export default function BoardCanvas({
           const docData = await response.json();
 
           const newNode = {
-            id: `node-${Date.now()}`,
+            id: newNodeId(),
             type: "document",
             position,
             data: { label: "Untitled Document", documentId: docData.id },
@@ -276,7 +242,7 @@ export default function BoardCanvas({
           const sketchData = await response.json();
 
           const newNode = {
-            id: `node-${Date.now()}`,
+            id: newNodeId(),
             type: "sketch",
             position,
             data: { label: "Untitled Sketch", sketchId: sketchData.id },
@@ -290,123 +256,8 @@ export default function BoardCanvas({
         return;
       }
 
-      if (type === "image") {
-        const newNode = {
-          id: `node-${Date.now()}`,
-          type: "image",
-          position,
-          data: {
-            label: "Image",
-            src: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?q=80&w=1000&auto=format&fit=crop",
-            alt: "Placeholder Image",
-          },
-          style: { width: 200, height: 250 },
-        };
-        setNodes((nds) => nds.concat(newNode));
-        return;
-      }
-
-      if (type === "file") {
-        const newNode = {
-          id: `node-${Date.now()}`,
-          type: "file",
-          position,
-          data: {
-            label: "File",
-            fileName: "No file selected",
-            fileSize: 0,
-            fileType: "",
-            src: null,
-          },
-          style: { width: 200, height: 80 },
-        };
-        setNodes((nds) => nds.concat(newNode));
-        return;
-      }
-
-      if (type === "calendar") {
-        const newNode = {
-          id: `node-${Date.now()}`,
-          type: "calendar",
-          position,
-          data: {
-            calendarTheme: "light",
-            calendarStyle: "default",
-            backgroundColor: "#2a2a2a",
-          },
-          style: { width: 200, height: 200 },
-        };
-        setNodes((nds) => nds.concat(newNode));
-        return;
-      }
-
-      if (type === "clock") {
-        const newNode = {
-          id: `node-${Date.now()}`,
-          type: "clock",
-          position,
-          data: {
-            label: "Clock",
-            clockType: "analog",
-            backgroundColor: "#232323",
-          },
-          style: { width: 156, height: 156 },
-        };
-        setNodes((nds) => nds.concat(newNode));
-        return;
-      }
-
-      if (type === "todo") {
-        const newNode = {
-          id: `node-${Date.now()}`,
-          type: "todo",
-          position,
-          data: {
-            items: [{ id: `todo-${Date.now()}`, text: "", checked: false }],
-          },
-        };
-        setNodes((nds) => nds.concat(newNode));
-        return;
-      }
-
-      if (type === "table") {
-        const newNode = {
-          id: `node-${Date.now()}`,
-          type: "table",
-          position,
-          data: {
-            columns: ["Column 1", "Column 2"],
-            rows: [
-              ["", ""],
-              ["", ""],
-            ],
-          },
-        };
-        setNodes((nds) => nds.concat(newNode));
-        return;
-      }
-
-      if (type === "column") {
-        const newNode = {
-          id: `node-${Date.now()}`,
-          type: "column",
-          position,
-          data: columnNodeDefaults(),
-          style: { ...COLUMN_DEFAULT_SIZE },
-        };
-        setNodes((nds) => nds.concat(newNode));
-        return;
-      }
-
-      const newNode = {
-        id: `node-${Date.now()}`,
-        type,
-        position,
-        data: { label: "" },
-        style: { width: 338, height: 68 },
-      };
-
-      setNodes((nds) => nds.concat(newNode));
+      const newNode = createLocalNode(type, position);
+      if (newNode) setNodes((nds) => nds.concat(newNode));
     },
     [rfInstance, setNodes, projectId, boardId, canEdit],
   );
@@ -424,7 +275,7 @@ export default function BoardCanvas({
             y: event.clientY,
           });
           const newNode = {
-            id: `node-${Date.now()}`,
+            id: newNodeId(),
             type: "custom",
             position,
             data: { label: "" },
@@ -441,17 +292,91 @@ export default function BoardCanvas({
   const selectedEdge = useMemo(() => edges.find((e) => e.selected), [edges]);
   const selectedNode = useMemo(() => nodes.find((n) => n.selected), [nodes]);
 
-  // Dropping a text-like node onto a column folds it into the column.
+  const [trash, setTrash] = React.useState([]);
+  const nodesRef = React.useRef(nodes);
+  const edgesRef = React.useRef(edges);
+  React.useEffect(() => {
+    nodesRef.current = nodes;
+    edgesRef.current = edges;
+  }, [nodes, edges]);
+
+  // Drag stop: text-like nodes dropped on a column fold into it.
   const handleNodeDragStop = React.useCallback(
     (event, node) => {
-      const absorbed = absorbDraggedNode(rfInstance?.getNodes?.() ?? nodes, node);
-      if (absorbed) {
-        setNodes(absorbed);
-        return;
-      }
-      onNodeDragStop(event, node);
+      const absorbed = absorbDraggedNode(rfInstance?.getNodes?.() ?? nodesRef.current, node);
+      if (absorbed) setNodes(absorbed);
     },
-    [rfInstance, nodes, setNodes, onNodeDragStop],
+    [rfInstance, setNodes],
+  );
+
+  // Deletions are captured for Trash before they reach React Flow.
+  const handleNodesChange = React.useCallback(
+    (changes) => {
+      const removedIds = new Set(changes.filter((c) => c.type === "remove").map((c) => c.id));
+      const gone = removedIds.size ? nodesRef.current.filter((n) => removedIds.has(n.id)) : [];
+      if (gone.length) {
+        const goneIds = new Set(gone.map((n) => n.id));
+        const d = gone[0].data || {};
+        const title = String(d.title || d.label || d.text || d.name || d.question || "").slice(0, 40);
+        setTrash((t) =>
+          [
+            {
+              id: newNodeId(),
+              title: title || `${gone[0].type} node`,
+              nodes: gone,
+              edges: edgesRef.current.filter((e) => goneIds.has(e.source) || goneIds.has(e.target)),
+              deletedAt: Date.now(),
+            },
+            ...t,
+          ].slice(0, 30),
+        );
+      }
+
+      onNodesChange(changes);
+    },
+    [onNodesChange],
+  );
+
+  const restoreFromTrash = React.useCallback(
+    (entryId) => {
+      const entry = trash.find((t) => t.id === entryId);
+      if (!entry) return;
+      setTrash((t) => t.filter((x) => x.id !== entryId));
+      setNodes((nds) => {
+        const ids = new Set(nds.map((n) => n.id));
+        return nds.concat(entry.nodes.filter((n) => !ids.has(n.id)).map((n) => ({ ...n, selected: false })));
+      });
+      setEdges((eds) => {
+        const ids = new Set(eds.map((e) => e.id));
+        return eds.concat(entry.edges.filter((e) => !ids.has(e.id)).map((e) => ({ ...e, selected: false })));
+      });
+      toast.success("Restored");
+    },
+    [trash, setNodes, setEdges],
+  );
+
+  // Arrange commands from the node sidebar, which sits outside the React Flow provider.
+  const handleNodeCommand = React.useCallback(
+    (command, nodeId) => {
+      if (command === "front" || command === "back") {
+        setNodes((nds) => nds.map((n) => (n.id === nodeId ? { ...n, zIndex: stackIndex(nds, nodeId, command) } : n)));
+      } else if (command === "duplicate") {
+        setNodes((nds) => {
+          const src = nds.find((n) => n.id === nodeId);
+          if (!src) return nds;
+          const copy = {
+            ...structuredClone(src),
+            id: newNodeId(),
+            position: { x: src.position.x + 30, y: src.position.y + 30 },
+            selected: true,
+          };
+          return nds.map((n) => (n.selected ? { ...n, selected: false } : n)).concat(copy);
+        });
+      } else if (command === "delete") {
+        rfInstance?.deleteElements({ nodes: [{ id: nodeId }] });
+      }
+    },
+    [setNodes, rfInstance],
   );
 
   const updateEdge = React.useCallback(
@@ -480,32 +405,6 @@ export default function BoardCanvas({
     setNodes((nds) => nds.map((n) => ({ ...n, selected: false })));
   }, [setNodes]);
 
-  const nodeTypes = useMemo(
-    () => ({
-      custom: CustomNode,
-      comment: CommentNode,
-      link: LinkNode,
-      board: BoardNode,
-      document: DocumentNode,
-      sketch: SketchNode,
-      image: ImageNode,
-      file: FileNode,
-      clock: ClockNode,
-      calendar: CalendarNode,
-      todo: CheckboxNode,
-      table: TableNode,
-      column: ColumnNode,
-    }),
-    [],
-  );
-
-  const edgeTypes = useMemo(
-    () => ({
-      center: CenterEdge,
-    }),
-    [],
-  );
-
   const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
@@ -519,10 +418,14 @@ export default function BoardCanvas({
 
   React.useEffect(() => {
     if (isInitialized && rfInstance && !hasAnimated.current && viewport) {
-      rfInstance.setViewport(viewport, { duration: 1600 });
+      if (settings.fitViewOnOpen && nodesRef.current.length) {
+        rfInstance.fitView({ padding: 0.15, duration: 1200 });
+      } else {
+        rfInstance.setViewport(viewport, { duration: 1600 });
+      }
       hasAnimated.current = true;
     }
-  }, [isInitialized, rfInstance, viewport]);
+  }, [isInitialized, rfInstance, viewport, settings.fitViewOnOpen]);
 
   const handleMerge = React.useCallback(
     (newNodes, newEdges) => {
@@ -535,13 +438,8 @@ export default function BoardCanvas({
   // Pending keyed board awaiting its access key before navigation.
   const [keyPrompt, setKeyPrompt] = React.useState(null);
 
-  const onNodeDoubleClick = React.useCallback(
-    async (event, node) => {
-      if (node.type !== "board") return;
-
-      const targetId = node.data.boardId;
-      const name = node.data.name;
-
+  const openBoard = React.useCallback(
+    async (targetId, name) => {
       // Personal boards (no project) are unchanged; project boards are gated.
       if (!projectId) {
         onNavigate(targetId, name);
@@ -562,6 +460,25 @@ export default function BoardCanvas({
     [onNavigate, projectId],
   );
 
+  const onNodeDoubleClick = React.useCallback(
+    (event, node) => {
+      if (node.type === "board") openBoard(node.data.boardId, node.data.name);
+    },
+    [openBoard],
+  );
+
+  // Mirror nodes ask to open their source board.
+  React.useEffect(() => {
+    const open = (e) => {
+      const { boardId: target, name } = e.detail || {};
+      if (!target) return;
+      if (target === "home") onBreadcrumbClick?.(null);
+      else openBoard(target, name);
+    };
+    window.addEventListener("geiger:open-board", open);
+    return () => window.removeEventListener("geiger:open-board", open);
+  }, [openBoard, onBreadcrumbClick]);
+
   const handleKeySubmit = React.useCallback(
     (value) => {
       if (!keyPrompt) return;
@@ -576,7 +493,17 @@ export default function BoardCanvas({
     [keyPrompt, onNavigate],
   );
 
-  const colorMode = theme === "light" ? "light" : "dark";
+  // Per-board look: backdrop, pattern overrides and an optional forced canvas theme.
+  const { appearance, update: updateAppearance } = useBoardAppearance(boardId, projectId, Boolean(id || projectId));
+  const themeOverride = appearance.theme;
+  const colorMode = themeOverride !== "inherit" ? themeOverride : resolvedTheme === "light" ? "light" : "dark";
+  const themeClass = themeOverride === "dark" ? "dark" : themeOverride === "light" ? "theme-light" : "";
+  const pattern = resolvePattern(appearance.pattern, settings);
+  const backdrop = hasBackdrop(appearance);
+  const boardAppearance = React.useMemo(
+    () => ({ value: appearance, onChange: updateAppearance, boardKey: boardId || projectId || "home", disabled: !canEdit }),
+    [appearance, updateAppearance, boardId, projectId, canEdit],
+  );
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background text-foreground">
@@ -590,15 +517,14 @@ export default function BoardCanvas({
 
       <div
         data-node-style={settings.nodeStyle || "classic"}
-        className={`absolute inset-0 transition-opacity duration-1000 ${
-          !isInitialized || isLoading ? "opacity-0 pointer-events-none" : "opacity-100"
-        }`}
+        className={`absolute inset-0 transition-opacity duration-1000 ${themeClass ? `${themeClass} bg-background text-foreground` : ""} ${!isInitialized || isLoading ? "opacity-0 pointer-events-none" : "opacity-100"}`}
       >
+        <CanvasBackdrop appearance={appearance} viewport={viewport} />
         <SketchPreviewProvider nodes={nodes} onOpenSketch={openSketch}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
+          onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onNodeDragStop={handleNodeDragStop}
@@ -608,49 +534,68 @@ export default function BoardCanvas({
           onDragOver={onDragOver}
           onDrop={onDrop}
           onNodeDoubleClick={onNodeDoubleClick}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
+          nodeTypes={NODE_TYPES}
+          edgeTypes={EDGE_TYPES}
           colorMode={colorMode}
           defaultViewport={viewport}
-          className="bg-background touch-none"
+          className={`touch-none ${backdrop ? "!bg-transparent" : "bg-background"}`}
+          style={backdrop ? { "--xy-background-color": "transparent" } : undefined}
           proOptions={{ hideAttribution: true }}
           minZoom={0.1}
-          maxZoom={2}
+          maxZoom={Number(settings.maxZoom) || 2}
           nodesDraggable={canEdit}
           nodesConnectable={canEdit}
           deleteKeyCode={canEdit ? ["Backspace", "Delete"] : null}
-          panOnDrag={isMobile ? true : panOnDrag}
-          selectionOnDrag={isMobile ? false : selectionOnDrag}
+          panOnDrag={isMobile || handMode ? true : panOnDrag}
+          selectionOnDrag={isMobile || handMode ? false : selectionOnDrag}
           panOnScroll={panOnScroll && !scrollZooms}
           zoomOnScroll={zoomOnScroll || scrollZooms}
           zoomOnDoubleClick={false}
-          selectionMode={SelectionMode.Partial}
+          selectionMode={settings.selectionMode === "full" ? SelectionMode.Full : SelectionMode.Partial}
           snapToGrid={!!settings.snapToGrid}
           snapGrid={[gridSize, gridSize]}
+          connectionLineType={ConnectionLineType.Straight}
+          connectionLineStyle={connectionLineStyleFor(settings.defaultEdge)}
         >
-          {settings.canvasBackground !== "none" && (
+          {pattern.variant !== "none" && (
             <Background
-              color="var(--canvas-dots)"
-              gap={gridSize}
-              size={settings.canvasBackground === "cross" ? 6 : 1}
-              variant={settings.canvasBackground || "dots"}
+              id="minor"
+              color={pattern.color}
+              bgColor={backdrop ? "transparent" : undefined}
+              gap={pattern.gap}
+              size={pattern.size}
+              lineWidth={pattern.variant === "lines" ? pattern.size : 1}
+              variant={pattern.variant}
+              style={{ opacity: pattern.opacity }}
+            />
+          )}
+          {pattern.variant !== "none" && pattern.majorEvery > 0 && (
+            <Background
+              id="major"
+              color={pattern.color}
+              bgColor="transparent"
+              gap={pattern.gap * pattern.majorEvery}
+              lineWidth={Math.max(1, pattern.size) * 1.6}
+              variant={BackgroundVariant.Lines}
+              style={{ opacity: Math.min(1, pattern.opacity * 1.4) }}
             />
           )}
           {settings.showMinimap && (
             <MiniMap
+              position={settings.minimapPosition || "bottom-right"}
               pannable
               zoomable
               className="!bg-surface-dialog !border !border-border rounded-md"
               nodeColor="var(--minimap-node)"
               nodeStrokeColor="var(--minimap-stroke)"
-              maskColor={theme === "light" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)"}
+              maskColor={colorMode === "light" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)"}
             />
           )}
         </ReactFlow>
         </SketchPreviewProvider>
       </div>
 
-      <div className="absolute top-0 left-0 right-0 z-40">
+      <div className={`absolute top-0 left-0 right-0 z-40`}>
         <Topbar
           id={id}
           settings={settings}
@@ -660,6 +605,7 @@ export default function BoardCanvas({
           onSettingsReset={resetSettings}
           settingsDirty={settingsDirty}
           settingsSaving={settingsSaving}
+          boardAppearance={boardAppearance}
           nodes={nodes}
           edges={edges}
           onMerge={handleMerge}
@@ -670,7 +616,11 @@ export default function BoardCanvas({
         />
       </div>
 
-      <div className={`absolute top-14 bottom-0 left-0 z-40 transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
+      <div
+        className={`absolute top-14 bottom-0 left-0 z-40 transition-all duration-300 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+      >
         <Sidebar
           selectedEdge={selectedEdge}
           onUpdateEdge={updateEdge}
@@ -680,10 +630,17 @@ export default function BoardCanvas({
           onDeselectNode={deselectNodes}
           enabledTools={settings.toolbarTools}
           projectId={projectId}
+          onNodeCommand={handleNodeCommand}
+          trash={trash}
+          onRestore={restoreFromTrash}
         />
       </div>
 
-      <div className={`absolute bottom-4 z-50 transition-all duration-300 ${sidebarOpen ? "left-20" : "left-4"}`}>
+      <div
+        className={`absolute bottom-4 z-50 flex flex-col gap-2 transition-all duration-300 ${
+          sidebarOpen ? "left-20" : "left-4"
+        }`}
+      >
         <div className="flex flex-col bg-zoom-bg backdrop-blur-md rounded-lg shadow-xl border border-border/50 overflow-hidden">
           <button
             onClick={() => rfInstance?.zoomIn({ duration: 300 })}

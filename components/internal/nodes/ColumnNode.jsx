@@ -47,6 +47,7 @@ const FALLBACK_SIZE = {
   file: { w: 200, h: 80 },
   clock: { w: 156, h: 156 },
   calendar: { w: 200, h: 200 },
+  sketch: { w: 320, h: 240 },
 };
 
 const KIND_PLACEHOLDER = {

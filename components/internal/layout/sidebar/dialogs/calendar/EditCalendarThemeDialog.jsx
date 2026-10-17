@@ -379,7 +379,7 @@ export default function EditCalendarThemeDialog({
               <div
                 className="flex flex-col rounded-xl overflow-hidden"
                 style={{
-                  backgroundColor: "#2a2a2a",
+                  backgroundColor: "var(--surface-hover)",
                   width: `${previewDimensions.width}px`,
                   height: `${previewDimensions.height}px`,
                 }}

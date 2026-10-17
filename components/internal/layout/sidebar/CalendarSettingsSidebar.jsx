@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { SidebarShell } from "./SidebarPrimitives";
+import { NodeAppearancePlugs } from "./plugs/NodeAppearancePlugs";
 import { ColorPlug } from "./plugs/ColorPlug";
 import { ReactionPlug } from "./plugs/ReactionPlug";
 import { LabelPlug } from "./plugs/LabelPlug";
@@ -12,6 +13,7 @@ export default function CalendarSettingsSidebar({
   selectedNode,
   onUpdateNode,
   onBack,
+  onNodeCommand,
 }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -23,7 +25,7 @@ export default function CalendarSettingsSidebar({
     });
   };
 
-  const currentColor = selectedNode.data?.backgroundColor || "#333333";
+  const currentColor = selectedNode.data?.backgroundColor;
 
   const handleAddReaction = (emoji) => {
     const currentReactions = selectedNode.data?.reactions || {};
@@ -54,6 +56,13 @@ export default function CalendarSettingsSidebar({
         />
 
         <ReactionPlug onReaction={handleAddReaction} />
+        <div className="w-8 h-px bg-divider/60 my-1" />
+        <NodeAppearancePlugs
+          node={selectedNode}
+          onUpdateNode={onUpdateNode}
+          onNodeCommand={onNodeCommand}
+          textControls={false}
+        />
       </SidebarShell>
 
       <EditCalendarThemeDialog

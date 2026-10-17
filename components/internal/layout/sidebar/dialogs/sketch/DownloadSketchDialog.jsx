@@ -18,7 +18,7 @@ const FORMAT_OPTIONS = [
     label: "PNG",
     description: "Image on white",
     icon: Image,
-    color: "text-blue-400",
+    color: "text-blue-500 dark:text-blue-400",
     accent: "bg-blue-400/10 border-blue-400/30",
   },
   {
@@ -26,7 +26,7 @@ const FORMAT_OPTIONS = [
     label: "SVG",
     description: "Scalable vector",
     icon: Shapes,
-    color: "text-green-400",
+    color: "text-green-600 dark:text-green-400",
     accent: "bg-green-400/10 border-green-400/30",
   },
   {
@@ -34,7 +34,7 @@ const FORMAT_OPTIONS = [
     label: "Excalidraw",
     description: "Editable .excalidraw file",
     icon: Braces,
-    color: "text-yellow-400",
+    color: "text-yellow-600 dark:text-yellow-400",
     accent: "bg-yellow-400/10 border-yellow-400/30",
   },
 ];

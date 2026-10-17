@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import BoardPlaygroundCanvas from "@/components/internal/canvas/BoardPlaygroundCanvas";
+import PlaygroundFrame from "@/components/landing/PlaygroundFrame";
+
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export default function LandingBoardShowcase({
   ctaHref,
@@ -31,7 +33,7 @@ export default function LandingBoardShowcase({
 
           <CtaLink
             href={ctaHref}
-            className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-5 font-medium text-[#161616] transition-colors hover:bg-white/90"
           >
             {ctaLabel || "Checkout Notes"}
             <ArrowRight className="h-4 w-4" />
@@ -40,9 +42,7 @@ export default function LandingBoardShowcase({
         </div>
 
         <div className="relative rounded-2xl border border-border/80 bg-background/70 p-2 shadow-2xl backdrop-blur-md sm:p-3">
-          <div className="h-[430px] overflow-hidden rounded-xl border border-border bg-background sm:h-[460px] lg:h-[600px]">
-            <BoardPlaygroundCanvas />
-          </div>
+          <PlaygroundFrame src={`${BASE_PATH}/playground`} title="Geiger Notes playground" />
         </div>
       </div>
     </section>

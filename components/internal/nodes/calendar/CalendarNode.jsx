@@ -6,6 +6,7 @@ import {
   Position,
   NodeResizeControl,
   useReactFlow,
+  useConnection,
 } from "@xyflow/react";
 import { ArrowRight } from "lucide-react";
 import Reactions from "../../ui/Reactions";
@@ -16,6 +17,7 @@ import EventsStyle from "./styles/EventsStyle";
 
 const CalendarNode = ({ id, data, selected, dragging, width, height }) => {
   const { setNodes } = useReactFlow();
+  const isConnecting = useConnection().inProgress;
   const [isVisible, setIsVisible] = useState(false);
   const nodeWidth = Math.max(width || 200, 50);
   const nodeHeight = Math.max(height || 200, 50);
@@ -126,6 +128,19 @@ const CalendarNode = ({ id, data, selected, dragging, width, height }) => {
             <EventsStyle width={nodeWidth} height={nodeHeight} theme={theme} />
           )}
         </div>
+        <Handle
+          type="target"
+          position={Position.Center}
+          className={`
+            !w-full !h-full !border-0 !rounded-none !bg-transparent absolute !inset-0 !transform-none
+            ${isConnecting ? "pointer-events-auto z-50" : "pointer-events-none -z-10"}
+          `}
+          style={{
+            top: 0,
+            left: 0,
+            opacity: 0,
+          }}
+        />
         <Handle
           type="source"
           position={Position.Right}

@@ -18,6 +18,9 @@ export default function Sidebar({
   onDeselectNode,
   enabledTools,
   projectId,
+  onNodeCommand,
+  trash,
+  onRestore,
 }) {
   const [cachedSelectedEdge, setCachedSelectedEdge] = useState(selectedEdge);
   const [cachedSelectedNode, setCachedSelectedNode] = useState(selectedNode);
@@ -59,7 +62,7 @@ export default function Sidebar({
           activePanel === "main" ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <MainSidebar enabledTools={enabledTools} />
+        <MainSidebar enabledTools={enabledTools} trash={trash} onRestore={onRestore} />
       </div>
       <div
         className={`absolute inset-0 flex flex-col py-4 w-full h-full transition-transform duration-300 ease-in-out ${panelBgClass} ${
@@ -85,6 +88,7 @@ export default function Sidebar({
             onUpdateNode={onUpdateNode}
             onBack={onDeselectNode}
             projectId={projectId}
+            onNodeCommand={onNodeCommand}
           />
         )}
       </div>
@@ -99,6 +103,7 @@ export default function Sidebar({
             onUpdateNode={onUpdateNode}
             onBack={onDeselectNode}
             projectId={projectId}
+            onNodeCommand={onNodeCommand}
           />
         )}
       </div>
@@ -112,6 +117,7 @@ export default function Sidebar({
             selectedNode={nodeToRender}
             onUpdateNode={onUpdateNode}
             onBack={onDeselectNode}
+            onNodeCommand={onNodeCommand}
           />
         )}
       </div>
@@ -125,6 +131,7 @@ export default function Sidebar({
             selectedNode={nodeToRender}
             onUpdateNode={onUpdateNode}
             onBack={onDeselectNode}
+            onNodeCommand={onNodeCommand}
           />
         )}
       </div>

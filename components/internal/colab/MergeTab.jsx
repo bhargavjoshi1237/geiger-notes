@@ -162,7 +162,7 @@ export default function MergeTab({
                   <>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-surface-hover/30 border-2 border-border border-dashed rounded-xl p-4 text-center flex flex-col items-center justify-center gap-1 group hover:border-emerald-500/30 transition-colors">
-                        <div className="text-2xl font-bold text-emerald-400">
+                        <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                           {mergeDiff.newNodes.length}
                         </div>
                         <div className="text-xs font-medium text-muted-foreground group-hover:text-foreground">

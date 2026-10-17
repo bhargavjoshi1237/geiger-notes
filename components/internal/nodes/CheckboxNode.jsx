@@ -162,14 +162,14 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
           {items.map((item) => (
             <div
               key={item.id}
-              className="group/item flex items-center gap-2.5"
+              className="group/item flex items-center gap-3"
             >
               <button
                 type="button"
                 onClick={() => handleToggle(item.id)}
                 title={item.checked ? "Mark as not done" : "Mark as done"}
                 className={`
-                  nodrag flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm border-2 transition-colors
+                  nodrag flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[5px] border-2 transition-colors
                   ${
                     item.checked
                       ? "border-primary bg-primary text-primary-foreground"
@@ -177,7 +177,7 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
                   }
                 `}
               >
-                <Check className="h-3 w-3" strokeWidth={3} />
+                <Check className="h-4 w-4" strokeWidth={3} />
               </button>
 
               <TextEditingTrait
@@ -192,7 +192,7 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
                   onChange={(e) => handleTextChange(item.id, e.target.value)}
                   placeholder="Add a task..."
                   className={`
-                    w-full bg-transparent text-sm focus:outline-none placeholder:text-muted-foreground
+                    w-full bg-transparent font-sans text-base focus:outline-none placeholder:text-muted-foreground
                     ${item.checked ? "text-muted-foreground line-through" : "text-foreground"}
                   `}
                 />
@@ -204,7 +204,7 @@ const CheckboxNode = ({ id, data, selected, dragging }) => {
                 className="nodrag shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-red-400 group-hover/item:opacity-100"
                 title="Remove"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
           ))}

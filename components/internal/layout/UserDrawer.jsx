@@ -210,7 +210,7 @@ export default function UserDrawer({
             {role === "viewer" && (
               <button
                 onClick={onRequestAccess}
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 text-sm font-medium text-emerald-400 transition-colors hover:bg-emerald-500/20"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 text-sm font-medium text-emerald-600 dark:text-emerald-400 transition-colors hover:bg-emerald-500/20"
               >
                 <LogIn className="h-4 w-4" />
                 Request to join

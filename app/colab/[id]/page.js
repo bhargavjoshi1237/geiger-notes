@@ -2,31 +2,28 @@
 
 import React, { useMemo } from 'react';
 import { useSearchParams } from "next/navigation";
+import { useTheme } from "next-themes";
 import { ReactFlow, Background, SelectionMode } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import Sidebar from '@/components/internal/layout/Sidebar';
 import Topbar from '@/components/internal/layout/Topbar';
-import CustomNode from '@/components/internal/nodes/CustomNode';
 import CenterEdge from '@/components/internal/edges/CenterEdge';
 import ZoomControls from '@/components/internal/canvas/zoom-controls';
 import { useCollabLogic } from '@/lib/collab/hooks/useCollabLogic';
 import CanvasSkeleton from '@/components/internal/canvas/CanvasSkeleton';
-import CommentNode from '@/components/internal/nodes/CommentNode';
-import LinkNode from '@/components/internal/nodes/LinkNode';
-import CheckboxNode from '@/components/internal/nodes/CheckboxNode';
-import TableNode from '@/components/internal/nodes/TableNode';
-import ColumnNode, {
-    absorbDraggedNode,
-    COLUMN_DEFAULT_SIZE,
-    columnNodeDefaults,
-    dropIntoColumnAtPoint,
-} from '@/components/internal/nodes/ColumnNode';
+import { absorbDraggedNode, dropIntoColumnAtPoint } from '@/components/internal/nodes/ColumnNode';
+import { NODE_TYPES, createLocalNode, newNodeId } from '@/components/internal/nodes/registry';
+import { DEFAULT_TOOLBAR_TOOLS } from '@/lib/settings/defaults';
+
+// Live sessions have no board/document/sketch rows of their own, so tools that need one are left out.
+const COLLAB_TOOLS = DEFAULT_TOOLBAR_TOOLS.filter((t) => !['board', 'document', 'draw', 'mirror', 'huddle'].includes(t));
 import UserDrawer from '@/components/internal/layout/UserDrawer';
 
 export default function CollabPage({ params }) {
     const { id } = React.use(params);
     const searchParams = useSearchParams();
     const debugBgLayers = searchParams.get("layerdebug") === "1";
+    const { resolvedTheme } = useTheme();
 
     const shellBgClass = debugBgLayers ? "bg-red-700/85" : "bg-background";
     const mainBgClass = debugBgLayers ? "bg-emerald-700/55" : "";
@@ -61,14 +58,7 @@ export default function CollabPage({ params }) {
 
     const handleSettingsChange = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
     const [rfInstance, setRfInstance] = React.useState(null);
-    const nodeTypes = useMemo(() => ({
-        custom: CustomNode,
-        comment: CommentNode,
-        link: LinkNode,
-        todo: CheckboxNode,
-        table: TableNode,
-        column: ColumnNode,
-    }), []);
+    const nodeTypes = NODE_TYPES;
 
     const edgeTypes = useMemo(() => ({
         center: CenterEdge,
@@ -120,57 +110,8 @@ export default function CollabPage({ params }) {
                 return;
             }
 
-            if (type === 'todo') {
-                const newNode = {
-                    id: `node-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                    type: 'todo',
-                    position,
-                    data: {
-                        items: [{ id: `todo-${Date.now()}`, text: '', checked: false }],
-                    },
-                };
-                setNodes((nds) => nds.concat(newNode));
-                return;
-            }
-
-            if (type === 'table') {
-                const newNode = {
-                    id: `node-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                    type: 'table',
-                    position,
-                    data: {
-                        columns: ['Column 1', 'Column 2'],
-                        rows: [
-                            ['', ''],
-                            ['', ''],
-                        ],
-                    },
-                };
-                setNodes((nds) => nds.concat(newNode));
-                return;
-            }
-
-            if (type === 'column') {
-                const newNode = {
-                    id: `node-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                    type: 'column',
-                    position,
-                    data: columnNodeDefaults(),
-                    style: { ...COLUMN_DEFAULT_SIZE },
-                };
-                setNodes((nds) => nds.concat(newNode));
-                return;
-            }
-
-            const newNode = {
-                id: `node-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                type,
-                position,
-                data: { label: '' },
-                style: { width: 338, height: 68 },
-            };
-
-            setNodes((nds) => nds.concat(newNode));
+            const newNode = createLocalNode(type, position);
+            if (newNode) setNodes((nds) => nds.concat(newNode));
         },
         [rfInstance, setNodes],
     );
@@ -186,7 +127,7 @@ export default function CollabPage({ params }) {
                     y: event.clientY 
                 });
                 const newNode = {
-                    id: `node-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                    id: newNodeId(),
                     type: 'custom',
                     position,
                     data: { label: '' },
@@ -200,7 +141,8 @@ export default function CollabPage({ params }) {
 
     // Dropping a text-like node onto a column folds it into the column.
     const handleNodeDragStop = React.useCallback((event, node) => {
-        const absorbed = absorbDraggedNode(rfInstance?.getNodes?.() ?? nodes, node);
+        const current = rfInstance?.getNodes?.() ?? nodes;
+        const absorbed = absorbDraggedNode(current, node);
         if (absorbed) {
             setNodes(absorbed);
             return;
@@ -238,6 +180,7 @@ export default function CollabPage({ params }) {
                     selectedNode={selectedNode}
                     onUpdateNode={updateNode}
                     onDeselectNode={deselectNodes}
+                    enabledTools={COLLAB_TOOLS}
                 />
                 <main className={`flex-1 relative h-full ${mainBgClass}`}>
                     <div 
@@ -264,7 +207,7 @@ export default function CollabPage({ params }) {
                             onDrop={onDrop}
                             nodeTypes={nodeTypes}
                             edgeTypes={edgeTypes}
-                            colorMode="dark"
+                            colorMode={resolvedTheme === "light" ? "light" : "dark"}
                             className={flowBgClass}
                             minZoom={0.1}
                             maxZoom={2}
@@ -280,7 +223,7 @@ export default function CollabPage({ params }) {
                             nodesConnectable={role === 'host' || role === 'editor'}
                             elementsSelectable={true} 
                         >
-                            <Background color="#373737" gap={12} size={1} variant="dots" />
+                            <Background color="var(--canvas-dots)" gap={12} size={1} variant="dots" />
                             <ZoomControls />
                         </ReactFlow>
                         <UserDrawer

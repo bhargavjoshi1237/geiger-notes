@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Undo2,
   Redo2,
@@ -21,6 +21,8 @@ import AppDialog from "./AppDialog";
 import MeetStage from "../meet/meet_stage";
 import MeetTopbarStatus from "../meet/meet_topbar_status";
 import { Logo, ThemeToggle } from "@geiger/ui";
+import { toast } from "sonner";
+import { createClient } from "@/utils/supabase/client";
 
 export default function Topbar({
   id,
@@ -31,6 +33,7 @@ export default function Topbar({
   onSettingsReset,
   settingsDirty,
   settingsSaving,
+  boardAppearance,
   nodes,
   edges,
   sessionData,
@@ -64,6 +67,75 @@ export default function Topbar({
     (details) => setMeeting({ ...details, startedAt: Date.now() }),
     [],
   );
+
+  // Huddle nodes: broadcast meeting state, and join/start a node's room on `geiger:huddle`.
+  const meetingRef = useRef(null);
+  const broadcastMeeting = useCallback(() => {
+    const m = meetingRef.current;
+    window.dispatchEvent(
+      new CustomEvent("geiger:meeting-state", { detail: { active: Boolean(m), code: m?.code ?? null } }),
+    );
+  }, []);
+  useEffect(() => {
+    meetingRef.current = meeting;
+    broadcastMeeting();
+  }, [meeting, broadcastMeeting]);
+  useEffect(() => {
+    if (!showCollaborate) return undefined;
+    const base = process.env.NEXT_PUBLIC_BASE_PATH || "";
+    const post = async (path, body) => {
+      const res = await fetch(`${base}/api/meet/${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      return { ok: res.ok, data: await res.json().catch(() => ({})) };
+    };
+    const onHuddle = async (e) => {
+      const { nodeId, code } = e.detail || {};
+      if (code && meetingRef.current?.code === code) return broadcastMeeting();
+      try {
+        const { data: { user } } = await createClient().auth.getUser();
+        if (!user) {
+          toast.error("Sign in to join a huddle");
+          return broadcastMeeting();
+        }
+        let room = null;
+        if (code) {
+          const found = await post("lookup", { code });
+          if (found.ok && found.data.roomId) room = { roomId: found.data.roomId, code: found.data.code, isHost: false };
+        }
+        if (!room) {
+          const created = await post("create", {});
+          if (!created.ok || !created.data.roomId) {
+            toast.error(created.data.error || "Couldn't start the huddle");
+            return broadcastMeeting();
+          }
+          room = { roomId: created.data.roomId, code: created.data.code, isHost: true };
+          window.dispatchEvent(new CustomEvent("geiger:huddle-code", { detail: { nodeId, code: room.code } }));
+        }
+        const meta = user.user_metadata || {};
+        enterMeeting({
+          ...room,
+          me: {
+            id: user.id,
+            name: meta.full_name || meta.name || user.email || "Guest",
+            avatarUrl: meta.avatar_url || meta.picture || null,
+          },
+        });
+      } catch (err) {
+        console.error(err);
+        toast.error("Couldn't join the huddle");
+        broadcastMeeting();
+      }
+    };
+    window.addEventListener("geiger:huddle", onHuddle);
+    window.addEventListener("geiger:meeting-state-request", broadcastMeeting);
+    return () => {
+      window.removeEventListener("geiger:huddle", onHuddle);
+      window.removeEventListener("geiger:meeting-state-request", broadcastMeeting);
+    };
+  }, [showCollaborate, enterMeeting, broadcastMeeting]);
 
   return (
     <>
@@ -281,6 +353,7 @@ export default function Topbar({
         nodeCount={Array.isArray(nodes) ? nodes.length : 0}
         edgeCount={Array.isArray(edges) ? edges.length : 0}
         dialogContainer={dialogContainer}
+        boardAppearance={boardAppearance}
       />
       <CollaborateDilouge
         id={id}
@@ -299,6 +372,7 @@ export default function Topbar({
       />
       {meeting && (
         <MeetStage
+          key={meeting.roomId}
           roomId={meeting.roomId}
           code={meeting.code}
           isHost={meeting.isHost}

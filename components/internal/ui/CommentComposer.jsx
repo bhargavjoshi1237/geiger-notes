@@ -82,7 +82,7 @@ export default function CommentComposer({ author, value, onChange, onSend }) {
           type="button"
           onClick={onSend}
           title="Send comment"
-          className="nodrag absolute right-2 flex items-center gap-1 text-xs font-medium text-zinc-400 transition-colors hover:text-blue-300"
+          className="nodrag absolute right-2 flex items-center gap-1 text-xs font-medium text-zinc-500 transition-colors hover:text-blue-600 dark:text-zinc-400 dark:hover:text-blue-300"
         >
           <Send className="h-3.5 w-3.5" />
         </button>

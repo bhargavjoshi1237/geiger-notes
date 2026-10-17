@@ -18,7 +18,7 @@ const FORMAT_OPTIONS = [
     label: "JSON",
     description: "Raw board data",
     icon: Braces,
-    color: "text-yellow-400",
+    color: "text-yellow-600 dark:text-yellow-400",
     accent: "bg-yellow-400/10 border-yellow-400/30",
   },
   {
@@ -42,7 +42,7 @@ const FORMAT_OPTIONS = [
     label: "TXT",
     description: "Plain text summary",
     icon: AlignLeft,
-    color: "text-green-400",
+    color: "text-green-600 dark:text-green-400",
     accent: "bg-green-400/10 border-green-400/30",
   },
 ];

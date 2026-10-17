@@ -1,4 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr'
+import { playgroundHandler } from '@/lib/playground/mode'
 
 // Default the data API to the `notes` schema so existing .from('boards'|'base'|
 // 'collab'|'documents'|'user_settings') calls resolve to the relocated notes.*
@@ -6,6 +7,9 @@ import { createBrowserClient } from '@supabase/ssr'
 // This default is global to the browser singleton: never use this factory for
 // public-schema tables — scope those with .schema("public") explicitly.
 export function createClient() {
+  // The landing playground serves an in-memory copy of the data instead.
+  const playground = playgroundHandler('createClient')
+  if (playground) return playground()
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,

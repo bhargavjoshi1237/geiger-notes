@@ -1,175 +1,237 @@
+"use client";
+
 import React, { memo } from "react";
-import {
-  Handle,
-  Position,
-  NodeResizeControl,
-  useReactFlow,
-  useConnection,
-} from "@xyflow/react";
-import { Link, ArrowRight } from "lucide-react";
-import { ResizeHandle } from "@geiger/ui";
-import Reactions from "../ui/Reactions";
+import { useStore } from "@xyflow/react";
+import { ExternalLink, Globe, Link, Loader2, Pencil } from "lucide-react";
+import NodeShell, { useNodeDataUpdater } from "./shared/NodeShell";
 import TextEditingTrait from "./traits/TextEditingTrait";
 
+const FAILED_RETRY_MS = 6 * 60 * 60 * 1000;
+const IMAGE_MIN_HEIGHT = 230;
+const CARD_MIN_HEIGHT = 110;
+
+// Normalise a typed link to an absolute http(s) URL, or null when it isn't one.
+export function normalizeLinkUrl(raw) {
+  const trimmed = (raw || "").trim();
+  if (!trimmed || /\s/.test(trimmed)) return null;
+  const candidate = /^[a-z][a-z\d+.-]*:/i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    if (!url.hostname.includes(".") && url.hostname !== "localhost") return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+const hostOf = (href) => {
+  try {
+    return new URL(href).hostname.replace(/^www\./, "");
+  } catch {
+    return href;
+  }
+};
+
+function Favicon({ src, className = "h-5 w-5" }) {
+  const [failed, setFailed] = React.useState(false);
+  if (!src || failed) return <Globe className={`${className} shrink-0 text-muted-foreground`} />;
+  return (
+    <img
+      src={src}
+      alt=""
+      referrerPolicy="no-referrer"
+      className={`${className} shrink-0 rounded-sm object-contain`}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+function OpenButton({ href }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      title="Open link"
+      aria-label="Open link"
+      className="nodrag nopan flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
+    >
+      <ExternalLink className="h-3.5 w-3.5" />
+    </a>
+  );
+}
+
+function EditButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      title="Edit link"
+      aria-label="Edit link"
+      className="nodrag nopan flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
+    >
+      <Pencil className="h-3.5 w-3.5" />
+    </button>
+  );
+}
+
 const LinkNode = ({ id, data, selected, dragging }) => {
-  const { setNodes } = useReactFlow();
-  const connection = useConnection();
-  const [isVisible, setIsVisible] = React.useState(false);
-  const isConnecting = connection.inProgress;
+  const update = useNodeDataUpdater(id);
+  const height = useStore((s) => s.nodeLookup.get(id)?.measured?.height ?? 68);
+  const [editingState, setEditing] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
 
+  const href = normalizeLinkUrl(data.url);
+  const editing = !href || (editingState && selected);
+  const preview = data.preview?.sourceUrl === href ? data.preview : null;
+  const hasPreview = Boolean(preview && !preview.error && (preview.title || preview.description || preview.image));
+
+  // Fetch and cache the preview once per URL; failed fetches retry after a few hours.
+  const cached = data.preview;
   React.useEffect(() => {
-    requestAnimationFrame(() => setIsVisible(true));
-  }, []);
-
-  const handleReactionClick = (emoji) => {
-    setNodes((nodes) =>
-      nodes.map((n) => {
-        if (n.id === id) {
-          const currentReactions = n.data.reactions || {};
-          const newCount = (currentReactions[emoji] || 0) + 1;
-          return {
-            ...n,
-            data: {
-              ...n.data,
-              reactions: {
-                ...currentReactions,
-                [emoji]: newCount,
-              },
-            },
+    if (!href || editing) return;
+    if (cached?.sourceUrl === href && !(cached.error && Date.now() - (cached.fetchedAt || 0) > FAILED_RETRY_MS)) return;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      let next = { error: true, sourceUrl: href, fetchedAt: Date.now() };
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/api/link-preview?url=${encodeURIComponent(href)}`,
+        );
+        if (res.ok) {
+          const json = await res.json();
+          next = {
+            title: json.title || null,
+            description: json.description || null,
+            image: json.image || null,
+            favicon: json.favicon || null,
+            siteName: json.siteName || null,
+            sourceUrl: href,
+            fetchedAt: Date.now(),
           };
         }
-        return n;
-      }),
-    );
+      } catch {
+        // Network failure: cache the error so we fall back to the plain row.
+      }
+      if (cancelled) return;
+      setLoading(false);
+      update({ preview: next });
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      setLoading(false);
+    };
+  }, [href, editing, cached, update]);
+
+  const handleUrlChange = (evt) => {
+    setEditing(true);
+    update({ url: evt.target.value });
   };
 
-  return (
-    <>
-      <div
-        className={`
-            node-chrome relative flex flex-col w-full h-full min-h-[68px] min-w-[338px] group
-            transition-all duration-300 ease-out
-            ${selected ? "border-2 border-foreground" : "border-2 border-transparent hover:border-border"}
-            ${dragging ? "shadow-2xl shadow-black/50 z-50" : ""}
-            ${isVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-2 scale-95"}
-        `}
-        style={{
-          backgroundColor: data.backgroundColor || "var(--node-default)",
-        }}
-      >
-        <NodeResizeControl
-          minWidth={338}
-          minHeight={68}
-          className="!bg-transparent !border-none"
-          position="bottom-right"
-          style={{
-            opacity: 1,
-            pointerEvents: "all",
-          }}
-          onResizeEnd={(_, params) => {
-            setNodes((nodes) =>
-              nodes.map((n) => {
-                if (n.id === id) {
-                  return {
-                    ...n,
-                    width: Math.round(params.width / 15) * 15,
-                    height: Math.round(params.height / 15) * 15,
-                    position: {
-                      x: Math.round(params.x / 15) * 15,
-                      y: Math.round(params.y / 15) * 15,
-                    },
-                  };
-                }
-                return n;
-              }),
-            );
+  const compact = data.display === "compact" || height < CARD_MIN_HEIGHT;
+  const showImage = !compact && preview?.image && height >= IMAGE_MIN_HEIGHT;
+
+  let body;
+  if (editing) {
+    body = (
+      <div className="flex h-full w-full flex-1 items-center overflow-hidden px-4">
+        <Link className="mr-3 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+        <TextEditingTrait
+          className="w-full"
+          onKeyDown={(e) => {
+            if ((e.key === "Enter" || e.key === "Escape") && href) setEditing(false);
           }}
         >
-          <div
-            className={`transition-opacity duration-200 ${selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-          >
-            <ResizeHandle />
-          </div>
-        </NodeResizeControl>
-
-        <div className="flex-1 w-full h-full overflow-hidden flex items-center px-4">
-          <Link className="w-5 h-5 text-muted-foreground mr-3 flex-shrink-0" />
-          <TextEditingTrait className="w-full">
-            <input
-              className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground font-sans"
-              placeholder="Enter a link URL"
-              value={data.url || ""}
-              onChange={(evt) => {
-                setNodes((nodes) =>
-                  nodes.map((n) => {
-                    if (n.id === id) {
-                      return {
-                        ...n,
-                        data: {
-                          ...n.data,
-                          url: evt.target.value,
-                        },
-                      };
-                    }
-                    return n;
-                  }),
-                );
+          <input
+            className="w-full bg-transparent font-sans text-foreground outline-none placeholder:text-muted-foreground"
+            placeholder="Enter a link URL"
+            value={data.url || ""}
+            autoFocus={editingState}
+            onChange={handleUrlChange}
+            onFocus={() => setEditing(true)}
+            onBlur={() => setEditing(false)}
+          />
+        </TextEditingTrait>
+      </div>
+    );
+  } else if (!hasPreview || compact) {
+    body = (
+      <div
+        className="flex h-full w-full flex-1 items-center gap-3 overflow-hidden px-4"
+        onDoubleClick={() => setEditing(true)}
+      >
+        {loading && !hasPreview ? (
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
+        ) : hasPreview ? (
+          <Favicon key={preview.favicon} src={preview.favicon} />
+        ) : (
+          <Link className="h-5 w-5 shrink-0 text-muted-foreground" />
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-sans text-sm text-foreground">{hasPreview ? preview.title || hostOf(href) : data.url}</p>
+          {hasPreview && (
+            <p className="truncate text-xs text-muted-foreground">{preview.siteName || hostOf(href)}</p>
+          )}
+        </div>
+        {selected && <EditButton onClick={() => setEditing(true)} />}
+        <OpenButton href={href} />
+      </div>
+    );
+  } else {
+    body = (
+      <div className="flex h-full w-full flex-1 flex-col overflow-hidden rounded-[inherit]" onDoubleClick={() => setEditing(true)}>
+        {showImage && (
+          <div className="relative min-h-0 flex-1 overflow-hidden border-b border-border bg-surface-hover">
+            <img
+              src={preview.image}
+              alt=""
+              referrerPolicy="no-referrer"
+              loading="lazy"
+              draggable={false}
+              className="absolute inset-0 h-full w-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
               }}
             />
-          </TextEditingTrait>
+          </div>
+        )}
+        <div className={`flex min-h-0 flex-col gap-1 px-4 py-3 ${showImage ? "shrink-0" : "flex-1"}`}>
+          <div className="flex items-center gap-2">
+            <Favicon key={preview.favicon} src={preview.favicon} className="h-4 w-4" />
+            <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+              {preview.siteName || hostOf(href)}
+            </span>
+            {selected && <EditButton onClick={() => setEditing(true)} />}
+            <OpenButton href={href} />
+          </div>
+          <p className="line-clamp-2 font-sans text-sm font-medium leading-snug text-foreground">
+            {preview.title || hostOf(href)}
+          </p>
+          {preview.description && (
+            <p
+              className={`text-xs leading-relaxed text-muted-foreground ${
+                showImage ? "line-clamp-2" : "line-clamp-3 min-h-0 overflow-hidden"
+              }`}
+            >
+              {preview.description}
+            </p>
+          )}
         </div>
-
-        <Reactions
-          reactions={data.reactions}
-          onReactionClick={handleReactionClick}
-        />
-
-        <Handle
-          type="target"
-          position={Position.Left}
-          className={`
-            !w-2 !h-full !border-0 !rounded-none !bg-transparent absolute !left-0 !top-0 !transform-none
-            ${isConnecting ? "pointer-events-auto z-50" : "pointer-events-none -z-10"}
-          `}
-          style={{
-            opacity: 0,
-          }}
-        />
-        {/* Center target + right source handles, mirroring CustomNode. */}
-
-        <Handle
-          type="target"
-          position={Position.Center}
-          className={`
-            !w-full !h-full !border-0 !rounded-none !bg-transparent absolute !inset-0 !transform-none
-            ${isConnecting ? "pointer-events-auto z-50" : "pointer-events-none -z-10"}
-          `}
-          style={{
-            top: 0,
-            left: 0,
-            opacity: 0,
-          }}
-        />
-        <Handle
-          type="source"
-          position={Position.Right}
-          className={`
-    !w-2 !h-2 !bg-foreground !border-0
-    absolute !top-0 !-right-[1px]
-    flex items-center justify-center
-
-    origin-top-right
-    transition-transform duration-200 hover:scale-[2.5]
-
-    !translate-x-0 !translate-y-0
-    group/handle
-    ${selected ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
-  `}
-        >
-          <ArrowRight className="w-[10px] h-[10px] opacity-0 group-hover/handle:opacity-100 transition-opacity duration-200 text-background -rotate-45" />
-        </Handle>
       </div>
-    </>
+    );
+  }
+
+  return (
+    <NodeShell id={id} data={data} selected={selected} dragging={dragging} minWidth={338} minHeight={68}>
+      {body}
+    </NodeShell>
   );
 };
 

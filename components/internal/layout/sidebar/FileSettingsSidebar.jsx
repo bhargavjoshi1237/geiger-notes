@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Download, Upload, FileText } from "lucide-react";
 import { SidebarShell, SidebarSection } from "./SidebarPrimitives";
+import { NodeAppearancePlugs } from "./plugs/NodeAppearancePlugs";
 import { ActionPlug } from "./plugs/ActionPlug";
 import { ColorPlug } from "./plugs/ColorPlug";
 import FileChangeDialog from "./dialogs/FileChangeDialog";
@@ -13,6 +14,7 @@ export default function FileSettingsSidebar({
   selectedNode,
   onUpdateNode,
   onBack,
+  onNodeCommand,
 }) {
   const [isChangeDialogOpen, setIsChangeDialogOpen] = useState(false);
 
@@ -115,6 +117,13 @@ export default function FileSettingsSidebar({
             onChange={(color) => updateData({ color })}
           />
         </SidebarSection>
+        <div className="w-8 h-px bg-divider/60 my-1" />
+        <NodeAppearancePlugs
+          node={selectedNode}
+          onUpdateNode={onUpdateNode}
+          onNodeCommand={onNodeCommand}
+          textControls={true}
+        />
       </SidebarShell>
 
       <FileChangeDialog

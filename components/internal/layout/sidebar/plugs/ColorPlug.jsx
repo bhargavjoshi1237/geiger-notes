@@ -18,7 +18,7 @@ export const ColorPlug = ({
         icon={() => (
           <div
             className="w-5 h-5 rounded border border-ring shadow-sm"
-            style={{ backgroundColor: value || "#333333" }}
+            style={{ backgroundColor: value || "var(--node-default)" }}
           />
         )}
       />

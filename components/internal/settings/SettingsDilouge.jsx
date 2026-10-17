@@ -6,11 +6,13 @@ import { SlidersHorizontal, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import GeneralSettings from "./GeneralSettings";
+import CanvasSettings from "./CanvasSettings";
 import DefaultsSettings from "./DefaultsSettings";
 import AccountSettings from "./AccountSettings";
 
 const NAV = [
   { id: "general", label: "General", },
+  { id: "canvas", label: "Canvas", },
   { id: "defaults", label: "Defaults", },
   { id: "account", label: "Account", },
 ];
@@ -29,6 +31,8 @@ export default function SettingsDialog({
   isSaving = false,
   nodeCount = 0,
   edgeCount = 0,
+  // Open board's appearance { value, onChange, boardKey, disabled }; omitted where there's no board row.
+  boardAppearance,
 }) {
   const [activeTab, setActiveTab] = useState("general");
 
@@ -106,6 +110,13 @@ export default function SettingsDialog({
                   edgeCount={edgeCount}
                 />
               )}
+              {activeTab === "canvas" && (
+                <CanvasSettings
+                  settings={settings}
+                  onSettingsChange={onSettingsChange}
+                  boardAppearance={boardAppearance}
+                />
+              )}
               {activeTab === "defaults" && (
                 <DefaultsSettings
                   settings={settings}
@@ -119,7 +130,7 @@ export default function SettingsDialog({
             {activeTab !== "account" && (
               <div className="shrink-0 p-3 px-4 border-t border-border bg-surface-dialog flex items-center justify-end gap-2 text-sm">
                 {onSave && isDirty && (
-                  <span className="mr-auto text-xs text-amber-400/80">
+                  <span className="mr-auto text-xs text-amber-600 dark:text-amber-400/80">
                     Unsaved changes
                   </span>
                 )}

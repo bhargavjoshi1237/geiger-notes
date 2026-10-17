@@ -36,7 +36,7 @@ function ControlButton({ icon: Icon, label, active, danger, onClick, disabled })
           ? "border-transparent bg-red-600 text-white hover:bg-red-500"
           : active
             ? "border-border bg-surface-hover text-foreground hover:bg-surface-active"
-            : "border-transparent bg-red-500/10 text-red-300 hover:bg-red-500/20",
+            : "border-transparent bg-red-500/10 text-red-600 dark:text-red-300 hover:bg-red-500/20",
       )}
     >
       <Icon className="h-[18px] w-[18px]" />
@@ -110,7 +110,7 @@ export function MeetStage({ roomId, code, me, isHost, onClose, onStatsChange }) 
   return createPortal(
     <div className="fixed top-14 bottom-0 left-0 right-0 z-50 flex flex-col bg-background md:left-16">
       {room.error ? (
-        <div className="border-b border-amber-500/20 bg-amber-500/10 px-4 py-2 text-xs text-amber-300">
+        <div className="border-b border-amber-500/20 bg-amber-500/10 px-4 py-2 text-xs text-amber-700 dark:text-amber-300">
           {room.error} You can still hear and see everyone else.
         </div>
       ) : null}
