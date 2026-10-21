@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:playground": "node --import ./lib/playground/__tests__/register.mjs --test lib/playground/__tests__/seed.test.mjs",
+    "test:collab": "node --import ./lib/playground/__tests__/register.mjs --test lib/collab/__tests__/host-controls.test.mjs",
     "db:push": "geiger-orm push",
     "db:status": "geiger-orm status",
     "db:rollback": "geiger-orm rollback",
