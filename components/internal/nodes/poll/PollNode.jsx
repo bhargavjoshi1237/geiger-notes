@@ -1,9 +1,10 @@
 "use client";
 
 import React, { memo, useEffect, useState } from "react";
-import { BarChart3, Check, Lock, LockOpen, Minus, Plus, RotateCcw, X } from "lucide-react";
+import { BarChart3, Check, Eye, EyeOff, Lock, LockOpen, Minus, Plus, RotateCcw, X } from "lucide-react";
 import NodeShell, { useNodeDataUpdater } from "@/components/internal/nodes/shared/NodeShell";
 import TextEditingTrait from "@/components/internal/nodes/traits/TextEditingTrait";
+import { useSessionControlsContext } from "@/components/internal/colab/live/SessionContext";
 import { getUser } from "@/lib/supabase/user";
 
 const VOTER_KEY = "geiger-notes:voter-id";
@@ -30,6 +31,7 @@ export const nodeMeta = {
       dotsPerVoter: 3,
       anonymous: false,
       closed: false,
+      hideResults: false,
     },
     style: { width: 330, height: 285 },
   }),
@@ -80,7 +82,11 @@ function PollNode({ id, data, selected, dragging }) {
   const mode = data.mode || "single";
   const dotsPerVoter = Math.max(1, data.dotsPerVoter || 3);
   const closed = !!data.closed;
-  const editing = selected && !closed;
+  // Live sessions: hosts may keep poll controls to themselves, and hidden results stay visible to hosts only.
+  const { inSession, moderator, canEdit, facilitationLocked } = useSessionControlsContext();
+  const resultsHidden = !!data.hideResults && !(inSession && moderator);
+  const votingPaused = inSession && !canEdit;
+  const editing = selected && !closed && !facilitationLocked && !votingPaused;
 
   const countOf = (optId) => (votes[optId] || []).length;
   const mineOn = (optId) => (voter ? (votes[optId] || []).filter((v) => v === voter.id).length : 0);
@@ -93,7 +99,7 @@ function PollNode({ id, data, selected, dragging }) {
 
   // Mutate votes from the freshest node data so concurrent clicks don't clobber each other.
   const mutateVotes = (fn) => {
-    if (!voter || closed) return;
+    if (!voter || closed || votingPaused) return;
     update((node) => {
       const current = node.data.votes || {};
       const next = fn(current);
@@ -155,6 +161,14 @@ function PollNode({ id, data, selected, dragging }) {
               {data.question || "Untitled poll"}
             </p>
           )}
+          {data.hideResults && !resultsHidden && (
+            <span
+              title="Participants can't see the results yet"
+              className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+            >
+              <EyeOff className="h-3 w-3" /> Hidden
+            </span>
+          )}
           {closed && (
             <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               <Lock className="h-3 w-3" /> Closed
@@ -179,14 +193,14 @@ function PollNode({ id, data, selected, dragging }) {
                 <div
                   className="pointer-events-none absolute inset-y-0 left-0 transition-[width] duration-500 ease-out"
                   style={{
-                    width: `${pct}%`,
+                    width: `${resultsHidden ? 0 : pct}%`,
                     backgroundColor: `color-mix(in oklab, var(--foreground) ${leading ? 14 : 8}%, transparent)`,
                   }}
                 />
                 <button
                   type="button"
                   onClick={() => vote(opt.id)}
-                  disabled={closed || !voter}
+                  disabled={closed || !voter || votingPaused}
                   aria-label={`Vote for ${opt.text || "option"}`}
                   className={`nodrag relative flex h-4 w-4 shrink-0 items-center justify-center border-2 transition-colors disabled:cursor-default ${
                     mode === "single" ? "rounded-full" : "rounded-[4px]"
@@ -209,7 +223,7 @@ function PollNode({ id, data, selected, dragging }) {
                   <button
                     type="button"
                     onClick={() => vote(opt.id)}
-                    disabled={closed || !voter}
+                    disabled={closed || !voter || votingPaused}
                     className="nodrag relative min-w-0 flex-1 truncate text-left text-sm disabled:cursor-default"
                   >
                     {opt.text || <span className="text-muted-foreground">Option</span>}
@@ -221,7 +235,7 @@ function PollNode({ id, data, selected, dragging }) {
                     {Array.from({ length: Math.min(mine, 5) }).map((_, i) => (
                       <span key={i} className="h-1.5 w-1.5 rounded-full bg-primary" />
                     ))}
-                    {!closed && (
+                    {!closed && !votingPaused && (
                       <button
                         type="button"
                         onClick={() => removeDot(opt.id)}
@@ -234,7 +248,7 @@ function PollNode({ id, data, selected, dragging }) {
                   </span>
                 )}
 
-                {!data.anonymous && voterIds.length > 0 && (
+                {!data.anonymous && !resultsHidden && voterIds.length > 0 && (
                   <span className="relative flex -space-x-1.5">
                     {voterIds.slice(0, 3).map((vid) => (
                       <span
@@ -248,9 +262,11 @@ function PollNode({ id, data, selected, dragging }) {
                   </span>
                 )}
 
-                <span className="relative shrink-0 text-xs tabular-nums text-muted-foreground">
-                  <span className="font-semibold text-foreground">{count}</span> · {pct}%
-                </span>
+                {resultsHidden ? null : (
+                  <span className="relative shrink-0 text-xs tabular-nums text-muted-foreground">
+                    <span className="font-semibold text-foreground">{count}</span> · {pct}%
+                  </span>
+                )}
 
                 {editing && (
                   <button
@@ -278,11 +294,23 @@ function PollNode({ id, data, selected, dragging }) {
 
         <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
           <span className="truncate">
-            {MODE_LABEL[mode]} · {mode === "dots" ? `${totalVotes} dots` : `${uniqueVoters} ${uniqueVoters === 1 ? "voter" : "voters"}`}
-            {mode === "dots" && voter && !closed ? ` · ${Math.max(0, dotsPerVoter - myDotsUsed)} left` : ""}
+            {votingPaused && !closed
+              ? "Voting is paused by the host"
+              : resultsHidden
+                ? `Results hidden · ${uniqueVoters} ${uniqueVoters === 1 ? "voter" : "voters"}`
+                : `${MODE_LABEL[mode]} · ${mode === "dots" ? `${totalVotes} dots` : `${uniqueVoters} ${uniqueVoters === 1 ? "voter" : "voters"}`}`}
+            {mode === "dots" && voter && !closed && !votingPaused ? ` · ${Math.max(0, dotsPerVoter - myDotsUsed)} left` : ""}
           </span>
-          {selected && (
+          {selected && !facilitationLocked && !votingPaused && (
             <span className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={() => update({ hideResults: !data.hideResults })}
+                title={data.hideResults ? "Reveal results to everyone" : "Hide results until you reveal them"}
+                className="nodrag flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-surface-hover hover:text-foreground"
+              >
+                {data.hideResults ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />} {data.hideResults ? "Reveal" : "Hide"}
+              </button>
               <button
                 type="button"
                 onClick={() => update({ votes: {}, voterNames: {} })}

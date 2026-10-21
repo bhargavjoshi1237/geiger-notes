@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
-import { CircleDot, ListChecks, Lock, LockOpen, RotateCcw, Shuffle, EyeOff, Eye, Vote } from "lucide-react";
+import { BarChart3, CircleDot, ListChecks, Lock, LockOpen, RotateCcw, Shuffle, EyeOff, Eye, Vote } from "lucide-react";
 import { Input, Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
 import { toast } from "sonner";
 import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { useSessionControlsContext } from "@/components/internal/colab/live/SessionContext";
 import { MODE_LABEL } from "./PollNode";
 
 const MODES = [
@@ -19,6 +20,8 @@ export default function PollSettings({ node, updateData }) {
   const data = node.data || {};
   const mode = data.mode || "single";
   const hasVotes = Object.values(data.votes || {}).some((ids) => ids?.length);
+  // In a live session the host can keep closing, resetting and revealing with hosts.
+  const { facilitationLocked } = useSessionControlsContext();
 
   // Switching mode invalidates existing ballots (e.g. stacked dots in single choice).
   const setMode = (value) => {
@@ -85,25 +88,38 @@ export default function PollSettings({ node, updateData }) {
         onClick={() => updateData(data.anonymous ? { anonymous: false } : { anonymous: true, voterNames: {} })}
       />
 
-      <SidebarButton
-        icon={data.closed ? LockOpen : Lock}
-        label={data.closed ? "Reopen poll" : "Close poll"}
-        aria-label={data.closed ? "Reopen poll" : "Close poll"}
-        title={data.closed ? "Reopen poll" : "Close poll"}
-        active={!!data.closed}
-        onClick={() => updateData({ closed: !data.closed })}
-      />
+      {!facilitationLocked && (
+        <>
+          <SidebarButton
+            icon={BarChart3}
+            label={data.hideResults ? "Reveal results" : "Hide results"}
+            aria-label={data.hideResults ? "Reveal results" : "Hide results until revealed"}
+            title={data.hideResults ? "Results hidden — click to reveal" : "Hide results until you reveal them"}
+            active={!!data.hideResults}
+            onClick={() => updateData({ hideResults: !data.hideResults })}
+          />
 
-      <SidebarButton
-        icon={RotateCcw}
-        label="Reset votes"
-        aria-label="Reset votes"
-        title="Reset votes"
-        onClick={() => {
-          updateData({ votes: {}, voterNames: {} });
-          toast.success("Votes reset");
-        }}
-      />
+          <SidebarButton
+            icon={data.closed ? LockOpen : Lock}
+            label={data.closed ? "Reopen poll" : "Close poll"}
+            aria-label={data.closed ? "Reopen poll" : "Close poll"}
+            title={data.closed ? "Reopen poll" : "Close poll"}
+            active={!!data.closed}
+            onClick={() => updateData({ closed: !data.closed })}
+          />
+
+          <SidebarButton
+            icon={RotateCcw}
+            label="Reset votes"
+            aria-label="Reset votes"
+            title="Reset votes"
+            onClick={() => {
+              updateData({ votes: {}, voterNames: {} });
+              toast.success("Votes reset");
+            }}
+          />
+        </>
+      )}
     </>
   );
 }

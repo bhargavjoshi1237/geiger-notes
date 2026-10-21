@@ -628,3 +628,17 @@
 @media (prefers-reduced-motion: reduce) {
   .canvas-live-aurora, .canvas-live-drift, .canvas-live-grain { animation: none; }
 }
+
+/* Live session reactions: float up from the bottom of the canvas, then fade. */
+.session-reaction {
+  animation: session-reaction 2.6s ease-out forwards;
+}
+@keyframes session-reaction {
+  0% { opacity: 0; transform: translateY(12px) scale(0.6); }
+  12% { opacity: 1; transform: translateY(0) scale(1.1); }
+  70% { opacity: 1; transform: translateY(-90px) scale(1); }
+  100% { opacity: 0; transform: translateY(-150px) scale(0.95); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .session-reaction { animation: none; }
+}

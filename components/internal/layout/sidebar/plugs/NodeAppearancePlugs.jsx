@@ -17,6 +17,7 @@ import { Input } from "@geiger/ui";
 import { SidebarButton } from "../SidebarPrimitives";
 import { PlugPopover, PlugSection, ChoiceGrid, SliderRow, ColorRow, MenuRow } from "./PlugControls";
 import { BORDER_STYLES, FONTS, FONT_SIZES, SHADOWS, setLocked, withAppearance } from "@/lib/canvas/node-appearance";
+import { useSessionControlsContext } from "@/components/internal/colab/live/SessionContext";
 
 const REACTIONS = ["👍", "❤️", "😂", "😮", "🎉", "🔥", "👀", "✅", "❓", "💡"];
 
@@ -29,6 +30,13 @@ const sizeOf = (node) => ({
 export function NodeAppearancePlugs({ node, onUpdateNode, onNodeCommand, textControls = true, layout = "rail" }) {
   const a = node.data?.appearance || {};
   const locked = !!node.data?.locked;
+  const { inSession, moderator } = useSessionControlsContext();
+  const hostLocked = locked && !!node.data?.lockedByHost;
+  const lockBlocked = hostLocked && !moderator;
+  const lockLabel = lockBlocked ? "Locked by the host" : locked ? "Unlock position" : inSession && moderator ? "Lock for everyone" : "Lock position";
+  const toggleLock = () => {
+    if (!lockBlocked) onUpdateNode(node.id, setLocked(node, !locked, { byHost: inSession && moderator }));
+  };
   const setA = (patch) => onUpdateNode(node.id, withAppearance(node, { ...a, ...patch }));
   const { w, h } = sizeOf(node);
   const asMenu = layout === "menu";
@@ -161,17 +169,21 @@ export function NodeAppearancePlugs({ node, onUpdateNode, onNodeCommand, textCon
       {asMenu ? (
         <MenuRow
           icon={locked ? Lock : Unlock}
-          label={locked ? "Unlock position" : "Lock position"}
+          label={lockLabel}
           active={locked}
-          onClick={() => onUpdateNode(node.id, setLocked(node, !locked))}
+          disabled={lockBlocked}
+          onClick={toggleLock}
         />
       ) : (
         <SidebarButton
           icon={locked ? Lock : Unlock}
           label={locked ? "Unlock" : "Lock"}
-          title={locked ? "Unlock position" : "Lock position"}
+          title={lockLabel}
+          aria-label={lockLabel}
           active={locked}
-          onClick={() => onUpdateNode(node.id, setLocked(node, !locked))}
+          disabled={lockBlocked}
+          className={lockBlocked ? "cursor-not-allowed opacity-50" : undefined}
+          onClick={toggleLock}
         />
       )}
 

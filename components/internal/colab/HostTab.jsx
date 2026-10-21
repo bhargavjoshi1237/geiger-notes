@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@geiger/ui";
 import { Play, LucideDoorClosed, Copy, Check } from "lucide-react";
 
@@ -13,6 +13,23 @@ export default function HostTab({
   handleEndSession,
   handleLeave,
 }) {
+  // Ending affects everyone, so the button asks once more before it fires.
+  const [confirming, setConfirming] = useState(false);
+  useEffect(() => {
+    if (!confirming) return undefined;
+    const timer = setTimeout(() => setConfirming(false), 4000);
+    return () => clearTimeout(timer);
+  }, [confirming]);
+
+  const endClicked = () => {
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    setConfirming(false);
+    handleEndSession();
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-[320px] py-6 px-4">
       {!isSessionActive ? (
@@ -81,11 +98,13 @@ export default function HostTab({
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={handleEndSession}
+                onClick={endClicked}
                 className="h-8 text-xs"
               >
                 <LucideDoorClosed className="w-5 h-5 mr-1 text-white" />
-                <p className="-mt-0.5 text-white">End Session</p>
+                <p className="-mt-0.5 text-white">
+                  {confirming ? "Click again to end for everyone" : "End Session"}
+                </p>
               </Button>
             )}
             {!isHost && isSessionActive && (

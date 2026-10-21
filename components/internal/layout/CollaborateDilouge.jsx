@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, cn } from "@geiger/ui";
 import { Users2 } from "lucide-react";
 import { toast } from "sonner";
+import { ROLE_LABEL, sessionMembers } from "@/lib/collab/session";
 
 import HostTab from "../colab/HostTab";
 import MembersTab from "../colab/MembersTab";
@@ -22,8 +23,10 @@ export default function CollaborateDilouge({
   sessionData,
   role,
   onAcceptRequest,
+  onRejectRequest,
   onKickMember,
   onLeaveSession,
+  onEndSession,
   onMerge,
   dialogContainer,
   onEnterMeeting,
@@ -165,43 +168,17 @@ export default function CollaborateDilouge({
   const isHost = role === "host";
   const sessionCode = sessionData?.code;
 
-  const members = useMemo(() => {
-    if (!sessionData) return [];
-    const list = [];
-    const joinersMap = sessionData.joiners || {};
-    Object.keys(joinersMap).forEach((uid) => {
-      const m = joinersMap[uid];
-      // Only active members (joined) and pending requests are relevant here.
-      // Kicked/left entries are retained for access control but must not show
-      // up as members or as fake join requests.
-      if (m.status !== "joined" && m.status !== "requested") return;
-      list.push({
-        id: uid,
-        name: m.name || m.email || "Unknown",
-        status: m.status === "joined" ? "online" : "pending",
-        role: m.status === "joined" ? "Editor" : "Viewer",
-        type: m.status === "joined" ? "joined" : "requested",
-        isMe: currentUser?.id === uid,
-      });
-    });
-
-    const hostId = sessionData.host;
-    if (!list.find((m) => m.id === hostId)) {
-      list.unshift({
-        id: hostId,
-        name: currentUser?.id === hostId ? "You (Host)" : "Host",
-        status: "online",
-        role: "Owner",
-        type: "joined",
-        isMe: currentUser?.id === hostId,
-      });
-    } else {
-      const m = list.find((m) => m.id === hostId);
-      if (m) m.role = "Owner";
-    }
-
-    return list;
-  }, [sessionData, currentUser]);
+  // Kicked/left entries stay in joiners for access control, so sessionMembers drops them here.
+  const members = useMemo(
+    () =>
+      sessionMembers(sessionData, currentUser?.id).map((m) => ({
+        ...m,
+        role: m.role === "host" ? "Owner" : ROLE_LABEL[m.role],
+        type: m.status === "requested" ? "requested" : "joined",
+        status: m.status === "requested" ? "pending" : "online",
+      })),
+    [sessionData, currentUser],
+  );
 
   const joinedMembers = members.filter((m) => m.type !== "requested");
   const requestedMembers = members.filter((m) => m.type === "requested");
@@ -275,9 +252,11 @@ export default function CollaborateDilouge({
     router.push(`/${currentUser?.id}/home`);
   };
 
+  // Ends the session for everyone; the session page then shows its ended screen.
   const handleEndSession = async () => {
-    router.push(`/${currentUser?.id}/home`);
-    toast.info("Session ended");
+    if (!onEndSession) return;
+    const ok = await onEndSession();
+    if (ok) onOpenChange(false);
   };
 
   // Starting or joining hands the meeting (plus who we are) up to the Topbar, which docks the stage.
@@ -377,10 +356,11 @@ export default function CollaborateDilouge({
           {activeTab === "members" && (
             <MembersTab
               isSessionActive={isSessionActive}
-              isHost={isHost}
+              isHost={isHost || role === "cohost"}
               requestedMembers={requestedMembers}
               joinedMembers={joinedMembers}
               onAcceptRequest={onAcceptRequest}
+              onRejectRequest={onRejectRequest || onKickMember}
               onKickMember={onKickMember}
               handleLeave={handleLeave}
             />

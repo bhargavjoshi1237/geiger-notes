@@ -4,6 +4,7 @@ import React, { memo, useEffect, useRef, useState } from "react";
 import { Timer as TimerIcon, Play, Pause, RotateCcw, SkipForward } from "lucide-react";
 import { toast } from "sonner";
 import NodeShell, { useNodeDataUpdater } from "@/components/internal/nodes/shared/NodeShell";
+import { useSessionControlsContext } from "@/components/internal/colab/live/SessionContext";
 
 export const DEFAULT_POMODORO = { workMin: 25, shortMin: 5, longMin: 15, longEvery: 4, phase: "work", cycle: 1 };
 export const PHASE_LABEL = { work: "Focus", short: "Short break", long: "Long break" };
@@ -177,6 +178,10 @@ function TimerNode({ id, data, selected, dragging }) {
   const reset = () => update({ ...IDLE_STATE });
   const skip = () => update({ ...IDLE_STATE, pomodoro: nextPhase(pomo) });
 
+  // In a live session the host can keep the timer to themselves.
+  const { inSession, canEdit, facilitationLocked } = useSessionControlsContext();
+  const controlsLocked = facilitationLocked || (inSession && !canEdit);
+
   // Ring progress: share of the run consumed, or the position within the current minute for the stopwatch.
   const progress =
     mode === "stopwatch" ? (elapsed % 60000) / 60000 : total > 0 ? Math.min(1, elapsed / total) : 0;
@@ -253,7 +258,12 @@ function TimerNode({ id, data, selected, dragging }) {
           )}
         </div>
 
-        {mode !== "countdown" && (
+        {mode !== "countdown" && controlsLocked && (
+          <p className="flex h-9 items-center justify-center text-[11px] font-medium text-muted-foreground">
+            The host runs this timer
+          </p>
+        )}
+        {mode !== "countdown" && !controlsLocked && (
           <div className="flex items-center justify-center gap-2">
             <ControlButton onClick={reset} label="Reset">
               <RotateCcw className="h-4 w-4" />

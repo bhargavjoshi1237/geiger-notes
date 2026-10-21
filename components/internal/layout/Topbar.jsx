@@ -39,8 +39,10 @@ export default function Topbar({
   sessionData,
   role,
   onAcceptRequest,
+  onRejectRequest,
   onKickMember,
   onLeaveSession,
+  onEndSession,
   onMerge,
   breadcrumbs,
   onBreadcrumbClick,
@@ -60,11 +62,17 @@ export default function Topbar({
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCollaborateOpen, setIsCollaborateOpen] = useState(false);
   const [isAppOpen, setIsAppOpen] = useState(false);
-  // The live meeting ({ roomId, code, isHost, me, startedAt }); its stage docks under this bar.
+  // The live meeting ({ roomId, code, host, me, startedAt }); its stage docks under this bar.
   const [meeting, setMeeting] = useState(null);
   const [meetStats, setMeetStats] = useState({ total: 1, connected: false });
+  // The room's stored host decides who moderates, so a host who rejoins by code is host again.
   const enterMeeting = useCallback(
-    (details) => setMeeting({ ...details, startedAt: Date.now() }),
+    (details) =>
+      setMeeting({
+        ...details,
+        host: details.host || (details.isHost ? details.me?.id : null),
+        startedAt: Date.now(),
+      }),
     [],
   );
 
@@ -89,7 +97,7 @@ export default function Topbar({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      return { ok: res.ok, data: await res.json().catch(() => ({})) };
+      return { ok: res.ok, status: res.status, data: await res.json().catch(() => ({})) };
     };
     const onHuddle = async (e) => {
       const { nodeId, code } = e.detail || {};
@@ -103,7 +111,12 @@ export default function Topbar({
         let room = null;
         if (code) {
           const found = await post("lookup", { code });
-          if (found.ok && found.data.roomId) room = { roomId: found.data.roomId, code: found.data.code, isHost: false };
+          if (found.ok && found.data.roomId) {
+            room = { roomId: found.data.roomId, code: found.data.code, host: found.data.host, isHost: false };
+          } else if (found.status === 403 || found.status === 423) {
+            toast.error(found.data.error || "You can't join this huddle");
+            return broadcastMeeting();
+          }
         }
         if (!room) {
           const created = await post("create", {});
@@ -111,7 +124,7 @@ export default function Topbar({
             toast.error(created.data.error || "Couldn't start the huddle");
             return broadcastMeeting();
           }
-          room = { roomId: created.data.roomId, code: created.data.code, isHost: true };
+          room = { roomId: created.data.roomId, code: created.data.code, host: created.data.host, isHost: true };
           window.dispatchEvent(new CustomEvent("geiger:huddle-code", { detail: { nodeId, code: room.code } }));
         }
         const meta = user.user_metadata || {};
@@ -312,7 +325,7 @@ export default function Topbar({
               sessionData={sessionData}
               role={role}
               onAcceptRequest={onAcceptRequest}
-              onKickMember={onKickMember}
+              onKickMember={onRejectRequest || onKickMember}
             >
               <button
                 className="w-8 h-8 rounded-sm border border-transparent hover:bg-surface-hover hidden items-center justify-center transition-colors text-muted-foreground hover:text-foreground relative outline-none sm:flex"
@@ -364,8 +377,10 @@ export default function Topbar({
         sessionData={sessionData}
         role={role}
         onAcceptRequest={onAcceptRequest}
+        onRejectRequest={onRejectRequest}
         onKickMember={onKickMember}
         onLeaveSession={onLeaveSession}
+        onEndSession={onEndSession}
         onMerge={onMerge}
         dialogContainer={dialogContainer}
         onEnterMeeting={enterMeeting}
@@ -375,7 +390,7 @@ export default function Topbar({
           key={meeting.roomId}
           roomId={meeting.roomId}
           code={meeting.code}
-          isHost={meeting.isHost}
+          hostId={meeting.host}
           me={meeting.me}
           onStatsChange={setMeetStats}
           onClose={() => setMeeting(null)}

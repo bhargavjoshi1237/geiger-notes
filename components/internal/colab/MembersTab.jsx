@@ -14,6 +14,7 @@ export default function MembersTab({
   requestedMembers,
   joinedMembers,
   onAcceptRequest,
+  onRejectRequest,
   onKickMember,
   handleLeave,
 }) {
@@ -64,6 +65,8 @@ export default function MembersTab({
                         <Button
                           size="sm"
                           variant="ghost"
+                          onClick={() => onRejectRequest && onRejectRequest(user.id)}
+                          aria-label={`Decline ${user.name}`}
                           className="h-7 w-7 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -74,6 +77,7 @@ export default function MembersTab({
                           onClick={() =>
                             onAcceptRequest && onAcceptRequest(user.id)
                           }
+                          aria-label={`Accept ${user.name}`}
                           className="h-7 w-7 p-0 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-900/20"
                         >
                           <Check className="w-3.5 h-3.5" />
@@ -137,7 +141,7 @@ export default function MembersTab({
                         <div className="text-xs text-muted-foreground">{user.role}</div>
                       </div>
                     </div>
-                    {isHost && !user.isMe && (
+                    {isHost && !user.isMe && user.role !== "Owner" && (
                       <Button
                         variant="ghost"
                         size="icon"
