@@ -18,6 +18,8 @@ import { backdropFileId, loadBackdropImage } from "./backdrop";
 import { describeSkipped } from "@/lib/sketch/to-board-nodes";
 import { reconcileElements } from "@/lib/sketch/reconcile";
 import { useSketchPresence } from "@/lib/sketch/useSketchPresence";
+import { followScroll, movedByUser, viewportOf } from "@/lib/sketch/follow";
+import { followLoops } from "@/lib/collab/session";
 import CollaboratorStack from "./CollaboratorStack";
 import { createClient } from "@/utils/supabase/client";
 
@@ -249,15 +251,100 @@ export default function SketchEditor({
       .catch((err) => console.error("[Sketch] Reconnect reload error:", err));
   }, [sketchId, base]);
 
+  // Following: apply the leader's viewport as frames arrive, remembering what we set so our own
+  // onScrollChange echo isn't mistaken for the user panning away.
+  const followingIdRef = useRef(null);
+  const appliedScrollRef = useRef(null);
+  const applyRemoteViewport = useCallback((userId, frame) => {
+    const api = excalidrawApiRef.current;
+    if (!api || userId !== followingIdRef.current) return;
+    const { width, height } = api.getAppState();
+    const next = followScroll(frame, width, height);
+    if (!next) return;
+    appliedScrollRef.current = next;
+    api.updateScene({ appState: { scrollX: next.scrollX, scrollY: next.scrollY, zoom: { value: next.zoom } } });
+  }, []);
+
   const collaborationEnabled = Boolean(projectId);
-  const { collaborators, connected, isWriter, broadcastPointer, broadcastElements } =
-    useSketchPresence({
-      sketchId,
-      enabled: collaborationEnabled && !loading && !loadError,
-      me,
-      onRemoteElements: applyRemoteElements,
-      onReconnect: reloadAndReconcile,
-    });
+  const {
+    collaborators,
+    followers,
+    followingId,
+    connected,
+    isWriter,
+    broadcastPointer,
+    broadcastElements,
+    broadcastViewport,
+    follow,
+  } = useSketchPresence({
+    sketchId,
+    enabled: collaborationEnabled && !loading && !loadError,
+    me,
+    onRemoteElements: applyRemoteElements,
+    onReconnect: reloadAndReconcile,
+    onRemoteViewport: applyRemoteViewport,
+  });
+
+  useEffect(() => {
+    followingIdRef.current = followingId;
+    if (!followingId) appliedScrollRef.current = null;
+  }, [followingId]);
+
+  // Lead: stream our viewport only while someone follows us, starting with a frame for each new follower.
+  const followerCount = followers.length;
+  const followerCountRef = useRef(0);
+  useEffect(() => {
+    followerCountRef.current = followerCount;
+    const api = excalidrawApiRef.current;
+    if (followerCount > 0 && api) {
+      const viewport = viewportOf(api.getAppState());
+      if (viewport) broadcastViewport(viewport);
+    }
+  }, [followerCount, broadcastViewport]);
+
+  // Stop when the person we follow left, or their chain of follows leads back to us.
+  const leader = followingId ? collaborators.find((person) => person.userId === followingId) || null : null;
+  const followLoop = Boolean(
+    leader &&
+      followLoops(me?.id, leader.followingId, (id) => collaborators.find((person) => person.userId === id)?.followingId)
+  );
+  useEffect(() => {
+    if (!followingId || (leader && !followLoop)) return undefined;
+    const timer = setTimeout(() => follow(null), followLoop ? 0 : 3000);
+    return () => clearTimeout(timer);
+  }, [followingId, leader, followLoop, follow]);
+
+  const followCollaborator = useCallback(
+    (userId) => {
+      if (userId === followingIdRef.current) {
+        follow(null);
+        return;
+      }
+      const target = collaborators.find((person) => person.userId === userId);
+      const followingOf = (id) => collaborators.find((person) => person.userId === id)?.followingId;
+      if (target && followLoops(me?.id, target.followingId, followingOf)) {
+        toast.error(`${target.name} is already following you`);
+        return;
+      }
+      follow(userId);
+    },
+    [collaborators, follow, me?.id]
+  );
+
+  const handleScrollChange = useCallback(
+    (scrollX, scrollY, zoom) => {
+      const zoomValue = zoom?.value ?? zoom;
+      if (followingIdRef.current && movedByUser(appliedScrollRef.current, scrollX, scrollY, zoomValue)) {
+        follow(null);
+      }
+      if (followerCountRef.current > 0) {
+        const api = excalidrawApiRef.current;
+        const { width, height } = api?.getAppState() || {};
+        if (width && height) broadcastViewport({ scrollX, scrollY, zoom: zoomValue, width, height });
+      }
+    },
+    [follow, broadcastViewport]
+  );
 
   const persist = useCallback(
     async (elements, appState, files) => {
@@ -337,12 +424,15 @@ export default function SketchEditor({
     }, SAVE_DEBOUNCE_MS);
   }, []);
 
-  const handlePointerUpdate = useCallback(({ pointer }) => {
+  // The tool and button travel too, so a laser trail draws for everyone.
+  const handlePointerUpdate = useCallback(({ pointer, button }) => {
     if (!pointer) return;
     broadcastPointerRef.current?.(
       pointer.x,
       pointer.y,
-      appStateRef.current?.selectedElementIds || {}
+      appStateRef.current?.selectedElementIds || {},
+      pointer.tool,
+      button
     );
   }, []);
 
@@ -540,7 +630,8 @@ export default function SketchEditor({
             person.userId,
             {
               username: person.name,
-              pointer: person.pointer,
+              pointer: { ...person.pointer, tool: person.pointer.tool || "pointer" },
+              button: person.button,
               selectedElementIds: person.selectedElementIds,
               color: { background: person.color, stroke: person.color },
             },
@@ -754,7 +845,31 @@ export default function SketchEditor({
         }
         actions={
           <>
-            {connected && <CollaboratorStack collaborators={collaborators} />}
+            {connected && leader && (
+              <span className="flex items-center gap-1.5 rounded-full border border-border bg-surface-subtle py-0.5 pl-2 pr-1 text-[11px] text-foreground">
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: leader.color }} />
+                Following {leader.name}
+                <button
+                  type="button"
+                  onClick={() => follow(null)}
+                  className="rounded-full px-1.5 text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
+                >
+                  Stop
+                </button>
+              </span>
+            )}
+            {connected && followerCount > 0 && !leader && (
+              <span className="hidden text-[11px] text-muted-foreground md:inline">
+                {followerCount === 1 ? `${followers[0].name} is following you` : `${followerCount} following you`}
+              </span>
+            )}
+            {connected && (
+              <CollaboratorStack
+                collaborators={collaborators}
+                followingId={followingId}
+                onFollow={followCollaborator}
+              />
+            )}
             <SaveStatus status={saveStatus} live={connected && !isWriter} />
             {canEdit && (
               <button
@@ -785,6 +900,7 @@ export default function SketchEditor({
             }
           }}
           onPointerUpdate={collaborationEnabled ? handlePointerUpdate : undefined}
+          onScrollChange={collaborationEnabled ? handleScrollChange : undefined}
           viewModeEnabled={!canEdit}
         >
           {canEdit && (
