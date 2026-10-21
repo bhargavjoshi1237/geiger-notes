@@ -36,7 +36,7 @@ export default function MeetTab({ isSessionActive, sessionData, onJoined }) {
       toast.success(
         data.reused ? "Joined the session's meeting" : "Meeting started",
       );
-      onJoined({ roomId: data.roomId, code: data.code, isHost: !data.reused });
+      onJoined({ roomId: data.roomId, code: data.code, host: data.host, isHost: !data.reused });
     } catch (e) {
       console.error(e);
       toast.error("Couldn't start the meeting");
@@ -63,7 +63,7 @@ export default function MeetTab({ isSessionActive, sessionData, onJoined }) {
         toast.error(err);
         return;
       }
-      onJoined({ roomId: data.roomId, code: data.code, isHost: false });
+      onJoined({ roomId: data.roomId, code: data.code, host: data.host, isHost: false });
     } catch (e) {
       console.error(e);
       setJoinError("Couldn't join the meeting");

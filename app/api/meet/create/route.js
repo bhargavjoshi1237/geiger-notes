@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { randomBytes } from 'crypto';
+import { meetingRefusal } from '@/lib/meet/access';
 
 // Open a meeting room. Mirrors /api/collab/create, but a meeting is its own
 // feature: it mints its own code and stands on its own. `collabSessionId` is
@@ -31,16 +32,19 @@ export async function POST(request) {
         if (collabSessionId) {
             const { data: existing } = await supabase
                 .from('meet_rooms')
-                .select('id, code')
+                .select('id, code, host, metadata')
                 .eq('collab_session_id', collabSessionId)
                 .is('ended_at', null)
                 .is('deleted_at', null)
                 .maybeSingle();
             if (existing) {
+                const refusal = meetingRefusal(existing, user.id);
+                if (refusal) return NextResponse.json({ error: refusal.error }, { status: refusal.status });
                 return NextResponse.json({
                     success: true,
                     roomId: existing.id,
                     code: existing.code,
+                    host: existing.host,
                     reused: true,
                 });
             }
@@ -70,6 +74,7 @@ export async function POST(request) {
             success: true,
             roomId: data.id,
             code: data.code,
+            host: data.host,
         });
     } catch (error) {
         console.error('[API] Error creating meet room:', error);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import {
   Hand,
@@ -8,21 +8,24 @@ import {
   MicOff,
   MonitorUp,
   PhoneOff,
+  SmilePlus,
   Video as VideoIcon,
   VideoOff,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { hasTurn } from "@/lib/meet/ice";
-import { useMeetRoom } from "@/lib/meet/useMeetRoom";
+import { MEET_REACTIONS, useMeetRoom } from "@/lib/meet/useMeetRoom";
 import { trackToStream } from "@/lib/meet/useMediaTracks";
-import { cn } from "@geiger/ui";
+import { Popover, PopoverContent, PopoverTrigger, cn } from "@geiger/ui";
 import { RemoteAudio, VideoTile } from "./video_tile";
+import { HostToolsPopover, ParticipantMenu } from "./meet_host_tools";
 
-// Active meeting surface: tile grid, or a presenter layout with a filmstrip while anyone shares their screen.
-// Docks into the workspace below the Topbar (which shows the call status) and right of the 64px sidebar.
+// Active meeting surface: tile grid, or a presenter layout with a filmstrip while anyone shares their screen
+// or the host spotlights someone. Docks into the workspace below the Topbar (which shows the call status)
+// and right of the 64px sidebar.
 
-function ControlButton({ icon: Icon, label, active, danger, onClick, disabled }) {
+function ControlButton({ icon: Icon, label, active, danger, onClick, disabled, className }) {
   return (
     <button
       type="button"
@@ -37,6 +40,7 @@ function ControlButton({ icon: Icon, label, active, danger, onClick, disabled })
           : active
             ? "border-border bg-surface-hover text-foreground hover:bg-surface-active"
             : "border-transparent bg-red-500/10 text-red-600 dark:text-red-300 hover:bg-red-500/20",
+        className,
       )}
     >
       <Icon className="h-[18px] w-[18px]" />
@@ -44,9 +48,9 @@ function ControlButton({ icon: Icon, label, active, danger, onClick, disabled })
   );
 }
 
-export function MeetStage({ roomId, code, me, isHost, onClose, onStatsChange }) {
-  const room = useMeetRoom({ roomId, me });
-  const [handRaised, setHandRaised] = useState(false);
+export function MeetStage({ roomId, code, me, hostId, onClose, onStatsChange }) {
+  const room = useMeetRoom({ roomId, me, hostId, onExit: onClose });
+  const { isHost, roomMeta, reactions } = room;
 
   // Own camera preview: always the camera, never the screen — looking at a
   // recursive picture of your own share helps nobody.
@@ -60,18 +64,38 @@ export function MeetStage({ roomId, code, me, isHost, onClose, onStatsChange }) 
   );
 
   const remotes = room.remoteParticipants;
+  const remoteTile = (p, extra = {}) => (
+    <VideoTile
+      stream={room.remoteStreams.get(p.id)}
+      name={p.name}
+      id={p.id}
+      avatarUrl={p.avatarUrl}
+      micOn={p.micOn}
+      cameraOn={p.camOn}
+      sharing={p.sharing}
+      connectionState={room.peerStates.get(p.id)}
+      handRaised={Boolean(p.handRaisedAt)}
+      spotlighted={roomMeta.spotlightId === p.id}
+      isHost={room.hostId === p.id}
+      reaction={reactions[p.id]}
+      menu={isHost ? <ParticipantMenu participant={p} room={room} /> : null}
+      {...extra}
+    />
+  );
+
+  // A screen share takes the stage first; otherwise the host's spotlight does.
+  const sharer = room.sharing ? null : remotes.find((p) => p.sharing);
+  const spotlit = roomMeta.spotlightId ? remotes.find((p) => p.id === roomMeta.spotlightId) : null;
+  const selfSpotlit = roomMeta.spotlightId && roomMeta.spotlightId === me?.id;
   const presenter = room.sharing
-    ? { id: me?.id, name: "You", stream: selfShareStream, isSelf: true }
-    : (() => {
-        const sharer = remotes.find((p) => p.sharing);
-        if (!sharer) return null;
-        return {
-          id: sharer.id,
-          name: sharer.name,
-          stream: room.remoteStreams.get(sharer.id),
-          isSelf: false,
-        };
-      })();
+    ? { id: me?.id, name: "You", stream: selfShareStream, isSelf: true, sharing: true }
+    : sharer
+      ? { id: sharer.id, name: sharer.name, stream: room.remoteStreams.get(sharer.id), isSelf: false, sharing: true }
+      : spotlit
+        ? { participant: spotlit }
+        : selfSpotlit
+          ? { id: me?.id, name: me?.name || "You", stream: selfStream, isSelf: true, sharing: false }
+          : null;
 
   const total = remotes.length + 1;
   const gridCols =
@@ -103,6 +127,10 @@ export function MeetStage({ roomId, code, me, isHost, onClose, onStatsChange }) 
       micOn={room.micOn}
       cameraOn={room.camOn}
       isSelf
+      handRaised={Boolean(room.handRaisedAt)}
+      spotlighted={selfSpotlit}
+      isHost={isHost}
+      reaction={reactions[me?.id]}
       big={total <= 2 && !presenter}
     />
   );
@@ -122,29 +150,26 @@ export function MeetStage({ roomId, code, me, isHost, onClose, onStatsChange }) 
       <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
         {presenter ? (
           <div className="flex h-full flex-col gap-3">
-            <VideoTile
-              stream={presenter.stream}
-              name={presenter.name}
-              id={presenter.id}
-              sharing
-              cameraOn
-              isSelf={presenter.isSelf}
-              big
-              className="min-h-0 flex-1"
-            />
+            {presenter.participant ? (
+              remoteTile(presenter.participant, { big: true, className: "min-h-0 flex-1" })
+            ) : (
+              <VideoTile
+                stream={presenter.stream}
+                name={presenter.name}
+                id={presenter.id}
+                sharing={presenter.sharing}
+                cameraOn
+                isSelf={presenter.isSelf}
+                spotlighted={!presenter.sharing}
+                big
+                className="min-h-0 flex-1"
+              />
+            )}
             <div className="flex shrink-0 gap-3 overflow-x-auto pb-1">
               <div className="w-40 shrink-0">{selfTile}</div>
               {remotes.map((p) => (
                 <div key={p.id} className="w-40 shrink-0">
-                  <VideoTile
-                    stream={room.remoteStreams.get(p.id)}
-                    name={p.name}
-                    id={p.id}
-                    avatarUrl={p.avatarUrl}
-                    micOn={p.micOn}
-                    cameraOn={p.camOn}
-                    connectionState={room.peerStates.get(p.id)}
-                  />
+                  {remoteTile(p, { sharing: false, cameraOn: p.camOn })}
                 </div>
               ))}
             </div>
@@ -152,18 +177,7 @@ export function MeetStage({ roomId, code, me, isHost, onClose, onStatsChange }) 
         ) : (
           <div className={cn("grid h-full gap-3", gridCols)}>
             {remotes.map((p) => (
-              <VideoTile
-                key={p.id}
-                stream={room.remoteStreams.get(p.id)}
-                name={p.name}
-                id={p.id}
-                avatarUrl={p.avatarUrl}
-                micOn={p.micOn}
-                cameraOn={p.camOn}
-                sharing={p.sharing}
-                connectionState={room.peerStates.get(p.id)}
-                big={total <= 2}
-              />
+              <React.Fragment key={p.id}>{remoteTile(p, { big: total <= 2 })}</React.Fragment>
             ))}
             {selfTile}
           </div>
@@ -211,10 +225,38 @@ export function MeetStage({ roomId, code, me, isHost, onClose, onStatsChange }) 
         />
         <ControlButton
           icon={Hand}
-          label={handRaised ? "Lower hand" : "Raise hand"}
-          active={handRaised}
-          onClick={() => setHandRaised((v) => !v)}
+          label={room.handRaisedAt ? "Lower hand" : "Raise hand"}
+          active
+          onClick={room.toggleHand}
+          className={room.handRaisedAt ? "border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-300" : undefined}
         />
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              title="React"
+              aria-label="React"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-hover text-foreground transition-colors hover:bg-surface-active"
+            >
+              <SmilePlus className="h-[18px] w-[18px]" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="top" sideOffset={10} className="w-auto p-1.5">
+            <div className="flex gap-1">
+              {MEET_REACTIONS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => room.sendReaction(emoji)}
+                  className="flex h-9 w-9 items-center justify-center rounded-md text-lg transition-transform hover:scale-110 hover:bg-surface-hover"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+        {isHost ? <HostToolsPopover room={room} /> : null}
         <button
           type="button"
           onClick={leave}

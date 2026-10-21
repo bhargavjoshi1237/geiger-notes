@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { cn } from "@geiger/ui";
-import { Mic, MicOff, MonitorUp, WifiOff } from "lucide-react";
+import { Hand, Mic, MicOff, MonitorUp, Pin, WifiOff } from "lucide-react";
 
 // Deterministic accent per person, so a tile keeps the same colour across a
 // call without anyone having to store one.
@@ -80,6 +80,11 @@ export function VideoTile({
   isSelf = false,
   big = false,
   connectionState,
+  handRaised = false,
+  spotlighted = false,
+  isHost = false,
+  reaction = null,
+  menu = null,
   className,
 }) {
   const videoRef = useRef(null);
@@ -131,9 +136,37 @@ export function VideoTile({
         </div>
       ) : null}
 
+      {handRaised || spotlighted ? (
+        <div className="absolute left-2 top-2 flex items-center gap-1">
+          {handRaised ? (
+            <span className="flex items-center gap-1 rounded-md bg-amber-500 px-1.5 py-0.5 text-[10px] font-semibold text-black">
+              <Hand className="h-3 w-3" /> Hand raised
+            </span>
+          ) : null}
+          {spotlighted ? (
+            <span className="flex items-center gap-1 rounded-md bg-black/45 px-1.5 py-0.5 text-[10px] font-medium text-foreground backdrop-blur-sm">
+              <Pin className="h-3 w-3" /> Spotlight
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+
+      {menu ? (
+        <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100 has-[[data-state=open]]:opacity-100">
+          {menu}
+        </div>
+      ) : null}
+
+      {reaction ? (
+        <span key={reaction.key} className="session-reaction pointer-events-none absolute bottom-10 right-3 text-4xl drop-shadow">
+          {reaction.emoji}
+        </span>
+      ) : null}
+
       <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-md bg-black/45 px-2 py-1 backdrop-blur-sm">
         <span className="max-w-[12rem] truncate text-xs font-medium text-foreground">
           {isSelf ? "You" : name || "Guest"}
+          {isHost ? <span className="ml-1 text-[10px] font-normal text-amber-400">Host</span> : null}
         </span>
         {micOn ? (
           <Mic className="h-3 w-3 text-muted-foreground" />
