@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import {
   Avatar,
   AvatarFallback,
@@ -6,218 +6,348 @@ import {
   AvatarGroupCount,
   AvatarImage,
   Button,
-  ScrollArea,
+  Input,
+  LogoLoading,
 } from "@geiger/ui";
-import { History, ArrowLeft, Undo, GitMerge } from "lucide-react";
-export default function MergeTab({
-  selectedMergeSession,
-  mergeSessions,
-  handleMergeSessionSelect,
-  mergeDiff,
-  confirmMerge,
-  setSelectedMergeSession,
-  handleRollback,
-  currentUser,
-}) {
-  const hasRollback = !!selectedMergeSession?.rollback;
+import { AlertTriangle, ArrowLeft, ChevronRight, History, Loader2, Pencil, Plus, Search, Undo2 } from "lucide-react";
+import { computeMergeDiff, mergeStatus, nodeLabel, nodeTypeLabel } from "@/lib/collab/merge";
+import { sessionMembers } from "@/lib/collab/session";
+
+// Newest first inside each group; empty groups aren't shown.
+const GROUPS = [
+  { id: "ready", label: "Ready to merge" },
+  { id: "merged", label: "Merged" },
+  { id: "other", label: "From other boards" },
+  { id: "none", label: "Nothing to merge" },
+];
+
+const SEARCH_THRESHOLD = 5;
+const MAX_AVATARS = 3;
+
+function formatDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: date.getFullYear() === new Date().getFullYear() ? undefined : "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function changeSummary(diff) {
+  if (!diff) return "Couldn't be read";
+  if (diff.total === 0) return "No changes";
+  const parts = [];
+  if (diff.newNodes.length) parts.push(`${diff.newNodes.length} new`);
+  if (diff.changedNodes.length) parts.push(`${diff.changedNodes.length} changed`);
+  if (diff.edgeChanges) parts.push(`${diff.edgeChanges} ${diff.edgeChanges === 1 ? "link" : "links"}`);
+  return parts.join(", ");
+}
+
+function Centered({ children }) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center text-muted-foreground">
+      {children}
+    </div>
+  );
+}
+
+function SessionPeople({ people }) {
+  if (!people.length) return null;
+  return (
+    <AvatarGroup className="shrink-0">
+      {people.slice(0, MAX_AVATARS).map((person) => (
+        <Avatar key={person.id} size="sm" className="border-2 border-surface-dialog">
+          <AvatarImage src={person.avatarUrl} alt={person.name} />
+          <AvatarFallback>{person.name.charAt(0).toUpperCase()}</AvatarFallback>
+        </Avatar>
+      ))}
+      {people.length > MAX_AVATARS ? <AvatarGroupCount>+{people.length - MAX_AVATARS}</AvatarGroupCount> : null}
+    </AvatarGroup>
+  );
+}
+
+function SessionRow({ row, onSelect }) {
+  const { session, diff, status, people } = row;
+  const detail = status === "merged" ? `Merged ${formatDate(session.rollback.merged_at)}` : changeSummary(diff);
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(session)}
+      className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left transition-colors hover:bg-surface-hover/50 focus-visible:bg-surface-hover/50 focus-visible:outline-none"
+    >
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-mono text-xs font-medium text-foreground">
+          {session.code || "Untitled session"}
+        </span>
+        <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+          {formatDate(session.created_at)} · {detail}
+        </span>
+      </span>
+      <SessionPeople people={people} />
+      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+    </button>
+  );
+}
+
+function SessionList({ sessions, loadError, onRetry, onSelect, nodes, edges, currentUser }) {
+  const [query, setQuery] = useState("");
+
+  const rows = useMemo(
+    () =>
+      (sessions || []).map((session) => {
+        const diff = computeMergeDiff(session, nodes, edges);
+        return {
+          session,
+          diff,
+          status: mergeStatus(session, diff),
+          people: sessionMembers(session, currentUser?.id)
+            .filter((m) => m.role !== "host" && m.role !== "pending")
+            .map((m) => ({ id: m.id, name: m.name, avatarUrl: session.joiners?.[m.id]?.avatar_url })),
+        };
+      }),
+    [sessions, nodes, edges, currentUser],
+  );
+
+  const groups = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    const matches = term
+      ? rows.filter(
+          (row) =>
+            row.session.code?.toLowerCase().includes(term) ||
+            row.people.some((person) => person.name.toLowerCase().includes(term)),
+        )
+      : rows;
+    return GROUPS.map((group) => ({ ...group, rows: matches.filter((row) => row.status === group.id) })).filter(
+      (group) => group.rows.length,
+    );
+  }, [rows, query]);
+
+  if (loadError && !sessions) {
+    return (
+      <Centered>
+        <p className="text-sm text-foreground">Couldn&apos;t load your sessions</p>
+        <Button variant="outline" size="sm" onClick={onRetry} className="mt-2">
+          Try again
+        </Button>
+      </Centered>
+    );
+  }
+
+  if (!sessions) {
+    return (
+      <Centered>
+        <LogoLoading size={40} />
+      </Centered>
+    );
+  }
+
+  if (!sessions.length) {
+    return (
+      <Centered>
+        <History className="h-8 w-8 opacity-20" />
+        <p className="text-sm">No past sessions</p>
+        <p className="text-xs">Sessions you host show up here, so you can bring their work back to your board.</p>
+      </Centered>
+    );
+  }
 
   return (
-    <ScrollArea className="h-full flex flex-col h-full ">
-      {!selectedMergeSession ? (
-        <div className="h-full flex flex-col">
-          <ScrollArea className="flex-1 px-4 pb-4">
-            {mergeSessions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <History className="w-8 h-8 opacity-20 ml-auto mr-auto" />
-                </div>
-                <p className="text-sm font-medium">No hosted sessions found</p>
-                <p className="text-xs mt-1 w-full mx-auto opacity-70">
-                  Past sessions you've hosted will appear here for merging.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {mergeSessions.map((session) => (
-                  <button
-                    key={session.id}
-                    onClick={() => handleMergeSessionSelect(session)}
-                    className="w-full flex flex-col gap-1 p-3 rounded-lg bg-surface-hover/40 hover:bg-surface-hover/80 border border-border hover:border-border transition-all text-left group"
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-sm font-medium text-foreground group-hover:text-foreground transition-colors">
-                        {session.code || "Untitled Session"}
-                      </span>
-                      <span>
-                        <AvatarGroup className="grayscale">
-                          {currentUser && (
-                            <Avatar
-                              size="sm"
-                              className="border-2 border-surface-dialog"
-                            >
-                              <AvatarImage
-                                src={currentUser?.user_metadata?.avatar_url}
-                                alt={currentUser?.user_metadata?.name || "Host"}
-                              />
-                              <AvatarFallback>
-                                {currentUser?.user_metadata?.name
-                                  ? currentUser.user_metadata.name
-                                      .substring(0, 2)
-                                      .toUpperCase()
-                                  : "H"}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
-                          {session.joiners &&
-                            Object.values(session.joiners)
-                              .filter((j) => j.status === "joined")
-                              .slice(0, 2)
-                              .map((joiner, index) => (
-                                <Avatar
-                                  key={index}
-                                  size="sm"
-                                  className="border-2 border-surface-dialog"
-                                >
-                                  <AvatarImage
-                                    src={joiner.avatar_url}
-                                    alt={joiner.name}
-                                  />
-                                  <AvatarFallback>
-                                    {joiner.name
-                                      ? joiner.name
-                                          .substring(0, 2)
-                                          .toUpperCase()
-                                      : "U"}
-                                  </AvatarFallback>
-                                </Avatar>
-                              ))}
-                          {session.joiners &&
-                            Object.values(session.joiners).filter(
-                              (j) => j.status === "joined",
-                            ).length > 2 && (
-                              <AvatarGroupCount>
-                                +
-                                {Object.values(session.joiners).filter(
-                                  (j) => j.status === "joined",
-                                ).length - 2}
-                              </AvatarGroupCount>
-                            )}
-                        </AvatarGroup>
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between mt-1">
-                      <div className="text-xs text-muted-foreground group-hover:text-muted-foreground">
-                        {session.rollback ? (
-                          <div className="text-[10px] text-amber-500/90 flex items-center gap-1 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
-                            <GitMerge className="w-3 h-3" /> Merged
-                          </div>
-                        ) : (
-                          <div className="text-[10px] text-muted-foreground flex items-center gap-1 bg-surface-hover/50 px-1.5 py-0.5 rounded border border-border/50">
-                            <GitMerge className="w-3 h-3" /> Not Merged
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground group-hover:text-muted-foreground">
-                        {new Date(session.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
+    <div className="flex h-full flex-col">
+      {sessions.length > SEARCH_THRESHOLD ? (
+        <div className="relative shrink-0 border-b border-border p-3">
+          <Search className="pointer-events-none absolute left-5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by code or person"
+            aria-label="Search sessions"
+            className="h-8 pl-8 text-sm"
+          />
         </div>
-      ) : (
-        <div className="flex flex-col h-full">
-          <ScrollArea className="flex-1">
-            {hasRollback ? (
-              <div className="flex flex-col items-center justify-center p-8 text-center space-y-6">
-                <div className="space-y-2">
-                  <h3 className="text-lg font-medium text-foreground">
-                    Undo Merge
-                  </h3>
-                  <p className="text-sm text-muted-foreground max-w-[260px] mx-auto leading-relaxed">
-                    Merged on{" "}
-                    <span className="text-foreground">
-                      {new Date(
-                        selectedMergeSession.rollback.merged_at,
-                      ).toLocaleDateString()}
-                    </span>{" "}
-                    at{" "}
-                    <span className="text-foreground">
-                      {new Date(
-                        selectedMergeSession.rollback.merged_at,
-                      ).toLocaleTimeString()}
-                    </span>
-                  </p>
-                </div>
-                <div className="text-xs text-muted-foreground bg-muted/50 px-4 py-3 rounded-md border border-border w-full">
-                  Rolling back will restore the board state to exactly how it
-                  was before the merge.
-                </div>
-              </div>
-            ) : (
-              <div className="p-6 space-y-6">
-                {mergeDiff && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-surface-hover/30 border-2 border-border border-dashed rounded-xl p-4 text-center flex flex-col items-center justify-center gap-1 group hover:border-emerald-500/30 transition-colors">
-                        <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                          {mergeDiff.newNodes.length}
-                        </div>
-                        <div className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
-                          New Nodes
-                        </div>
-                      </div>
-                      <div className="bg-surface-hover/30 border-2 border-border border-dashed rounded-xl p-4 text-center flex flex-col items-center justify-center gap-1 group hover:border-blue-500/30 transition-colors">
-                        <div className="text-2xl font-bold text-blue-400">
-                          {mergeDiff.changedNodes.length}
-                        </div>
-                        <div className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
-                          Modified
-                        </div>
-                      </div>
-                    </div>
+      ) : null}
 
-                    <div className="space-y-3 pt-2">
-                      <div className="text-sm text-muted-foreground leading-relaxed">
-                        Merging will combine these changes into your current
-                        board. Your local unique nodes will be preserved.
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </ScrollArea>
-
-          <div className="p-4 border-t border-border flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => setSelectedMergeSession(null)}
-              className="w-[30%] bg-surface-hover text-foreground hover:bg-surface-hover hover:text-foreground"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
+        {groups.length ? (
+          groups.map((group) => (
+            <section key={group.id}>
+              <h4 className="sticky top-0 z-10 flex items-center justify-between bg-surface-dialog px-2 pb-1 pt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {group.label}
+                <span className="font-normal tabular-nums">{group.rows.length}</span>
+              </h4>
+              {group.rows.map((row) => (
+                <SessionRow key={row.session.id} row={row} onSelect={onSelect} />
+              ))}
+            </section>
+          ))
+        ) : (
+          <Centered>
+            <p className="text-sm">No sessions match &ldquo;{query.trim()}&rdquo;</p>
+            <Button variant="ghost" size="sm" onClick={() => setQuery("")}>
+              Clear search
             </Button>
-            {hasRollback ? (
-              <Button
-                onClick={handleRollback}
-                className="flex-1 bg-amber-600 hover:bg-amber-700 text-foreground shadow-lg shadow-amber-900/20"
-              >
-                <Undo className="w-4 h-4 mr-2" />
-                Rollback
-              </Button>
-            ) : (
-              <Button
-                onClick={confirmMerge}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-foreground shadow-lg shadow-emerald-900/20"
-              >
-                Merge Changes
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-    </ScrollArea>
+          </Centered>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value, tone }) {
+  return (
+    <div className="px-3 py-2.5 text-center">
+      <div className={`text-lg font-semibold tabular-nums ${value ? tone || "text-foreground" : "text-muted-foreground"}`}>
+        {value}
+      </div>
+      <div className="text-[11px] text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+function ChangeRow({ node, icon: Icon, iconClassName }) {
+  return (
+    <li className="flex items-center gap-2 rounded-md px-2 py-1.5 text-xs">
+      <Icon className={`h-3.5 w-3.5 shrink-0 ${iconClassName}`} />
+      <span className="min-w-0 flex-1 truncate text-foreground">{nodeLabel(node)}</span>
+      <span className="shrink-0 text-muted-foreground">{nodeTypeLabel(node)}</span>
+    </li>
+  );
+}
+
+function Notice({ children }) {
+  return (
+    <div className="flex gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-700 dark:text-amber-300">
+      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+      <p>{children}</p>
+    </div>
+  );
+}
+
+function MergeDetail({ diff }) {
+  if (!diff) return <Notice>This session&apos;s saved board couldn&apos;t be read, so there&apos;s nothing to merge.</Notice>;
+  return (
+    <>
+      <div className="grid grid-cols-3 divide-x divide-border rounded-lg border border-border bg-surface-hover/30">
+        <Stat label="New nodes" value={diff.newNodes.length} tone="text-emerald-600 dark:text-emerald-400" />
+        <Stat label="Changed" value={diff.changedNodes.length} />
+        <Stat label="Links" value={diff.edgeChanges} />
+      </div>
+
+      {diff.fromOtherBoard ? (
+        <Notice>None of these nodes are on this board, so this session probably came from another one. Merging adds them all here.</Notice>
+      ) : null}
+
+      {diff.newNodes.length || diff.changedNodes.length ? (
+        <ul>
+          {diff.newNodes.map((node) => (
+            <ChangeRow key={node.id} node={node} icon={Plus} iconClassName="text-emerald-600 dark:text-emerald-400" />
+          ))}
+          {diff.changedNodes.map((node) => (
+            <ChangeRow key={node.id} node={node} icon={Pencil} iconClassName="text-muted-foreground" />
+          ))}
+        </ul>
+      ) : null}
+
+      <p className="text-xs leading-relaxed text-muted-foreground">{mergeFootnote(diff)}</p>
+    </>
+  );
+}
+
+function mergeFootnote(diff) {
+  if (diff.total === 0) return "Your board already matches this session.";
+  const parts = [];
+  if (diff.changedNodes.length) parts.push("Changed nodes take the session's version.");
+  const local = diff.localNodes.length;
+  if (local === 1) parts.push("1 node that's only on your board stays as it is.");
+  else if (local > 1) parts.push(`${local} nodes that are only on your board stay as they are.`);
+  return parts.join(" ");
+}
+
+export default function MergeTab({
+  mergeSessions,
+  mergeLoadError,
+  retryMergeSessions,
+  selectedMergeSession,
+  handleMergeSessionSelect,
+  setSelectedMergeSession,
+  mergeDiff,
+  confirmMerge,
+  handleRollback,
+  isMergeBusy,
+  nodes,
+  edges,
+  boardId,
+  currentUser,
+}) {
+  if (!selectedMergeSession) {
+    return (
+      <SessionList
+        sessions={mergeSessions}
+        loadError={mergeLoadError}
+        onRetry={retryMergeSessions}
+        onSelect={handleMergeSessionSelect}
+        nodes={nodes}
+        edges={edges}
+        currentUser={currentUser}
+      />
+    );
+  }
+
+  const rollback = selectedMergeSession.rollback;
+  const changes = mergeDiff?.total || 0;
+  // Undo replaces the whole board, so it only runs where the merge happened. Older merges didn't record a board.
+  const undoElsewhere = !!rollback?.board_id && rollback.board_id !== boardId;
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex shrink-0 items-center gap-2 border-b border-border px-2 py-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSelectedMergeSession(null)}
+          aria-label="Back to sessions"
+          className="h-7 w-7"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <span className="min-w-0 flex-1 truncate font-mono text-xs font-medium text-foreground">
+          {selectedMergeSession.code || "Untitled session"}
+        </span>
+        <span className="shrink-0 pr-2 text-xs text-muted-foreground">{formatDate(selectedMergeSession.created_at)}</span>
+      </div>
+
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+        {rollback ? (
+          <>
+            <p className="text-sm text-muted-foreground">
+              Merged on <span className="text-foreground">{formatDate(rollback.merged_at)}</span>.
+            </p>
+            <Notice>
+              {undoElsewhere
+                ? "This session was merged into a different board. Open that board to undo it."
+                : "Undoing replaces this board with how it looked before the merge. Anything you've changed since then will be lost."}
+            </Notice>
+          </>
+        ) : (
+          <MergeDetail diff={mergeDiff} />
+        )}
+      </div>
+
+      <div className="shrink-0 border-t border-border p-3">
+        {rollback ? (
+          <Button variant="outline" onClick={handleRollback} disabled={isMergeBusy || undoElsewhere} className="w-full">
+            {isMergeBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Undo2 className="h-4 w-4" />}
+            Undo merge
+          </Button>
+        ) : (
+          <Button onClick={confirmMerge} disabled={isMergeBusy || !changes} className="w-full">
+            {isMergeBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {changes ? `Merge ${changes} ${changes === 1 ? "change" : "changes"}` : "Nothing to merge"}
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }

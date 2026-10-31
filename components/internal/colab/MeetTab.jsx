@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button, cn } from "@geiger/ui";
+import { Button, Input, cn } from "@geiger/ui";
 import { Video, LogIn, Link2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -78,7 +78,7 @@ export default function MeetTab({ isSessionActive, sessionData, onJoined }) {
       <div className="text-center space-y-4 animate-in fade-in">
         <Video className="w-8 h-8 opacity-20 ml-auto mr-auto" />
         <div className="space-y-1">
-          <h3 className="text-md font-semibold text-foreground">
+          <h3 className="text-base font-semibold text-foreground">
             Start a Meeting
           </h3>
           <p className="text-xs text-muted-foreground max-w-[280px] mx-auto">
@@ -152,22 +152,21 @@ export default function MeetTab({ isSessionActive, sessionData, onJoined }) {
 
       {showJoin ? (
         <div className="w-full space-y-3 animate-in fade-in slide-in-from-top-1">
-          <input
+          <Input
             autoFocus
-            type="text"
             placeholder="MEET-XXXX-XXXX"
+            aria-label="Meeting code"
+            aria-invalid={!!joinError}
             value={codeInput}
             onChange={(e) => setCodeInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && joinByCode()}
+            onKeyDown={(e) => e.key === "Enter" && !joining && joinByCode()}
             className={cn(
-              "w-full bg-muted border rounded-md px-3 py-2 text-sm text-center text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-border transition-colors font-mono uppercase",
-              joinError
-                ? "border-red-500/50 focus:border-red-500"
-                : "border-border",
+              "text-center font-mono uppercase",
+              joinError && "border-red-500/50 focus-visible:border-red-500",
             )}
           />
           {joinError ? (
-            <p className="text-xs text-red-400">{joinError}</p>
+            <p className="text-xs text-red-600 dark:text-red-400">{joinError}</p>
           ) : null}
           <Button
             onClick={joinByCode}

@@ -3,9 +3,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, cn } from "@geiger/ui";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, cn } from "@geiger/ui";
 import { Users2 } from "lucide-react";
 import { toast } from "sonner";
+import { buildMergedBoard, computeMergeDiff } from "@/lib/collab/merge";
 import { ROLE_LABEL, sessionMembers } from "@/lib/collab/session";
 
 import HostTab from "../colab/HostTab";
@@ -38,9 +39,28 @@ export default function CollaborateDilouge({
   const [activeTab, setActiveTab] = useState("host");
   const [isStarting, setIsStarting] = useState(false);
   const [sessionCodeInput, setSessionCodeInput] = useState("");
-  const [mergeSessions, setMergeSessions] = useState([]);
+  // Null until the first fetch resolves, so the tab can tell "loading" from "no sessions".
+  const [mergeSessions, setMergeSessions] = useState(null);
+  const [mergeLoadError, setMergeLoadError] = useState(false);
+  const [mergeReloadKey, setMergeReloadKey] = useState(0);
   const [selectedMergeSession, setSelectedMergeSession] = useState(null);
-  const [mergeDiff, setMergeDiff] = useState(null);
+  const [isMergeBusy, setIsMergeBusy] = useState(false);
+
+  const isSessionActive = !!sessionData;
+  const isHost = role === "host";
+  const sessionCode = sessionData?.code;
+
+  const tabs = [
+    { id: "host", label: isSessionActive ? "Session" : "Host" },
+    { id: "members", label: "Members" },
+    // Always available: a meeting doesn't depend on a session.
+    { id: "meet", label: "Meeting" },
+    (!isSessionActive || !isHost) && { id: "join", label: "Join" },
+    !isSessionActive && { id: "merge", label: "Merge" },
+  ].filter(Boolean);
+
+  // A tab can disappear while selected (Merge once a session starts); fall back to the first one.
+  const currentTab = tabs.some((tab) => tab.id === activeTab) ? activeTab : tabs[0].id;
 
   useEffect(() => {
     async function getUser() {
@@ -50,130 +70,105 @@ export default function CollaborateDilouge({
     getUser();
   }, [supabase]);
 
+  // Refetched on every visit so sessions that ended since the last one show up.
   useEffect(() => {
-    if (activeTab === "merge" && currentUser) {
-      async function fetchHostedSessions() {
-        const { data } = await supabase
-          .from("collab")
-          .select("*")
-          .eq("host", currentUser.id)
-          .order("created_at", { ascending: false });
-        if (data) setMergeSessions(data);
+    if (!open || currentTab !== "merge" || !currentUser) return undefined;
+    let cancelled = false;
+    async function fetchHostedSessions() {
+      const { data, error } = await supabase
+        .from("collab")
+        .select("*")
+        .eq("host", currentUser.id)
+        .order("created_at", { ascending: false });
+      if (cancelled) return;
+      if (error) {
+        console.error("Error loading hosted sessions:", error);
+        setMergeLoadError(true);
+        return;
       }
-      fetchHostedSessions();
+      setMergeSessions(data || []);
     }
-  }, [activeTab, currentUser, supabase]);
+    fetchHostedSessions();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, currentTab, currentUser, supabase, mergeReloadKey]);
 
-  const computeDiff = (session) => {
-    try {
-      const sNodes =
-        typeof session.state_nodes === "string"
-          ? JSON.parse(session.state_nodes)
-          : session.state_nodes || [];
-      const sEdges =
-        typeof session.state_edges === "string"
-          ? JSON.parse(session.state_edges)
-          : session.state_edges || [];
-      const currentIds = new Set(nodes.map((n) => n.id));
-      const newNodes = sNodes.filter((n) => !currentIds.has(n.id));
-      const changedNodes = sNodes.filter((n) => {
-        if (!currentIds.has(n.id)) return false;
-        const current = nodes.find((cn) => cn.id === n.id);
-        return JSON.stringify(n) !== JSON.stringify(current);
-      });
-      const sessionIds = new Set(sNodes.map((n) => n.id));
-      const deletedNodes = nodes.filter((n) => !sessionIds.has(n.id));
-
-      setMergeDiff({
-        newNodes,
-        changedNodes,
-        deletedNodes,
-        sNodes,
-        sEdges,
-      });
-    } catch (e) {
-      console.error("Error computing diff", e);
-      toast.error("Failed to compute diff");
-    }
+  const retryMergeSessions = () => {
+    setMergeLoadError(false);
+    setMergeReloadKey((key) => key + 1);
   };
 
-  const handleMergeSessionSelect = (session) => {
-    setSelectedMergeSession(session);
-    computeDiff(session);
+  const mergeDiff = useMemo(
+    () => (selectedMergeSession ? computeMergeDiff(selectedMergeSession, nodes, edges) : null),
+    [selectedMergeSession, nodes, edges],
+  );
+
+  const handleOpenChange = (next) => {
+    if (!next) setSelectedMergeSession(null);
+    onOpenChange(next);
   };
 
+  const finishMergeAction = (rollback) => {
+    setMergeSessions((prev) =>
+      prev.map((s) => (s.id === selectedMergeSession.id ? { ...s, rollback } : s)),
+    );
+    handleOpenChange(false);
+  };
+
+  // The undo point is saved first: if that fails the board stays untouched rather than merging with no way back.
   const confirmMerge = async () => {
     if (!mergeDiff || !onMerge) return;
-    const rollbackState = {
-      nodes: nodes,
-      edges: edges,
+    const rollback = {
+      nodes,
+      edges,
+      board_id: id,
       merged_at: new Date().toISOString(),
     };
+    setIsMergeBusy(true);
+    const { error } = await supabase
+      .from("collab")
+      .update({ rollback })
+      .eq("id", selectedMergeSession.id);
+    setIsMergeBusy(false);
 
-    if (selectedMergeSession) {
-      const { error } = await supabase
-        .from("collab")
-        .update({ rollback: rollbackState })
-        .eq("id", selectedMergeSession.id);
-
-      if (error) {
-        console.error("Error saving rollback state:", error);
-        toast.error("Failed to save rollback state");
-      } else {
-        const updatedSession = {
-          ...selectedMergeSession,
-          rollback: rollbackState,
-        };
-        setMergeSessions((prev) =>
-          prev.map((s) => (s.id === updatedSession.id ? updatedSession : s)),
-        );
-      }
+    if (error) {
+      console.error("Error saving rollback state:", error);
+      toast.error("Couldn't save an undo point, so nothing was merged");
+      return;
     }
-
-    const combinedNodes = [...mergeDiff.sNodes, ...mergeDiff.deletedNodes];
-    const sessionEdgeIds = new Set(mergeDiff.sEdges.map((e) => e.id));
-    const localUniqueEdges = edges.filter((e) => !sessionEdgeIds.has(e.id));
-    const combinedEdges = [...mergeDiff.sEdges, ...localUniqueEdges];
-    onMerge(combinedNodes, combinedEdges);
-    toast.success("Merged successfully");
-    onOpenChange(false);
-    setSelectedMergeSession(null);
+    const merged = buildMergedBoard(mergeDiff, edges);
+    onMerge(merged.nodes, merged.edges);
+    finishMergeAction(rollback);
+    toast.success("Session merged");
   };
 
   const handleRollback = async () => {
-    if (!selectedMergeSession?.rollback || !onMerge) return;
-    const { nodes: rollbackNodes, edges: rollbackEdges } =
-      selectedMergeSession.rollback;
-    onMerge(rollbackNodes, rollbackEdges);
+    const rollback = selectedMergeSession?.rollback;
+    if (!rollback || !onMerge) return;
+    setIsMergeBusy(true);
     const { error } = await supabase
       .from("collab")
       .update({ rollback: null })
       .eq("id", selectedMergeSession.id);
+    setIsMergeBusy(false);
 
     if (error) {
       console.error("Error clearing rollback state:", error);
-      toast.error("Failed to clear rollback state");
-    } else {
-      const updatedSession = { ...selectedMergeSession, rollback: null };
-      setMergeSessions((prev) =>
-        prev.map((s) => (s.id === updatedSession.id ? updatedSession : s)),
-      );
+      toast.error("Couldn't undo the merge");
+      return;
     }
-    onOpenChange(false);
-    setSelectedMergeSession(null);
-    toast.success("Rolled back successfully");
+    onMerge(rollback.nodes, rollback.edges);
+    finishMergeAction(null);
+    toast.success("Merge undone");
   };
-
-  const isSessionActive = !!sessionData;
-  const isHost = role === "host";
-  const sessionCode = sessionData?.code;
 
   // Kicked/left entries stay in joiners for access control, so sessionMembers drops them here.
   const members = useMemo(
     () =>
       sessionMembers(sessionData, currentUser?.id).map((m) => ({
         ...m,
-        role: m.role === "host" ? "Owner" : ROLE_LABEL[m.role],
+        role: ROLE_LABEL[m.role],
         type: m.status === "requested" ? "requested" : "joined",
         status: m.status === "requested" ? "pending" : "online",
       })),
@@ -275,20 +270,22 @@ export default function CollaborateDilouge({
 
   return (
     <>
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         container={dialogContainer}
         overlayClassName={dialogContainer ? "absolute inset-0" : undefined}
-        showCloseButton={false}
         className={`${dialogContainer ? "absolute max-h-[calc(100%-1rem)]" : ""} max-w-md bg-surface-dialog border-border text-foreground p-0 overflow-hidden gap-0 sm:rounded-lg shadow-xl`}
       >
-        <DialogHeader className="p-4 border-b border-border space-y-0">
+        <DialogHeader className="py-3.5 pl-4 pr-12 border-b border-border space-y-0">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <Users2 className="w-4 h-4 text-muted-foreground" />
-              <DialogTitle className="text-base font-sm text-foreground">
+              <DialogTitle className="text-base font-medium text-foreground">
                 Collaborate
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                Host, join or merge live sessions and start meetings for this board.
+              </DialogDescription>
             </div>
 
             <div
@@ -312,34 +309,33 @@ export default function CollaborateDilouge({
           </div>
         </DialogHeader>
 
-        <div className="flex border-b border-border bg-surface-dialog">
-          {[
-            { id: "host", label: isSessionActive ? "Session" : "Host" },
-            { id: "members", label: "Members" },
-            // Always available: a meeting doesn't depend on a session.
-            { id: "meet", label: "Meeting" },
-            (!isSessionActive || !isHost) && { id: "join", label: "Join" },
-            !isSessionActive && { id: "merge", label: "Merge" },
-          ]
-            .filter(Boolean)
-            .map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "flex-1 py-3 text-sm font-medium border-b-2 transition-colors",
-                  activeTab === tab.id
-                    ? "border-primary text-foreground bg-surface-hover/30"
-                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-hover/20",
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
+        <div role="tablist" className="flex border-b border-border bg-surface-dialog">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={currentTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "flex-1 py-2.5 text-sm font-medium border-b-2 transition-colors",
+                currentTab === tab.id
+                  ? "border-primary text-foreground bg-surface-hover/30"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-hover/20",
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        <div className="p-4 bg-surface-dialog h-[min(300px,calc(100dvh-220px))] overflow-y-auto">
-          {activeTab === "host" && (
+        <div
+          className={cn(
+            "bg-surface-dialog h-[min(380px,calc(100dvh-120px))]",
+            currentTab === "merge" ? "overflow-hidden" : "p-4 overflow-y-auto",
+          )}
+        >
+          {currentTab === "host" && (
             <HostTab
               isSessionActive={isSessionActive}
               startSession={startSession}
@@ -353,7 +349,7 @@ export default function CollaborateDilouge({
             />
           )}
 
-          {activeTab === "members" && (
+          {currentTab === "members" && (
             <MembersTab
               isSessionActive={isSessionActive}
               isHost={isHost || role === "cohost"}
@@ -366,7 +362,7 @@ export default function CollaborateDilouge({
             />
           )}
 
-          {activeTab === "meet" && (
+          {currentTab === "meet" && (
             <MeetTab
               isSessionActive={isSessionActive}
               sessionData={sessionData}
@@ -374,7 +370,7 @@ export default function CollaborateDilouge({
             />
           )}
 
-          {activeTab === "join" && (
+          {currentTab === "join" && (
             <JoinTab
               isSessionActive={isSessionActive}
               sessionCodeInput={sessionCodeInput}
@@ -385,28 +381,24 @@ export default function CollaborateDilouge({
             />
           )}
 
-          {activeTab === "merge" && (
+          {currentTab === "merge" && (
             <MergeTab
-              selectedMergeSession={selectedMergeSession}
               mergeSessions={mergeSessions}
-              handleMergeSessionSelect={handleMergeSessionSelect}
+              mergeLoadError={mergeLoadError}
+              retryMergeSessions={retryMergeSessions}
+              selectedMergeSession={selectedMergeSession}
+              handleMergeSessionSelect={setSelectedMergeSession}
+              setSelectedMergeSession={setSelectedMergeSession}
               mergeDiff={mergeDiff}
               confirmMerge={confirmMerge}
-              setSelectedMergeSession={setSelectedMergeSession}
               handleRollback={handleRollback}
+              isMergeBusy={isMergeBusy}
+              nodes={nodes}
+              edges={edges}
+              boardId={id}
               currentUser={currentUser}
             />
           )}
-        </div>
-
-        <div className="p-4 border-t border-border bg-surface-dialog flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            className="text-muted-foreground hover:text-foreground hover:bg-surface-hover"
-          >
-            Close
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

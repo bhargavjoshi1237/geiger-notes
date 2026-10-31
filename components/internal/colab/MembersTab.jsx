@@ -1,12 +1,7 @@
 import React from "react";
 import { Badge, Button, ScrollArea, cn } from "@geiger/ui";
-import {
-  Users2,
-  Check,
-  Trash2,
-  UserMinus,
-  LucideDoorClosed,
-} from "lucide-react";
+import { ROLE_LABEL } from "@/lib/collab/session";
+import { Users2, Check, X, UserMinus, LucideDoorClosed } from "lucide-react";
 
 export default function MembersTab({
   isSessionActive,
@@ -21,7 +16,7 @@ export default function MembersTab({
   return (
     <div className="h-full flex flex-col">
       {!isSessionActive ? (
-        <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground space-y-2">
+        <div className="flex flex-col items-center justify-center h-full text-muted-foreground space-y-2">
           <Users2 className="w-8 h-8 opacity-20" />
           <p className="text-sm">No active session</p>
           <p className="text-xs text-muted-foreground">
@@ -29,8 +24,8 @@ export default function MembersTab({
           </p>
         </div>
       ) : (
-        <div className="flex-1 -mx-2">
-          <ScrollArea className="h-[300px] px-2">
+        <div className="min-h-0 flex-1 -mx-2">
+          <ScrollArea className="h-full px-2">
             {isHost && requestedMembers.length > 0 && (
               <div className="mb-6">
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1 flex items-center justify-between">
@@ -67,9 +62,9 @@ export default function MembersTab({
                           variant="ghost"
                           onClick={() => onRejectRequest && onRejectRequest(user.id)}
                           aria-label={`Decline ${user.name}`}
-                          className="h-7 w-7 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                          className="h-7 w-7 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-500/10"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <X className="w-3.5 h-3.5" />
                         </Button>
                         <Button
                           size="sm"
@@ -129,24 +124,17 @@ export default function MembersTab({
                           {user.isMe && (
                             <span className="text-muted-foreground text-xs">(You)</span>
                           )}
-                          {user.role === "Owner" && (
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] h-4 py-0 px-1 border-border text-muted-foreground font-normal"
-                            >
-                              Host
-                            </Badge>
-                          )}
                         </div>
                         <div className="text-xs text-muted-foreground">{user.role}</div>
                       </div>
                     </div>
-                    {isHost && !user.isMe && user.role !== "Owner" && (
+                    {isHost && !user.isMe && user.role !== ROLE_LABEL.host && (
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => onKickMember && onKickMember(user.id)}
-                        className="h-8 w-8 opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-400 hover:bg-red-900/20"
+                        aria-label={`Remove ${user.name}`}
+                        className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-500/10"
                       >
                         <UserMinus className="w-4 h-4" />
                       </Button>
@@ -159,7 +147,7 @@ export default function MembersTab({
         </div>
       )}
       {!isHost && isSessionActive && (
-        <div className="p-4 mt-auto">
+        <div className="pt-3 mt-auto">
           <Button
             variant="destructive"
             className="w-full"
