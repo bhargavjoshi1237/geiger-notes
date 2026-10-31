@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Crown, Hand, SmilePlus, Wand2 } from "lucide-react";
+import { Hand, ShieldCheck, SmilePlus, Wand2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger, cn } from "@geiger/ui";
 import { canModerate, sessionMembers } from "@/lib/collab/session";
 import { SESSION_REACTIONS } from "@/lib/collab/hooks/useSessionControls";
@@ -105,7 +105,7 @@ export default function SessionToolbar({
                   </span>
                 ) : member.role === "host" ? (
                   <span className="absolute -bottom-1 -right-1 rounded-full border border-border bg-surface-dialog p-[1px]">
-                    <Crown className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                    <ShieldCheck className="h-2.5 w-2.5 text-amber-500" />
                   </span>
                 ) : null}
               </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Crown, Eye, EyeOff, Hand, Pencil, ShieldCheck, ShieldOff, UserMinus } from "lucide-react";
+import { ArrowRightLeft, Eye, EyeOff, Hand, Pencil, ShieldCheck, ShieldOff, UserMinus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -103,7 +103,7 @@ export default function MemberActionsMenu({
                 ) : null}
                 {myRole === "host" ? (
                   <DropdownMenuItem onSelect={() => onMakeHost(member)}>
-                    <Crown /> Make host…
+                    <ArrowRightLeft /> Make host…
                   </DropdownMenuItem>
                 ) : null}
               </>

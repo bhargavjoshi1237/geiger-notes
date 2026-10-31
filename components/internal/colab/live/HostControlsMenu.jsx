@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Crown, DoorClosed, Hand, Megaphone, Pause, Play, Send, Sparkles, Users } from "lucide-react";
+import { DoorClosed, Hand, Megaphone, Pause, Play, Send, ShieldCheck, Sparkles, Users } from "lucide-react";
 import {
   Button,
   Dialog,
@@ -17,11 +17,11 @@ import {
   cn,
 } from "@geiger/ui";
 
-// The host's consolidated panel (Zoom's "Host tools" pattern): attention, participant permissions, hands, lifecycle.
+// The host's consolidated panel (Zoom's "Host tools" pattern): attention and hands up top, permissions below, lifecycle pinned.
 
 function Section({ title, children, aside }) {
   return (
-    <div className="space-y-2 border-t border-border px-3 py-3 first:border-t-0">
+    <div className="space-y-2.5 border-t border-border px-3 py-3 first:border-t-0">
       <div className="flex items-center justify-between">
         <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{title}</h4>
         {aside}
@@ -82,8 +82,9 @@ export default function HostControlsMenu({ controls, role, preference, updatePre
               open && "bg-surface-hover text-foreground",
             )}
             title="Host controls"
+            aria-label="Host controls"
           >
-            <Crown className="h-3.5 w-3.5 text-amber-500" />
+            <ShieldCheck className="h-3.5 w-3.5" />
             <span className="hidden lg:inline">Host</span>
             {raisedHands.length ? (
               <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-black">
@@ -94,10 +95,14 @@ export default function HostControlsMenu({ controls, role, preference, updatePre
             ) : null}
           </button>
         </PopoverTrigger>
-        <PopoverContent align="end" sideOffset={8} className="w-80 max-w-[calc(100vw-2rem)] p-0">
-          <div className="flex items-center justify-between px-3 py-2.5">
+        <PopoverContent
+          align="end"
+          sideOffset={8}
+          className="flex max-h-[min(var(--radix-popover-content-available-height),600px)] w-80 max-w-[calc(100vw-2rem)] flex-col p-0"
+        >
+          <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2.5">
             <div className="flex items-center gap-2">
-              <Crown className="h-4 w-4 text-amber-500" />
+              <ShieldCheck className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-foreground">Host controls</span>
             </div>
             <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -105,26 +110,26 @@ export default function HostControlsMenu({ controls, role, preference, updatePre
             </span>
           </div>
 
-          <div className="max-h-[min(70vh,560px)] overflow-y-auto">
+          <div className="min-h-0 flex-1 overflow-y-auto">
             <Section title="Attention">
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" size="sm" className="h-8 justify-start text-xs" onClick={bringEveryone} disabled={endedSession}>
-                  <Users className="mr-1.5 h-3.5 w-3.5" /> Bring everyone
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={bringEveryone} disabled={endedSession}>
+                  <Users className="h-3.5 w-3.5" /> Bring everyone
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 justify-start text-xs"
+                  className="h-8 text-xs"
                   onClick={() => spotlightNode(selectedNodeId)}
                   disabled={!selectedNodeId || endedSession}
                   title={selectedNodeId ? "Fly everyone to the selected node" : "Select a node to spotlight it"}
                 >
-                  <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Spotlight node
+                  <Sparkles className="h-3.5 w-3.5" /> Spotlight node
                 </Button>
               </div>
               <ToggleRow
                 label="Lock everyone's view to mine"
-                hint="Participants follow you and can't pan away until you release."
+                hint="Everyone follows you until you release."
                 checked={presentingMe}
                 onChange={(on) => setViewLock(on)}
                 disabled={endedSession}
@@ -137,6 +142,7 @@ export default function HostControlsMenu({ controls, role, preference, updatePre
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && sendAnnouncement()}
                     placeholder="Announce to everyone…"
+                    aria-label="Announcement"
                     maxLength={280}
                     className="h-8 w-full rounded-md border border-border bg-surface-card pl-7 pr-2 text-xs text-foreground placeholder:text-muted-foreground focus:border-border-strong focus:outline-none"
                   />
@@ -145,19 +151,6 @@ export default function HostControlsMenu({ controls, role, preference, updatePre
                   <Send className="h-3.5 w-3.5" />
                 </Button>
               </div>
-            </Section>
-
-            <Section title="Participants can">
-              <ToggleRow label="Edit the board" checked={!preference.editLock} onChange={(on) => updatePreference({ editLock: !on })} />
-              <ToggleRow label="Ask to join" hint="Off locks the session to new people." checked={!preference.locked} onChange={(on) => updatePreference({ locked: !on })} />
-              <ToggleRow label="Use the laser pointer" checked={preference.laser !== "hosts"} onChange={(on) => updatePreference({ laser: on ? "everyone" : "hosts" })} />
-              <ToggleRow
-                label="Run polls and timers"
-                hint="Off keeps close, reset, reveal and timer controls with hosts."
-                checked={preference.facilitation !== "hosts"}
-                onChange={(on) => updatePreference({ facilitation: on ? "anyone" : "hosts" })}
-              />
-              <ToggleRow label="See each other's cursors" checked={!preference.hideCursors} onChange={(on) => updatePreference({ hideCursors: !on })} />
             </Section>
 
             <Section
@@ -194,32 +187,46 @@ export default function HostControlsMenu({ controls, role, preference, updatePre
               )}
             </Section>
 
-            <Section title="Session">
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={cn("h-8 justify-start text-xs", paused && "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300")}
-                  onClick={paused ? resumeActivities : suspendActivities}
-                  disabled={endedSession}
-                  title={paused ? "Restore participant permissions" : "Stop editing, joining, cursors and the laser at once"}
-                >
-                  {paused ? <Play className="mr-1.5 h-3.5 w-3.5" /> : <Pause className="mr-1.5 h-3.5 w-3.5" />}
-                  {paused ? "Resume all" : "Pause all"}
-                </Button>
-                {isHost ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 justify-start text-xs text-red-600 hover:bg-red-500/10 hover:text-red-600 dark:text-red-400"
-                    onClick={() => setConfirmEnd(true)}
-                    disabled={endedSession}
-                  >
-                    <DoorClosed className="mr-1.5 h-3.5 w-3.5" /> End for all
-                  </Button>
-                ) : null}
-              </div>
+            <Section title="Participants can">
+              <ToggleRow label="Edit the board" checked={!preference.editLock} onChange={(on) => updatePreference({ editLock: !on })} />
+              <ToggleRow label="Ask to join" checked={!preference.locked} onChange={(on) => updatePreference({ locked: !on })} />
+              <ToggleRow label="Use the laser pointer" checked={preference.laser !== "hosts"} onChange={(on) => updatePreference({ laser: on ? "everyone" : "hosts" })} />
+              <ToggleRow
+                label="Run polls and timers"
+                checked={preference.facilitation !== "hosts"}
+                onChange={(on) => updatePreference({ facilitation: on ? "anyone" : "hosts" })}
+              />
+              <ToggleRow label="See each other's cursors" checked={!preference.hideCursors} onChange={(on) => updatePreference({ hideCursors: !on })} />
             </Section>
+          </div>
+
+          <div className="grid shrink-0 grid-cols-2 gap-2 border-t border-border px-3 py-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                "h-8 text-xs",
+                !isHost && "col-span-2",
+                paused && "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+              )}
+              onClick={paused ? resumeActivities : suspendActivities}
+              disabled={endedSession}
+              title={paused ? "Restore participant permissions" : "Stop editing, joining, cursors and the laser at once"}
+            >
+              {paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
+              {paused ? "Resume all" : "Pause all"}
+            </Button>
+            {isHost ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs text-red-600 hover:bg-red-500/10 hover:text-red-600 dark:text-red-400"
+                onClick={() => setConfirmEnd(true)}
+                disabled={endedSession}
+              >
+                <DoorClosed className="h-3.5 w-3.5" /> End for all
+              </Button>
+            ) : null}
           </div>
         </PopoverContent>
       </Popover>

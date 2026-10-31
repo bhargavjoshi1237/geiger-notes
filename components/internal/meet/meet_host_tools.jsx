@@ -2,7 +2,7 @@
 
 import React from "react";
 import {
-  Crown,
+  ArrowRightLeft,
   Hand,
   Lock,
   Mic,
@@ -82,7 +82,7 @@ export function ParticipantMenu({ participant, room }) {
           {spotlighted ? <PinOff /> : <Pin />} {spotlighted ? "Remove spotlight" : "Spotlight for everyone"}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => host.makeHost(participant.id, participant.name)}>
-          <Crown /> Make host
+          <ArrowRightLeft /> Make host
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onSelect={() => host.remove(participant.id, participant.name)}>

@@ -9,7 +9,7 @@ import {
   ScrollArea,
   cn,
 } from "@geiger/ui";
-import { Crown, Hand, LogIn, LogOut, Loader2, MoreHorizontal, ShieldCheck, Users2 } from "lucide-react";
+import { Hand, LogIn, LogOut, Loader2, MoreHorizontal, ShieldCheck, Undo2, Users2 } from "lucide-react";
 import { ROLE_LABEL } from "@/lib/collab/session";
 import MemberActionsMenu, { memberHasActions } from "@/components/internal/colab/live/MemberActionsMenu";
 
@@ -112,7 +112,7 @@ export default function UserDrawer({
                         </div>
                         {member.role === "host" ? (
                           <div className="absolute -bottom-1 -right-1 rounded-full border border-border bg-surface-dialog p-0.5">
-                            <Crown className="h-3 w-3 fill-amber-500 text-amber-500" />
+                            <ShieldCheck className="h-3 w-3 text-amber-500" />
                           </div>
                         ) : member.role === "cohost" ? (
                           <div className="absolute -bottom-1 -right-1 rounded-full border border-border bg-surface-dialog p-0.5">
@@ -183,7 +183,7 @@ export default function UserDrawer({
                 onClick={onReclaimHost}
                 className="mr-auto inline-flex h-9 items-center justify-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 text-sm font-medium text-amber-700 transition-colors hover:bg-amber-500/20 dark:text-amber-300"
               >
-                <Crown className="h-4 w-4" />
+                <Undo2 className="h-4 w-4" />
                 Reclaim host
               </button>
             )}
