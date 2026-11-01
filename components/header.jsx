@@ -3,6 +3,7 @@
 import { SuiteHeader } from "@geiger/ui/suite-header";
 import { createClient } from "@/utils/supabase/server";
 import { UserProfileDropdown } from "@/components/user-profile-dropdown";
+import { fetchProductBadges } from "@/lib/product-badges";
 
 export async function Header() {
   const supabase = await createClient();
@@ -10,6 +11,7 @@ export async function Header() {
     data: { user },
   } = await supabase.auth.getUser();
   const userId = user?.id;
+  const badges = await fetchProductBadges();
 
   const profile = userId ? (
     <UserProfileDropdown
@@ -30,6 +32,7 @@ export async function Header() {
     <SuiteHeader
       userId={userId}
       profile={profile}
+      badges={badges}
       dashboardHref={userId ? `/${userId}/home` : "/org"}
     />
   );

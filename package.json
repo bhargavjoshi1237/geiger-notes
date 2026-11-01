@@ -19,7 +19,7 @@
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",
     "@geiger/orm": "github:bhargavjoshi1237/geiger-orm#master",
-    "@geiger/ui": "github:bhargavjoshi1237/geiger-ui#00cac4f5bc540cd910478abb0f240358cc653f08",
+    "@geiger/ui": "github:bhargavjoshi1237/geiger-ui#1e33dcdb1c62f35d1be6675fc95c9f6612d7d950",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-avatar": "^1.1.11",
