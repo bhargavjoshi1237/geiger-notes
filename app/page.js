@@ -33,9 +33,10 @@ function pickRandomShowcaseBackground() {
 }
 
 export const metadata = {
-  title: "Notes - Geiger Studio",
+  title: "Geiger Notes: shared canvases and documents for teams",
   description:
     "Create visual notes, organize ideas on infinite boards, and collaborate with your team in Geiger Notes.",
+  alternates: { canonical: "https://geiger.studio/notes" },
 };
 
 const utilityCards = [
