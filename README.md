@@ -82,7 +82,7 @@ npm run db:push                       # apply everything pending
 npm run db:seed                       # re-runnable data
 ```
 
-See [`MIGRATION_CONVENTIONS.md`](MIGRATION_CONVENTIONS.md) before writing any DDL.
+See [`MIGRATION_CONVENTIONS.md`](docs/MIGRATION_CONVENTIONS.md) before writing any DDL.
 
 ### Develop
 
@@ -119,11 +119,11 @@ The suite repositories are linked to Vercel auto-deploy. Pushing to `main` trigg
 
 This codebase follows a consistent set of patterns. Read these before contributing:
 
-- [`MODULE_CONVENTIONS.md`](MODULE_CONVENTIONS.md) — how to build a workspace screen
-- [`SUPABASE_CONVENTIONS.md`](SUPABASE_CONVENTIONS.md) — the data-layer playbook
-- [`MIGRATION_CONVENTIONS.md`](MIGRATION_CONVENTIONS.md) — schema changes and `@geiger/orm`
-- [`PROJECT_ACCESS.md`](PROJECT_ACCESS.md) — the project-scoped RLS access model
-- [`crafting.md`](crafting.md) — UI craft and quality bar
+- [`MODULE_CONVENTIONS.md`](docs/MODULE_CONVENTIONS.md) — how to build a workspace screen
+- [`SUPABASE_CONVENTIONS.md`](docs/SUPABASE_CONVENTIONS.md) — the data-layer playbook
+- [`MIGRATION_CONVENTIONS.md`](docs/MIGRATION_CONVENTIONS.md) — schema changes and `@geiger/orm`
+- [`PROJECT_ACCESS.md`](docs/PROJECT_ACCESS.md) — the project-scoped RLS access model
+- [`crafting.md`](docs/crafting.md) — UI craft and quality bar
 
 ## The Geiger suite
 

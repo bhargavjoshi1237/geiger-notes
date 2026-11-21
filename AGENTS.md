@@ -1,8 +1,8 @@
 @AGENTS.md
-@MODULE_CONVENTIONS.md
-@SUPABASE_CONVENTIONS.md
-@MIGRATION_CONVENTIONS.md
-@crafting.md
+@docs/MODULE_CONVENTIONS.md
+@docs/SUPABASE_CONVENTIONS.md
+@docs/MIGRATION_CONVENTIONS.md
+@docs/crafting.md
 Use the shared UI components from `@geiger/ui` instead of building your own; only create a bespoke component when the shared library genuinely lacks what you need.
 General Guidelines
 Do not run a build unless:
