@@ -13,7 +13,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import { Input, Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
-import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
 import ColorPicker from "@/components/internal/edges/ColorePicker";
 import { DEFAULT_POMODORO, IDLE_STATE, MODE_LABEL } from "./TimerNode";
 
@@ -35,7 +35,7 @@ function SettingPopover({ icon, label, children }) {
       <PopoverTrigger asChild>
         <SidebarButton icon={icon} label={label} aria-label={label} title={label} />
       </PopoverTrigger>
-      <PopoverContent side="right" align="start" sideOffset={8} className={POPOVER_CLASS}>
+      <PopoverContent {...RAIL_POPOVER} className={POPOVER_CLASS}>
         {children}
       </PopoverContent>
     </Popover>

@@ -10,26 +10,18 @@ import {
   AlignRight,
 } from "lucide-react";
 import { SidebarButton } from "../SidebarPrimitives";
+import { CycleButton } from "@/components/internal/ui/CycleButton";
 
-const ALIGNMENT_CYCLE = ["left", "center", "right"];
-
-const ALIGNMENT_ICONS = {
-  left: AlignLeft,
-  center: AlignCenter,
-  right: AlignRight,
-};
+const ALIGNMENTS = [
+  { value: "left", label: "Left", icon: AlignLeft },
+  { value: "center", label: "Centre", icon: AlignCenter },
+  { value: "right", label: "Right", icon: AlignRight },
+];
 
 export const TextFormattingPlug = ({ data, onChange }) => {
   const bold = data.bold || false;
   const italic = data.italic || false;
   const underline = data.underline || false;
-  const textAlign = data.textAlign || "left";
-
-  const nextAlignment =
-    ALIGNMENT_CYCLE[
-      (ALIGNMENT_CYCLE.indexOf(textAlign) + 1) % ALIGNMENT_CYCLE.length
-    ];
-  const AlignIcon = ALIGNMENT_ICONS[textAlign];
 
   return (
     <>
@@ -51,11 +43,11 @@ export const TextFormattingPlug = ({ data, onChange }) => {
         active={underline}
         onClick={() => onChange({ underline: !underline })}
       />
-      <SidebarButton
-        icon={AlignIcon}
-        label="Text Alignment"
-        active={textAlign !== "left"}
-        onClick={() => onChange({ textAlign: nextAlignment })}
+      <CycleButton
+        label="Alignment"
+        options={ALIGNMENTS}
+        value={data.textAlign || "left"}
+        onChange={(textAlign) => onChange({ textAlign })}
       />
     </>
   );

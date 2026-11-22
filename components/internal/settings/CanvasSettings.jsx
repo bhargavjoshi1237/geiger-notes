@@ -1,36 +1,55 @@
 "use client";
 
 import React from "react";
-import { Button, SegmentedTabs, SettingRow, SettingsList } from "@geiger/ui";
+import { Button, SettingRow, SettingsList } from "@geiger/ui";
 import BoardAppearanceSettings from "@/components/internal/canvas/appearance/BoardAppearanceSettings";
 import { DEFAULT_APPEARANCE } from "@/lib/canvas/appearance";
+import { CycleChip, withIcons } from "@/components/internal/ui/CycleButton";
+import {
+  CANVAS_PATTERN_GLYPHS,
+  GRID_SIZE_GLYPHS,
+  MAX_ZOOM_GLYPHS,
+  MINIMAP_CORNER_GLYPHS,
+} from "@/components/internal/ui/cycle-glyphs";
 import { GroupLabel } from "./SettingsPrimitives";
 
-const PATTERNS = [
-  { label: "Dots", value: "dots" },
-  { label: "Lines", value: "lines" },
-  { label: "Cross", value: "cross" },
-  { label: "None", value: "none" },
-];
+const PATTERNS = withIcons(
+  [
+    { label: "Dots", value: "dots" },
+    { label: "Lines", value: "lines" },
+    { label: "Cross", value: "cross" },
+    { label: "None", value: "none" },
+  ],
+  CANVAS_PATTERN_GLYPHS,
+);
 
 // Multiples of 15 so snapping stays aligned with the 15px node resize step.
-const GRID_SIZES = [
-  { label: "15px", value: 15 },
-  { label: "30px", value: 30 },
-  { label: "45px", value: 45 },
-];
+const GRID_SIZES = withIcons(
+  [
+    { label: "15px", value: 15 },
+    { label: "30px", value: 30 },
+    { label: "45px", value: 45 },
+  ],
+  GRID_SIZE_GLYPHS,
+);
 
-const MINIMAP_POSITIONS = [
-  { label: "Bottom right", value: "bottom-right" },
-  { label: "Top right", value: "top-right" },
-  { label: "Top left", value: "top-left" },
-];
+const MINIMAP_POSITIONS = withIcons(
+  [
+    { label: "Bottom right", value: "bottom-right" },
+    { label: "Top right", value: "top-right" },
+    { label: "Top left", value: "top-left" },
+  ],
+  MINIMAP_CORNER_GLYPHS,
+);
 
-const MAX_ZOOMS = [
-  { label: "2×", value: 2 },
-  { label: "4×", value: 4 },
-  { label: "8×", value: 8 },
-];
+const MAX_ZOOMS = withIcons(
+  [
+    { label: "2×", value: 2 },
+    { label: "4×", value: 4 },
+    { label: "8×", value: 8 },
+  ],
+  MAX_ZOOM_GLYPHS,
+);
 
 // Canvas tab: this board's look (saved instantly to the board) and canvas defaults for every board (saved with the dialog).
 export default function CanvasSettings({ settings = {}, onSettingsChange, boardAppearance }) {
@@ -88,8 +107,9 @@ export default function CanvasSettings({ settings = {}, onSettingsChange, boardA
             title="Default pattern"
             description="Used by boards that don't pick their own."
             control={
-              <SegmentedTabs
-                tabs={PATTERNS}
+              <CycleChip
+                label="Default pattern"
+                options={PATTERNS}
                 value={settings.canvasBackground || "dots"}
                 onChange={(v) => set("canvasBackground", v)}
               />
@@ -99,8 +119,9 @@ export default function CanvasSettings({ settings = {}, onSettingsChange, boardA
             title="Grid size"
             description="Pattern spacing and snap distance."
             control={
-              <SegmentedTabs
-                tabs={GRID_SIZES}
+              <CycleChip
+                label="Grid size"
+                options={GRID_SIZES}
                 value={settings.gridSize || 15}
                 onChange={(v) => set("gridSize", v)}
               />
@@ -109,8 +130,9 @@ export default function CanvasSettings({ settings = {}, onSettingsChange, boardA
           <SettingRow
             title="Max zoom"
             control={
-              <SegmentedTabs
-                tabs={MAX_ZOOMS}
+              <CycleChip
+                label="Max zoom"
+                options={MAX_ZOOMS}
                 value={Number(settings.maxZoom) || 2}
                 onChange={(v) => set("maxZoom", v)}
               />
@@ -131,8 +153,9 @@ export default function CanvasSettings({ settings = {}, onSettingsChange, boardA
             <SettingRow
               title="Minimap position"
               control={
-                <SegmentedTabs
-                  tabs={MINIMAP_POSITIONS}
+                <CycleChip
+                  label="Minimap position"
+                  options={MINIMAP_POSITIONS}
                   value={settings.minimapPosition || "bottom-right"}
                   onChange={(v) => set("minimapPosition", v)}
                 />

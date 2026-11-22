@@ -17,6 +17,12 @@ const DEFAULT_ROWS = [
   ["", ""],
 ];
 
+// Sizes each input to its text so columns fit their content (size is the fallback where field-sizing is unsupported).
+const cellSize = (value) => Math.max(String(value ?? "").length, 4);
+
+const ADD_STRIP =
+  "nodrag flex h-full min-h-6 w-full items-center justify-center gap-1 rounded-md border border-dashed border-foreground/20 text-[11px] text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground";
+
 const TableNode = ({ id, data, selected, dragging }) => {
   const { setNodes } = useReactFlow();
   const connection = useConnection();
@@ -24,6 +30,9 @@ const TableNode = ({ id, data, selected, dragging }) => {
   const isConnecting = connection.inProgress;
 
   const outline = data.outline || { enabled: false };
+  const addControls = `transition-opacity duration-200 ${
+    selected ? "opacity-100" : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
+  }`;
 
   React.useEffect(() => {
     requestAnimationFrame(() => setIsVisible(true));
@@ -176,21 +185,22 @@ const TableNode = ({ id, data, selected, dragging }) => {
         <div className="flex-1 w-full h-full overflow-auto nopan nowheel scrollbar-subtle flex flex-col">
           <table className="border-collapse w-full">
             <thead>
-              <tr className="border-b border-border">
+              <tr className="border-b border-foreground/15 bg-foreground/[0.04]">
                 {columns.map((col, colIndex) => (
                   <th
                     key={colIndex}
-                    className="relative px-3 py-2 min-w-[120px] border-r border-border/50 last:border-r-0 group/col"
+                    className="relative px-3 py-2 min-w-[72px] border-r border-foreground/10 last:border-r-0 group/col"
                   >
                     <TextEditingTrait>
                       <input
                         type="text"
                         value={col}
+                        size={cellSize(col)}
                         onChange={(e) =>
                           handleHeaderChange(colIndex, e.target.value)
                         }
                         placeholder="Header"
-                        className="w-full bg-transparent text-foreground text-xs font-semibold text-left focus:outline-none placeholder:text-muted-foreground"
+                        className="w-full field-sizing-content bg-transparent text-muted-foreground text-xs font-medium text-left focus:outline-none placeholder:text-muted-foreground"
                       />
                     </TextEditingTrait>
                     {columns.length > 1 && (
@@ -211,21 +221,22 @@ const TableNode = ({ id, data, selected, dragging }) => {
               {rows.map((row, rowIndex) => (
                 <tr
                   key={rowIndex}
-                  className="group/row border-b border-border/50 last:border-b-0"
+                  className="group/row border-b border-foreground/10 last:border-b-0 transition-colors hover:bg-foreground/[0.03]"
                 >
                   {columns.map((_, colIndex) => (
                     <td
                       key={colIndex}
-                      className="relative px-3 py-2 border-r border-border/50 last:border-r-0"
+                      className="relative px-3 py-2 border-r border-foreground/10 last:border-r-0"
                     >
                       <TextEditingTrait>
                         <input
                           type="text"
                           value={row[colIndex] ?? ""}
+                          size={cellSize(row[colIndex])}
                           onChange={(e) =>
                             handleCellChange(rowIndex, colIndex, e.target.value)
                           }
-                          className="w-full bg-transparent text-foreground text-xs focus:outline-none placeholder:text-muted-foreground"
+                          className={`w-full field-sizing-content bg-transparent text-foreground text-xs focus:outline-none placeholder:text-muted-foreground ${colIndex === 0 ? "font-medium" : ""}`}
                         />
                       </TextEditingTrait>
                       {colIndex === 0 && rows.length > 1 && (
@@ -245,25 +256,19 @@ const TableNode = ({ id, data, selected, dragging }) => {
             </tbody>
           </table>
 
-          <div className="flex border-t border-border mt-auto">
-            <button
-              type="button"
-              onClick={handleAddRow}
-              className="nodrag flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-surface-hover/60 transition-colors"
-            >
-              <Plus className="w-3 h-3" />
-              Row
-            </button>
-            <div className="w-px bg-border" />
-            <button
-              type="button"
-              onClick={handleAddColumn}
-              className="nodrag flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-surface-hover/60 transition-colors"
-            >
-              <Plus className="w-3 h-3" />
-              Column
-            </button>
-          </div>
+        </div>
+
+        {/* Add row / column strips sit just outside the table and appear on hover, so the resting table has no empty band. */}
+        <div className={`absolute left-0 right-6 top-full pt-1 ${addControls}`}>
+          <button type="button" onClick={handleAddRow} title="Add row" className={ADD_STRIP}>
+            <Plus className="w-3 h-3" />
+            Row
+          </button>
+        </div>
+        <div className={`absolute top-0 bottom-6 left-full pl-1 ${addControls}`}>
+          <button type="button" onClick={handleAddColumn} title="Add column" className={`${ADD_STRIP} w-6`}>
+            <Plus className="w-3 h-3" />
+          </button>
         </div>
 
         <Reactions

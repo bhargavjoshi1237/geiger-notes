@@ -8,12 +8,31 @@ import {
   DialogHeader,
   DialogTitle,
   Switch,
-  ToggleGroup,
-  ToggleGroupItem,
   cn,
 } from "@geiger/ui";
 import ColorPicker from "../../../../edges/ColorePicker";
 import { Settings2, Clock, Monitor, X } from "lucide-react";
+import { CycleChip, withIcons } from "@/components/internal/ui/CycleButton";
+import {
+  CLOCK_MARKER_GLYPHS,
+  CLOCK_MOVEMENT_GLYPHS,
+  CLOCK_NUMBER_GLYPHS,
+} from "@/components/internal/ui/cycle-glyphs";
+
+const FACE_DETAIL = [
+  { value: "none", label: "None" },
+  { value: "four", label: "Quarters" },
+  { value: "all", label: "All 12" },
+];
+const MARKER_OPTIONS = withIcons(FACE_DETAIL, CLOCK_MARKER_GLYPHS);
+const NUMBER_OPTIONS = withIcons(FACE_DETAIL, CLOCK_NUMBER_GLYPHS);
+const MOVEMENTS = withIcons(
+  [
+    { value: "smooth", label: "Smooth" },
+    { value: "quartz", label: "Ticking" },
+  ],
+  CLOCK_MOVEMENT_GLYPHS,
+);
 
 const ColorField = ({ label, value, onChange }) => (
   <div className="flex items-center justify-between py-1.5 group/color">
@@ -316,13 +335,16 @@ export default function EditClockThemeDialog({
               {activeTab === "analog" && (
                 <>
                   <div className="h-px my-1" />
-                  <ToggleRow
-                    label="Smooth Movement / Qwertz"
-                    checked={data.movement === "smooth"}
-                    onChange={(v) =>
-                      handleChange("movement", v ? "smooth" : "quartz")
-                    }
-                  />
+                  <div className="flex items-center justify-between py-1">
+                    <span className="text-[12px] text-muted-foreground">Second hand</span>
+                    <CycleChip
+                      label="Second hand"
+                      options={MOVEMENTS}
+                      value={data.movement || "smooth"}
+                      onChange={(v) => handleChange("movement", v)}
+                      className="h-7 w-32"
+                    />
+                  </div>
                   <div className="h-px my-1" />
                   <ToggleRow
                     label="Show Seconds"
@@ -336,65 +358,25 @@ export default function EditClockThemeDialog({
                         <span className="text-[10px] text-muted-foreground uppercase">
                           Markers
                         </span>
-                        <ToggleGroup
-                          type="single"
+                        <CycleChip
+                          label="Markers"
+                          options={MARKER_OPTIONS}
                           value={data.hourMarkers || "none"}
-                          onValueChange={(v) => {
-                            if (v) handleChange("hourMarkers", v);
-                          }}
-                          className="w-full justify-start gap-0.5 p-0.5 bg-background border border-border/50 rounded-lg"
-                        >
-                          <ToggleGroupItem
-                            value="none"
-                            className="flex-1 h-6 text-[10px] rounded-md data-[state=on]:bg-surface-hover data-[state=on]:text-foreground text-muted-foreground hover:text-foreground transition-all"
-                          >
-                            None
-                          </ToggleGroupItem>
-                          <ToggleGroupItem
-                            value="four"
-                            className="flex-1 h-6 text-[10px] rounded-md data-[state=on]:bg-surface-hover data-[state=on]:text-foreground text-muted-foreground hover:text-foreground transition-all"
-                          >
-                            4
-                          </ToggleGroupItem>
-                          <ToggleGroupItem
-                            value="all"
-                            className="flex-1 h-6 text-[10px] rounded-md data-[state=on]:bg-surface-hover data-[state=on]:text-foreground text-muted-foreground hover:text-foreground transition-all"
-                          >
-                            All
-                          </ToggleGroupItem>
-                        </ToggleGroup>
+                          onChange={(v) => handleChange("hourMarkers", v)}
+                          className="h-7 w-full"
+                        />
                       </div>
                       <div className="flex flex-col gap-1">
                         <span className="text-[10px] text-muted-foreground uppercase">
                           Numbers
                         </span>
-                        <ToggleGroup
-                          type="single"
+                        <CycleChip
+                          label="Numbers"
+                          options={NUMBER_OPTIONS}
                           value={data.numbers || "none"}
-                          onValueChange={(v) => {
-                            if (v) handleChange("numbers", v);
-                          }}
-                          className="w-full justify-start gap-0.5 p-0.5 bg-muted border border-border/50 rounded-lg"
-                        >
-                          <ToggleGroupItem
-                            value="none"
-                            className="flex-1 h-6 text-[10px] rounded-md data-[state=on]:bg-surface-hover data-[state=on]:text-foreground text-muted-foreground hover:text-foreground transition-all"
-                          >
-                            None
-                          </ToggleGroupItem>
-                          <ToggleGroupItem
-                            value="four"
-                            className="flex-1 h-6 text-[10px] rounded-md data-[state=on]:bg-surface-hover data-[state=on]:text-foreground text-muted-foreground hover:text-foreground transition-all"
-                          >
-                            4
-                          </ToggleGroupItem>
-                          <ToggleGroupItem
-                            value="all"
-                            className="flex-1 h-6 text-[10px] rounded-md data-[state=on]:bg-surface-hover data-[state=on]:text-foreground text-muted-foreground hover:text-foreground transition-all"
-                          >
-                            All
-                          </ToggleGroupItem>
-                        </ToggleGroup>
+                          onChange={(v) => handleChange("numbers", v)}
+                          className="h-7 w-full"
+                        />
                       </div>
                     </div>
                   </div>

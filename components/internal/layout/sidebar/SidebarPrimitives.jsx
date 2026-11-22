@@ -3,6 +3,10 @@
 import React from "react";
 import { ArrowLeft } from "lucide-react";
 
+// Placement for popovers opened from the 64px rail: centred on their button and as far
+// past the rail's edge (14px) as the button sits inside it, so the gap reads symmetric.
+export const RAIL_POPOVER = { side: "right", align: "center", sideOffset: 28, collisionPadding: 16 };
+
 export const SidebarButton = React.forwardRef(
   (
     { icon: Icon, label, active, onClick, className, children, ...props },

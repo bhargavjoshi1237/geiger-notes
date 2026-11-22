@@ -6,7 +6,7 @@ import "./excalidraw-theme.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import nextDynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Check, Link2, Workflow } from "lucide-react";
+import { ArrowLeft, Save, Link2, Workflow } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { LogoLoading } from "@geiger/ui";
@@ -21,6 +21,7 @@ import { useSketchPresence } from "@/lib/sketch/useSketchPresence";
 import { followScroll, movedByUser, viewportOf } from "@/lib/sketch/follow";
 import { followLoops } from "@/lib/collab/session";
 import CollaboratorStack from "./CollaboratorStack";
+import SaveIndicator from "@/components/internal/ui/SaveIndicator";
 import { createClient } from "@/utils/supabase/client";
 
 // Lazy-load Excalidraw (browser-only, no SSR) so the board bundle never pays
@@ -45,38 +46,6 @@ const ExcalidrawFooter = nextDynamic(
 
 // Autosave debounce in ms — saves 2.5s after the last change.
 const SAVE_DEBOUNCE_MS = 2500;
-
-function SaveStatus({ status, live }) {
-  // While someone else holds the write, "Unsaved changes" would be a lie — the
-  // scene is converging live and every client still flushes on unmount.
-  if (live)
-    return (
-      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-        Live
-      </span>
-    );
-  if (status === "saving")
-    return (
-      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <span className="h-3 w-3 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
-        Saving…
-      </span>
-    );
-  if (status === "saved")
-    return (
-      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-        Saved
-      </span>
-    );
-  return (
-    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-      <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
-      Unsaved changes
-    </span>
-  );
-}
 
 // Dark mode draws the canvas through invert(93%), so #fafafa lands on our #161616 background.
 const CANVAS_BG = { light: "#ffffff", dark: "#fafafa" };
@@ -127,6 +96,7 @@ export default function SketchEditor({
     isSaving: settingsSaving,
   } = useUserSettings();
   const [saveStatus, setSaveStatus] = useState("saved");
+  const [savedAt, setSavedAt] = useState(null);
   const [sketch, setSketch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -357,6 +327,7 @@ export default function SketchEditor({
         });
         if (!res.ok) throw new Error("Save failed");
         setSaveStatus("saved");
+        setSavedAt(Date.now());
       } catch (err) {
         console.error("[Sketch] Save error:", err);
         setSaveStatus("unsaved");
@@ -870,7 +841,8 @@ export default function SketchEditor({
                 onFollow={followCollaborator}
               />
             )}
-            <SaveStatus status={saveStatus} live={connected && !isWriter} />
+            {/* While someone else holds the write, "Unsaved changes" would be a lie — the scene converges live. */}
+            <SaveIndicator status={saveStatus} savedAt={savedAt} live={connected && !isWriter} />
             {canEdit && (
               <button
                 onClick={handleManualSave}

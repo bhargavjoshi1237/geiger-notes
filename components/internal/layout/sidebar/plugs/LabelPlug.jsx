@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Type } from "lucide-react";
 import { Input, Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
-import { SidebarButton } from "../SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "../SidebarPrimitives";
 
 export const LabelPlug = ({
   value,
@@ -29,9 +29,7 @@ export const LabelPlug = ({
         <SidebarButton icon={Type} label="Label" active={!!value} />
       </PopoverTrigger>
       <PopoverContent
-        side="right"
-        align="start"
-        sideOffset={8}
+        {...RAIL_POPOVER}
         className="w-72 bg-surface-dialog border-border p-4 shadow-2xl rounded-xl"
       >
         <div className="flex flex-col gap-3">

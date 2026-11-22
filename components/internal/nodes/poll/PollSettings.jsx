@@ -4,7 +4,7 @@ import React from "react";
 import { BarChart3, CircleDot, ListChecks, Lock, LockOpen, RotateCcw, Shuffle, EyeOff, Eye, Vote } from "lucide-react";
 import { Input, Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
 import { toast } from "sonner";
-import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
 import { useSessionControlsContext } from "@/components/internal/colab/live/SessionContext";
 import { MODE_LABEL } from "./PollNode";
 
@@ -37,9 +37,7 @@ export default function PollSettings({ node, updateData }) {
           <SidebarButton icon={Vote} label="Voting mode" aria-label="Voting mode" title="Voting mode" />
         </PopoverTrigger>
         <PopoverContent
-          side="right"
-          align="start"
-          sideOffset={8}
+          {...RAIL_POPOVER}
           className="w-64 bg-surface-dialog border-border p-3 shadow-xl rounded-xl"
         >
           <div className="flex flex-col gap-0.5">

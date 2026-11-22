@@ -4,8 +4,14 @@ import React, { useState } from "react";
 import { Copy, LayoutGrid, Plus, Rows3, Wand2 } from "lucide-react";
 import { Button, Input, Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
 import { toast } from "sonner";
-import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { CycleButton } from "@/components/internal/ui/CycleButton";
 import { generateShades, hexToHsl, hslToHex, makeSwatchId, normalizeHex } from "./PaletteNode";
+
+const LAYOUTS = [
+  { value: "grid", label: "Grid", icon: LayoutGrid },
+  { value: "strip", label: "Strip", icon: Rows3 },
+];
 
 const SECTION_LABEL = "text-[10px] uppercase tracking-wider text-muted-foreground font-semibold";
 const COUNTS = [5, 7, 9, 11];
@@ -102,13 +108,7 @@ export default function PaletteSettings({ node, updateData }) {
 
   return (
     <>
-      <SidebarButton
-        icon={layout === "strip" ? Rows3 : LayoutGrid}
-        label="Layout"
-        aria-label={layout === "strip" ? "Switch to grid layout" : "Switch to strip layout"}
-        title={layout === "strip" ? "Switch to grid" : "Switch to strip"}
-        onClick={() => updateData({ layout: layout === "strip" ? "grid" : "strip" })}
-      />
+      <CycleButton label="Layout" options={LAYOUTS} value={layout} onChange={(next) => updateData({ layout: next })} />
 
       <SidebarButton icon={Plus} label="Add color" aria-label="Add color" title="Add color" onClick={addSwatch} />
 
@@ -117,9 +117,7 @@ export default function PaletteSettings({ node, updateData }) {
           <SidebarButton icon={Wand2} label="Generate shades" aria-label="Generate shades" title="Generate shades" />
         </PopoverTrigger>
         <PopoverContent
-          side="right"
-          align="start"
-          sideOffset={8}
+          {...RAIL_POPOVER}
           className="w-64 bg-surface-dialog border-border p-3 shadow-xl rounded-xl"
         >
           <ShadeGenerator swatches={swatches} updateData={updateData} />

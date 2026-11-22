@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { ArrowUpRight, ScanEye, Unlink } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
-import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
 import {
   MirrorSourcePicker,
   openSourceBoard,
@@ -24,9 +24,7 @@ export default function MirrorSettings({ node, updateData }) {
           <SidebarButton icon={ScanEye} label="Mirror Source" active={open} title="Mirror source" />
         </PopoverTrigger>
         <PopoverContent
-          side="right"
-          align="start"
-          sideOffset={8}
+          {...RAIL_POPOVER}
           className="w-72 bg-surface-dialog border-border p-3 shadow-xl rounded-xl"
         >
           {open && (

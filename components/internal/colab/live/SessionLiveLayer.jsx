@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useSyncExternalStore } from "react";
 import { useOnViewportChange, useReactFlow, useStore } from "@xyflow/react";
 import { LASER_FADE_MS } from "@/lib/realtime/live-store";
 import { followViewport } from "@/lib/collab/session";
+import { ReactionIcon } from "@/components/internal/ui/ReactionIcon";
 
 // Screen-space overlay rendered inside <ReactFlow>: remote cursors, laser trails, follow border, spotlight ring and
 // reactions; it also streams our pointer/viewport and applies the viewport of whoever we follow.
@@ -252,7 +253,9 @@ export default function SessionLiveLayer({ controls, hideCursors }) {
         <div className="pointer-events-none absolute bottom-20 left-1/2 z-[61] flex -translate-x-1/2 items-end gap-3">
           {reactions.map((r) => (
             <span key={r.id} className="session-reaction flex flex-col items-center gap-1">
-              <span className="text-3xl leading-none drop-shadow">{r.emoji}</span>
+              <span className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-surface-dialog shadow-lg">
+                <ReactionIcon reaction={r.emoji} className="h-6 w-6" />
+              </span>
               {r.name ? (
                 <span
                   className="rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-black"

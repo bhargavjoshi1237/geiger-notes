@@ -3,7 +3,7 @@
 import React from "react";
 import { AlignJustify } from "lucide-react";
 import { Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
-import { SidebarButton } from "../SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "../SidebarPrimitives";
 
 const STROKE_WIDTHS = [
   { label: "Thin", value: 1 },
@@ -18,9 +18,7 @@ export const StrokeWidthPlug = ({ value, onChange }) => {
         <SidebarButton icon={AlignJustify} label="Stroke Weight" />
       </PopoverTrigger>
       <PopoverContent
-        side="right"
-        align="start"
-        sideOffset={8}
+        {...RAIL_POPOVER}
         className="w-40 bg-surface-dialog border-border p-1 shadow-xl rounded-xl"
       >
         <div className="flex flex-col gap-0.5">

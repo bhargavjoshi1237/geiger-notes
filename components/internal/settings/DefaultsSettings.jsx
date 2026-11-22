@@ -6,7 +6,6 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  SegmentedTabs,
   SettingRow,
   SettingsList,
 } from "@geiger/ui";
@@ -15,21 +14,35 @@ import ColorPicker from "../edges/ColorePicker";
 import ToolbarOptions from "./ToolbarOptions";
 import { NODE_STYLES, TOOL_IDS } from "@/lib/settings/defaults";
 import {
-  ARROW_SHAPES as ARROW_SHAPE_OPTIONS,
+  ARROW_SHAPES,
   DASH_PATTERNS,
   EDGE_PATHS,
   FLOW_ANIMATIONS,
   dasharrayFor,
 } from "@/lib/canvas/edge-style";
+import { CycleChip, withIcons } from "@/components/internal/ui/CycleButton";
+import {
+  ARROW_END_GLYPHS,
+  ARROW_START_GLYPHS,
+  DASH_GLYPHS,
+  FLOW_GLYPHS,
+  PATH_GLYPHS,
+  WEIGHT_GLYPHS,
+} from "@/components/internal/ui/cycle-glyphs";
 
-const STROKE_WIDTHS = [
-  { label: "Thin", value: 1 },
-  { label: "Medium", value: 2 },
-  { label: "Thick", value: 4 },
-];
-
-// SegmentedTabs only needs value/label pairs.
-const ARROW_SHAPES = ARROW_SHAPE_OPTIONS.map(({ value, label }) => ({ value, label }));
+const STROKE_WIDTHS = withIcons(
+  [
+    { label: "Thin", value: 1 },
+    { label: "Medium", value: 2 },
+    { label: "Thick", value: 4 },
+  ],
+  WEIGHT_GLYPHS,
+);
+const DASH_OPTIONS = withIcons(DASH_PATTERNS, DASH_GLYPHS);
+const FLOW_OPTIONS = withIcons(FLOW_ANIMATIONS, FLOW_GLYPHS);
+const PATH_OPTIONS = withIcons(EDGE_PATHS, PATH_GLYPHS);
+const ARROW_END_OPTIONS = withIcons(ARROW_SHAPES, ARROW_END_GLYPHS);
+const ARROW_START_OPTIONS = withIcons(ARROW_SHAPES, ARROW_START_GLYPHS);
 
 // last:border-b overrides the shared AccordionItem last:border-b-0 so the last card keeps its bottom edge.
 const ITEM_CLASS = "border last:border-b border-border rounded-md bg-muted/30";
@@ -117,6 +130,12 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
   const nodeStyle = settings.nodeStyle || "classic";
   const tools = settings.toolbarTools || [];
   const edgeStroke = edge.stroke || "#71717a";
+  const previewPath =
+    edge.path === "step" || edge.path === "smoothstep"
+      ? "M4 20 L80 20 L80 4 L156 4"
+      : edge.path === "straight"
+        ? "M4 12 L156 12"
+        : "M4 20 Q80 -8 156 20";
 
   const updateEdge = (key, value) =>
     onSettingsChange?.("defaultEdge", { ...edge, [key]: value });
@@ -163,7 +182,7 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
                   </marker>
                 </defs>
                 <path
-                  d={edge.path === "step" || edge.path === "smoothstep" ? "M4 20 L80 20 L80 4 L156 4" : edge.path === "straight" ? "M4 12 L156 12" : "M4 20 Q80 -8 156 20"}
+                  d={previewPath}
                   fill="none"
                   stroke={edgeStroke}
                   strokeWidth={edge.strokeWidth || 2}
@@ -176,6 +195,12 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
                     <animate attributeName="stroke-dashoffset" values="24;0" dur="0.6s" repeatCount="indefinite" />
                   ) : null}
                 </path>
+                {/* Same travelling dot the canvas draws (CenterEdge). */}
+                {edge.flow === "dot" ? (
+                  <circle r={Math.max(3, (edge.strokeWidth || 2) + 1.5)} style={{ fill: edgeStroke }}>
+                    <animateMotion dur="2.4s" repeatCount="indefinite" path={previewPath} />
+                  </circle>
+                ) : null}
               </svg>
             </div>
 
@@ -196,11 +221,12 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
                 <span className="mb-2 block text-muted-foreground text-xs font-medium">
                   Thickness
                 </span>
-                <SegmentedTabs
-                  tabs={STROKE_WIDTHS}
+                <CycleChip
+                  label="Thickness"
+                  options={STROKE_WIDTHS}
                   value={edge.strokeWidth || 2}
                   onChange={(v) => updateEdge("strokeWidth", v)}
-                  fullWidth
+                  className="h-9 w-full"
                 />
               </div>
             </div>
@@ -209,8 +235,9 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
               <SettingRow
                 title="Path"
                 control={
-                  <SegmentedTabs
-                    tabs={EDGE_PATHS}
+                  <CycleChip
+                    label="Path"
+                    options={PATH_OPTIONS}
                     value={edge.path || "curve"}
                     onChange={(v) => updateEdge("path", v)}
                   />
@@ -219,8 +246,9 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
               <SettingRow
                 title="Line style"
                 control={
-                  <SegmentedTabs
-                    tabs={DASH_PATTERNS.map(({ value, label }) => ({ value, label: label.replace(" dash", "") }))}
+                  <CycleChip
+                    label="Line style"
+                    options={DASH_OPTIONS}
                     value={edge.dash || "solid"}
                     onChange={(v) => updateEdge("dash", v)}
                   />
@@ -229,8 +257,9 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
               <SettingRow
                 title="End arrow"
                 control={
-                  <SegmentedTabs
-                    tabs={ARROW_SHAPES}
+                  <CycleChip
+                    label="End arrow"
+                    options={ARROW_END_OPTIONS}
                     value={edge.arrowEnd || "arrow"}
                     onChange={(v) => updateEdge("arrowEnd", v)}
                   />
@@ -239,8 +268,9 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
               <SettingRow
                 title="Start arrow"
                 control={
-                  <SegmentedTabs
-                    tabs={ARROW_SHAPES}
+                  <CycleChip
+                    label="Start arrow"
+                    options={ARROW_START_OPTIONS}
                     value={edge.arrowStart || "none"}
                     onChange={(v) => updateEdge("arrowStart", v)}
                   />
@@ -250,8 +280,9 @@ export default function DefaultsSettings({ settings = {}, onSettingsChange }) {
                 title="Animation"
                 description="Motion along new connections."
                 control={
-                  <SegmentedTabs
-                    tabs={FLOW_ANIMATIONS.map(({ value, label }) => ({ value, label: label.split(" ").pop() }))}
+                  <CycleChip
+                    label="Animation"
+                    options={FLOW_OPTIONS}
                     value={edge.flow || "none"}
                     onChange={(v) => updateEdge("flow", v)}
                   />

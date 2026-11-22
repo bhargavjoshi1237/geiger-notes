@@ -15,7 +15,8 @@ import {
 import { toast } from "sonner";
 
 import { hasTurn } from "@/lib/meet/ice";
-import { MEET_REACTIONS, useMeetRoom } from "@/lib/meet/useMeetRoom";
+import { useMeetRoom } from "@/lib/meet/useMeetRoom";
+import ReactionPicker from "@/components/internal/ui/ReactionPicker";
 import { trackToStream } from "@/lib/meet/useMediaTracks";
 import { Popover, PopoverContent, PopoverTrigger, cn } from "@geiger/ui";
 import { RemoteAudio, VideoTile } from "./video_tile";
@@ -241,19 +242,8 @@ export function MeetStage({ roomId, code, me, hostId, onClose, onStatsChange }) 
               <SmilePlus className="h-[18px] w-[18px]" />
             </button>
           </PopoverTrigger>
-          <PopoverContent side="top" sideOffset={10} className="w-auto p-1.5">
-            <div className="flex gap-1">
-              {MEET_REACTIONS.map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => room.sendReaction(emoji)}
-                  className="flex h-9 w-9 items-center justify-center rounded-md text-lg transition-transform hover:scale-110 hover:bg-surface-hover"
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
+          <PopoverContent side="top" sideOffset={10} className="w-auto p-3">
+            <ReactionPicker onPick={room.sendReaction} />
           </PopoverContent>
         </Popover>
         {isHost ? <HostToolsPopover room={room} /> : null}

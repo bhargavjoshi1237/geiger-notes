@@ -3,7 +3,7 @@
 import React from "react";
 import { Circle, Flag, GitFork, Hash, PencilLine, RectangleHorizontal, SlidersHorizontal } from "lucide-react";
 import { Input, Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
-import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
 import ColorPicker from "@/components/internal/edges/ColorePicker";
 
 const SECTION_LABEL = "text-[10px] uppercase tracking-wider text-muted-foreground font-semibold";
@@ -33,9 +33,7 @@ function SettingPopover({ icon, label, children }) {
         <SidebarButton icon={icon} label={label} aria-label={label} title={label} />
       </PopoverTrigger>
       <PopoverContent
-        side="right"
-        align="start"
-        sideOffset={8}
+        {...RAIL_POPOVER}
         className="w-64 bg-surface-dialog border-border p-3 shadow-xl rounded-xl"
       >
         <div className="flex flex-col gap-0.5">

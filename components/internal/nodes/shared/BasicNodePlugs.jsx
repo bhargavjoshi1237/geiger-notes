@@ -3,7 +3,7 @@
 import React from "react";
 import { Ban } from "lucide-react";
 import { Input, Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
-import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
 import { COLORS } from "@/components/internal/edges/ColorePicker";
 
 // Sidebar-rail building blocks shared by the text/shape/sticker settings panels.
@@ -25,7 +25,7 @@ export function PopoverPlug({ icon, label, width = "w-64", trigger, children }) 
       <PopoverTrigger asChild>
         {trigger ?? <SidebarButton icon={icon} label={label} title={label} aria-label={label} />}
       </PopoverTrigger>
-      <PopoverContent side="right" align="start" sideOffset={8} className={`${width} ${PLUG_POPOVER_CLASS}`}>
+      <PopoverContent {...RAIL_POPOVER} className={`${width} ${PLUG_POPOVER_CLASS}`}>
         {children}
       </PopoverContent>
     </Popover>

@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { cn } from "@geiger/ui";
 import { Hand, Mic, MicOff, MonitorUp, Pin, WifiOff } from "lucide-react";
+import { ReactionIcon } from "@/components/internal/ui/ReactionIcon";
 
 // Deterministic accent per person, so a tile keeps the same colour across a
 // call without anyone having to store one.
@@ -158,8 +159,11 @@ export function VideoTile({
       ) : null}
 
       {reaction ? (
-        <span key={reaction.key} className="session-reaction pointer-events-none absolute bottom-10 right-3 text-4xl drop-shadow">
-          {reaction.emoji}
+        <span
+          key={reaction.key}
+          className="session-reaction pointer-events-none absolute bottom-10 right-3 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-surface-dialog shadow-lg"
+        >
+          <ReactionIcon reaction={reaction.emoji} className="h-6 w-6" />
         </span>
       ) : null}
 

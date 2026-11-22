@@ -21,6 +21,7 @@ import {
   Quote,
 } from "lucide-react";
 import { toast } from "sonner";
+import SaveIndicator from "@/components/internal/ui/SaveIndicator";
 
 const Toolbar = ({ editor }) => {
   if (!editor) {
@@ -93,7 +94,8 @@ const Toolbar = ({ editor }) => {
 const DocumentEditor = ({ documentId, onClose, isOpen }) => {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [saveStatus, setSaveStatus] = useState("saved"); // 'saved', 'saving', 'unsaved', 'local'
+  const [saveStatus, setSaveStatus] = useState("saved"); // 'saved', 'saving', 'unsaved', 'error', 'local'
+  const [savedAt, setSavedAt] = useState(null);
 
   const contentRef = useRef(content);
   const isSavingRef = useRef(false);
@@ -171,10 +173,11 @@ const DocumentEditor = ({ documentId, onClose, isOpen }) => {
       if (!res.ok) throw new Error("Failed to save");
 
       setSaveStatus("saved");
+      setSavedAt(Date.now());
     } catch (err) {
       console.error(err);
       toast.error("Failed to save document");
-      setSaveStatus("unsaved");
+      setSaveStatus("error");
     } finally {
       isSavingRef.current = false;
       if (pendingSaveRef.current) {
@@ -257,9 +260,10 @@ const DocumentEditor = ({ documentId, onClose, isOpen }) => {
       });
       if (!res.ok) throw new Error("Failed to save");
       setSaveStatus("saved");
+      setSavedAt(Date.now());
     } catch (e) {
       console.error(e);
-      setSaveStatus("unsaved");
+      setSaveStatus("error");
     } finally {
       isSavingRef.current = false;
       if (pendingSaveRef.current) {
@@ -311,22 +315,8 @@ const DocumentEditor = ({ documentId, onClose, isOpen }) => {
           <DialogTitle className="text-lg font-medium">
             Document Editor
           </DialogTitle>
-          <div className="flex items-center gap-2">
-            <div className="text-xs text-muted-foreground font-mono uppercase tracking-wider">
-              {saveStatus === "saving" && (
-                <span className="text-yellow-500 animate-pulse">Saving...</span>
-              )}
-              {saveStatus === "saved" && (
-                <span className="text-green-500">Synced</span>
-              )}
-              {saveStatus === "unsaved" && (
-                <span className="text-muted-foreground">Unsaved changes...</span>
-              )}
-              {saveStatus === "local" && (
-                <span className="text-muted-foreground">Local playground</span>
-              )}
-            </div>
-          </div>
+          {/* mr-8 keeps clear of the dialog's close button in the corner. */}
+          <SaveIndicator status={saveStatus} savedAt={savedAt} className="mr-8" />
         </DialogHeader>
 
         {/* Toolbar */}

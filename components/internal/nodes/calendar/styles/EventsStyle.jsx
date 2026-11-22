@@ -1,144 +1,49 @@
-import { WEEKDAY_LABELS_SUNDAY } from "../constants";
-import { eventsSizing, themeColors } from "../sizing";
+import { CALENDAR_ACCENT } from "../sizing";
+import MonthGrid from "./MonthGrid";
 
-const EventsStyle = ({ width, height, theme }) => {
-  const nodeWidth = Math.max(width || 200, 50);
-  const nodeHeight = Math.max(height || 200, 50);
-  const refSize = Math.min(nodeWidth, nodeHeight);
-  const now = new Date();
-
-  const {
-    eventPaddingX,
-    eventPaddingY,
-    eventColumnGap,
-    eventSectionGap,
-    eventWeekdaySize,
-    eventDateSize,
-    eventMessageSize,
-    eventMonthTitleSize,
-    eventCalendarWeekdaySize,
-    eventCalendarDateSize,
-    eventPillSize,
-    showEventMessage,
-  } = eventsSizing({ nodeWidth, nodeHeight, refSize });
-
-  const { textColor, mutedTextColor, eventDividerColor } = themeColors(theme);
-  const eventMonthLabel = now.toLocaleDateString("en-US", { month: "long" }).toUpperCase();
-  const eventWeekdayLabel = now.toLocaleDateString("en-US", { weekday: "long" }).toUpperCase();
-
-  const eventMonthCells = (() => {
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const monthStart = new Date(year, month, 1);
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const startOffset = monthStart.getDay();
-    const cells = Array(startOffset).fill(null);
-    for (let d = 1; d <= daysInMonth; d += 1) cells.push(d);
-    while (cells.length % 7 !== 0) cells.push(null);
-    return cells;
-  })();
+// 400 x 200 design canvas: today on the left, a Sunday-first mini month on the right.
+const EventsStyle = ({ now, scale, colors }) => {
+  const u = (n) => n * scale;
 
   return (
-    <div
-      className="h-full w-full min-h-0 grid grid-cols-[1.1fr_0.9fr]"
-      style={{
-        paddingLeft: `${eventPaddingX}px`,
-        paddingRight: `${eventPaddingX}px`,
-        paddingTop: `${eventPaddingY}px`,
-        paddingBottom: `${eventPaddingY}px`,
-        columnGap: `${eventColumnGap}px`,
-      }}
-    >
-      <div className="flex min-h-0 flex-col">
+    <div className="flex h-full" style={{ padding: u(16) }}>
+      <div className="flex min-w-0 flex-1 flex-col" style={{ paddingRight: u(16) }}>
         <p
-          className="font-sf text-red-500 font-bold leading-none"
-          style={{ fontSize: `${eventWeekdaySize}px`, letterSpacing: "0.04em" }}
+          className="font-bold leading-none"
+          style={{ fontSize: u(12), letterSpacing: "0.06em", color: CALENDAR_ACCENT }}
         >
-          {eventWeekdayLabel}
+          {now.toLocaleDateString("en-US", { weekday: "long" }).toUpperCase()}
         </p>
         <p
-          className="font-sf leading-none"
-          style={{
-            marginTop: `${Math.max(2, eventSectionGap)}px`,
-            fontSize: `${eventDateSize}px`,
-            color: theme === "light" ? "#000000" : "#ffffff",
-          }}
+          className="leading-none tabular-nums"
+          style={{ marginTop: u(6), fontSize: u(64), letterSpacing: "-0.03em", color: colors.date }}
         >
           {now.getDate()}
         </p>
-
-        {showEventMessage && (
-          <p
-            className="font-sf mt-auto leading-none"
-            style={{
-              fontSize: `${eventMessageSize}px`,
-              color: mutedTextColor,
-            }}
-          >
-            No events today
-          </p>
-        )}
-      </div>
-      
-      <div
-        className="min-h-0 flex flex-col"
-        style={{
-          borderLeft: `1px solid ${eventDividerColor}`,
-          paddingLeft: `${Math.max(5, eventPaddingX - 2)}px`,
-        }}
-      >
-        <p
-          className="font-sf text-red-500 font-bold leading-none"
-          style={{ fontSize: `${eventMonthTitleSize}px`, letterSpacing: "0.04em" }}
-        >
-          {eventMonthLabel}
+        <p className="mt-auto leading-none" style={{ fontSize: u(12), color: colors.muted }}>
+          No events today
         </p>
+      </div>
 
-        <div
-          className="mt-1 grid grid-cols-7 text-center font-sf font-semibold"
-          style={{
-            fontSize: `${eventCalendarWeekdaySize}px`,
-            color: mutedTextColor,
-            lineHeight: 1,
-          }}
-        >
-          {WEEKDAY_LABELS_SUNDAY.map((label, index) => (
-            <p key={`${label}-${index}`}>{label}</p>
-          ))}
-        </div>
+      <div className="shrink-0" style={{ width: Math.max(1, u(1)), backgroundColor: colors.divider }} />
 
-        <div
-          className="mt-1 grid flex-1 auto-rows-fr grid-cols-7 text-center font-sf font-semibold min-h-0"
-          style={{
-            fontSize: `${eventCalendarDateSize}px`,
-            color: textColor,
-            lineHeight: 1,
-          }}
+      <div className="flex min-w-0 flex-1 flex-col" style={{ paddingLeft: u(14) }}>
+        <p
+          className="font-bold leading-none"
+          style={{ paddingLeft: u(5), fontSize: u(10), letterSpacing: "0.06em", color: CALENDAR_ACCENT }}
         >
-          {eventMonthCells.map((day, index) => {
-            if (!day) return <div key={`event-empty-${index}`} className="min-h-0" />;
-            const isToday = day === now.getDate();
-            return (
-              <div key={`event-day-${day}`} className="flex min-h-0 items-center justify-center">
-                {isToday ? (
-                  <span
-                    className="flex items-center justify-center rounded-full"
-                    style={{
-                      width: `${eventPillSize}px`,
-                      height: `${eventPillSize}px`,
-                      backgroundColor: "#ef4444",
-                      color: "#ffffff",
-                    }}
-                  >
-                    {day}
-                  </span>
-                ) : (
-                  <span>{day}</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
+          {now.toLocaleDateString("en-US", { month: "long" }).toUpperCase()}
+        </p>
+        <MonthGrid
+          now={now}
+          scale={scale}
+          colors={colors}
+          weekStartsOnSunday
+          labelSize={8}
+          dateSize={10.5}
+          pillSize={17}
+          gap={8}
+        />
       </div>
     </div>
   );

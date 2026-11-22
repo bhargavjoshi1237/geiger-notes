@@ -1,29 +1,22 @@
-import { daySizing } from "../sizing";
+import { CALENDAR_ACCENT } from "../sizing";
 
-const DayStyle = ({ width, height, theme }) => {
-  const nodeWidth = Math.max(width || 100, 50);
-  const nodeHeight = Math.max(height || 200, 50);
-  const refSize = Math.min(nodeWidth, nodeHeight);
-
-  const { dateFontSize, dayFontSize } = daySizing({ refSize });
+// 200 x 200 design canvas: weekday over a large date, centred.
+const DayStyle = ({ now, scale, colors }) => {
+  const u = (n) => n * scale;
 
   return (
-    <div className="flex flex-col items-center justify-center h-full">
+    <div className="flex h-full flex-col items-center justify-center">
       <p
-        className="font-sf text-red-500 font-bold"
-        style={{ fontSize: `${dayFontSize}px`, lineHeight: 1.2 }}
+        className="font-semibold leading-none"
+        style={{ fontSize: u(26), letterSpacing: "0.04em", color: CALENDAR_ACCENT }}
       >
-        {new Date().toLocaleDateString("en-US", { weekday: "short" }).toUpperCase()}
+        {now.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase()}
       </p>
       <p
-        className="font-sf leading-none"
-        style={{
-          fontSize: `${dateFontSize}px`,
-          lineHeight: 1,
-          color: theme === "light" ? "#000000" : "#ffffff",
-        }}
+        className="leading-none tabular-nums"
+        style={{ marginTop: u(4), fontSize: u(104), letterSpacing: "-0.03em", color: colors.date }}
       >
-        {new Date().getDate()}
+        {now.getDate()}
       </p>
     </div>
   );

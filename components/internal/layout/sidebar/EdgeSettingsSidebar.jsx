@@ -1,14 +1,21 @@
 "use client";
 
 import React from "react";
-import { Spline, MoveRight, Minus, Activity, Type, ArrowLeftRight } from "lucide-react";
+import { Spline, MoveRight, Minus, Type, ArrowLeftRight } from "lucide-react";
 import { Input, Switch } from "@geiger/ui";
 import { SidebarShell } from "./SidebarPrimitives";
 import { ColorPlug } from "./plugs/ColorPlug";
-import { PlugPopover, PlugSection, ChoiceGrid, SliderRow, ColorRow } from "./plugs/PlugControls";
+import { PlugPopover, PlugSection, ChoiceGrid, SliderRow, StepSlider, ColorRow } from "./plugs/PlugControls";
+import { CycleButton, CycleChip, withIcons } from "@/components/internal/ui/CycleButton";
+import {
+  ARROW_END_GLYPHS,
+  ARROW_SIZE_GLYPHS,
+  ARROW_START_GLYPHS,
+  FLOW_GLYPHS,
+  PATH_GLYPHS,
+} from "@/components/internal/ui/cycle-glyphs";
 import {
   ARROW_SHAPES,
-  ARROW_SIZES,
   DASH_PATTERNS,
   EDGE_PATHS,
   FLOW_ANIMATIONS,
@@ -17,28 +24,18 @@ import {
   upgradeEdge,
 } from "@/lib/canvas/edge-style";
 
-const PATH_GLYPHS = {
-  curve: "M2 18 Q12 -2 22 18",
-  straight: "M2 18 L22 4",
-  step: "M2 18 L12 18 L12 4 L22 4",
-  smoothstep: "M2 18 L9 18 Q12 18 12 15 L12 7 Q12 4 15 4 L22 4",
-  bezier: "M2 18 C12 18 12 4 22 4",
+const SIZES = [
+  { value: "sm", label: "Small" },
+  { value: "md", label: "Medium" },
+  { value: "lg", label: "Large" },
+];
+const FLOW_OPTIONS = withIcons(FLOW_ANIMATIONS, FLOW_GLYPHS);
+const ARROW_SIZE_OPTIONS = withIcons(SIZES, ARROW_SIZE_GLYPHS);
+const PATH_OPTIONS = withIcons(EDGE_PATHS, PATH_GLYPHS);
+const ARROW_OPTIONS = {
+  arrowStart: withIcons(ARROW_SHAPES, ARROW_START_GLYPHS),
+  arrowEnd: withIcons(ARROW_SHAPES, ARROW_END_GLYPHS),
 };
-
-const ARROW_GLYPHS = {
-  none: null,
-  arrow: <path d="M14 6 L22 11 L14 16 z" fill="currentColor" />,
-  open: <path d="M15 6 L22 11 L15 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />,
-  circle: <circle cx="18.5" cy="11" r="3.5" fill="currentColor" />,
-  diamond: <path d="M14 11 L18 7 L22 11 L18 15 z" fill="currentColor" />,
-  bar: <rect x="19" y="5" width="2" height="12" fill="currentColor" />,
-};
-
-const Glyph = ({ children }) => (
-  <svg width="24" height="22" viewBox="0 0 24 22" className="overflow-visible">
-    {children}
-  </svg>
-);
 
 export default function EdgeSettingsSidebar({ selectedEdge, onUpdateEdge, onBack }) {
   if (!selectedEdge) return null;
@@ -70,18 +67,12 @@ export default function EdgeSettingsSidebar({ selectedEdge, onUpdateEdge, onBack
 
       <PlugPopover icon={Spline} label="Path">
         <PlugSection label="Path">
-          <ChoiceGrid
-            options={EDGE_PATHS}
+          <CycleChip
+            label="Path"
+            options={PATH_OPTIONS}
             value={data.path || "curve"}
             onChange={(path) => update({ data: { path, offset: undefined } })}
-            render={(opt) => (
-              <>
-                <Glyph>
-                  <path d={PATH_GLYPHS[opt.value]} fill="none" stroke="currentColor" strokeWidth="1.6" />
-                </Glyph>
-                {opt.label}
-              </>
-            )}
+            className="w-full"
           />
         </PlugSection>
         <label className="flex items-center justify-between text-xs text-foreground">
@@ -117,26 +108,22 @@ export default function EdgeSettingsSidebar({ selectedEdge, onUpdateEdge, onBack
               ) : null
             }
           >
-            <ChoiceGrid
-              options={ARROW_SHAPES}
+            <CycleChip
+              label={key === "arrowStart" ? "Start arrow" : "End arrow"}
+              options={ARROW_OPTIONS[key]}
               value={data[key] || "none"}
               onChange={(v) => update({ data: { [key]: v } })}
-              render={(opt) => (
-                <Glyph>
-                  <g transform={key === "arrowStart" ? "translate(24 0) scale(-1 1)" : undefined}>
-                    <line x1="2" y1="11" x2={opt.value === "none" ? 22 : 16} y2="11" stroke="currentColor" strokeWidth="1.6" />
-                    {ARROW_GLYPHS[opt.value]}
-                  </g>
-                </Glyph>
-              )}
+              className="w-full"
             />
           </PlugSection>
         ))}
         <PlugSection label="Size">
-          <ChoiceGrid
-            options={ARROW_SIZES}
+          <CycleChip
+            label="Arrow size"
+            options={ARROW_SIZE_OPTIONS}
             value={data.arrowSize || "md"}
             onChange={(arrowSize) => update({ data: { arrowSize } })}
+            className="w-full"
           />
         </PlugSection>
       </PlugPopover>
@@ -187,11 +174,7 @@ export default function EdgeSettingsSidebar({ selectedEdge, onUpdateEdge, onBack
         </PlugSection>
       </PlugPopover>
 
-      <PlugPopover icon={Activity} label="Animation" active={(data.flow || "none") !== "none"}>
-        <PlugSection label="Flow">
-          <ChoiceGrid options={FLOW_ANIMATIONS} value={data.flow || "none"} onChange={setFlow} columns={1} />
-        </PlugSection>
-      </PlugPopover>
+      <CycleButton label="Animation" options={FLOW_OPTIONS} value={data.flow || "none"} onChange={setFlow} />
 
       <PlugPopover icon={Type} label="Label" active={!!label}>
         <PlugSection label="Text">
@@ -203,12 +186,9 @@ export default function EdgeSettingsSidebar({ selectedEdge, onUpdateEdge, onBack
           />
         </PlugSection>
         <PlugSection label="Size">
-          <ChoiceGrid
-            options={[
-              { value: "sm", label: "Small" },
-              { value: "md", label: "Medium" },
-              { value: "lg", label: "Large" },
-            ]}
+          <StepSlider
+            label="Label size"
+            options={SIZES}
             value={data.labelSize || "md"}
             onChange={(labelSize) => update({ data: { labelSize } })}
           />

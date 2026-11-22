@@ -1,16 +1,17 @@
 "use client";
 
 import React from "react";
-import { Hash, SquareFunction, Table2 } from "lucide-react";
-import { Input, Label, Popover, PopoverContent, PopoverTrigger, SegmentedTabs } from "@geiger/ui";
-import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { DollarSign, Hash, Percent, SquareFunction, Table2 } from "lucide-react";
+import { Input, Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
+import { RAIL_POPOVER, SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { CycleChip } from "@/components/internal/ui/CycleButton";
 import { FORMULA_FUNCTIONS, FORMULA_OPS } from "./formula-engine";
 
 const POPOVER_CLASS = "w-64 bg-surface-dialog border-border p-3 shadow-xl rounded-xl";
 const FORMATS = [
-  { value: "number", label: "Number" },
-  { value: "currency", label: "Currency" },
-  { value: "percent", label: "Percent" },
+  { value: "number", label: "Number", icon: Hash },
+  { value: "currency", label: "Currency", icon: DollarSign },
+  { value: "percent", label: "Percent", icon: Percent },
 ];
 
 const SectionLabel = ({ children }) => (
@@ -29,7 +30,7 @@ export default function FormulaSettings({ node, updateData }) {
         <PopoverTrigger asChild>
           <SidebarButton icon={SquareFunction} label="Operation" />
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" sideOffset={8} className={POPOVER_CLASS}>
+        <PopoverContent {...RAIL_POPOVER} className={POPOVER_CLASS}>
           <SectionLabel>Operation</SectionLabel>
           <div className="flex flex-col gap-0.5">
             {FORMULA_OPS.map((o) => (
@@ -69,14 +70,14 @@ export default function FormulaSettings({ node, updateData }) {
         <PopoverTrigger asChild>
           <SidebarButton icon={Hash} label="Number format" />
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" sideOffset={8} className={POPOVER_CLASS}>
+        <PopoverContent {...RAIL_POPOVER} className={POPOVER_CLASS}>
           <SectionLabel>Format</SectionLabel>
-          <SegmentedTabs
-            fullWidth
-            tabs={FORMATS}
+          <CycleChip
+            label="Number format"
+            options={FORMATS}
             value={data.format || "number"}
             onChange={(format) => updateData({ format })}
-            buttonClassName="h-7 px-2 text-xs"
+            className="w-full"
           />
           <div className="mt-3 grid grid-cols-2 gap-2">
             <div>
@@ -107,7 +108,7 @@ export default function FormulaSettings({ node, updateData }) {
         <PopoverTrigger asChild>
           <SidebarButton icon={Table2} label="Table column" />
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" sideOffset={8} className={POPOVER_CLASS}>
+        <PopoverContent {...RAIL_POPOVER} className={POPOVER_CLASS}>
           <SectionLabel>Table column</SectionLabel>
           <Input
             value={data.column ?? ""}

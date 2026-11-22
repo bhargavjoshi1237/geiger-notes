@@ -15,11 +15,46 @@ import {
 } from "lucide-react";
 import { Input } from "@geiger/ui";
 import { SidebarButton } from "../SidebarPrimitives";
-import { PlugPopover, PlugSection, ChoiceGrid, SliderRow, ColorRow, MenuRow } from "./PlugControls";
-import { BORDER_STYLES, FONTS, FONT_SIZES, SHADOWS, setLocked, withAppearance } from "@/lib/canvas/node-appearance";
+import { PlugPopover, PlugSection, ChoiceGrid, SliderRow, StepSlider, ColorRow, MenuRow } from "./PlugControls";
+import { BORDER_STYLES, FONTS, FONT_SIZES, setLocked, withAppearance } from "@/lib/canvas/node-appearance";
+import { CycleChip, withIcons } from "@/components/internal/ui/CycleButton";
+import ReactionPicker from "@/components/internal/ui/ReactionPicker";
+import { BORDER_STYLE_GLYPHS, BORDER_WIDTH_GLYPHS } from "@/components/internal/ui/cycle-glyphs";
 import { useSessionControlsContext } from "@/components/internal/colab/live/SessionContext";
 
-const REACTIONS = ["👍", "❤️", "😂", "😮", "🎉", "🔥", "👀", "✅", "❓", "💡"];
+const BORDER_WIDTH_OPTIONS = withIcons(
+  [0, 1, 2, 4].map((v) => ({ value: v, label: v ? `${v}px` : "None" })),
+  BORDER_WIDTH_GLYPHS,
+);
+const BORDER_STYLE_OPTIONS = withIcons(
+  BORDER_STYLES.map((s) => ({ value: s, label: s[0].toUpperCase() + s.slice(1) })),
+  BORDER_STYLE_GLYPHS,
+);
+// Ordered lightest to strongest so the shadow slider reads as an intensity scale; keys match SHADOWS.
+const SHADOW_STEPS = [
+  { value: "none", label: "None" },
+  { value: "sm", label: "Soft" },
+  { value: "md", label: "Medium" },
+  { value: "lg", label: "Deep" },
+  { value: "glow", label: "Glow" },
+];
+const TEXT_SIZE_STEPS = [
+  { value: "sm", label: "Small" },
+  { value: "md", label: "Medium" },
+  { value: "lg", label: "Large" },
+  { value: "xl", label: "X-Large" },
+];
+
+// Section aside for a step slider: a reset link while overridden, a muted note on where the value comes from otherwise.
+function ResetAside({ set, onReset, resetLabel, unsetLabel }) {
+  return set ? (
+    <button type="button" onClick={onReset} className="text-[11px] text-muted-foreground hover:text-foreground">
+      {resetLabel}
+    </button>
+  ) : (
+    <span className="text-[11px] text-muted-foreground/70">{unsetLabel}</span>
+  );
+}
 
 const sizeOf = (node) => ({
   w: Math.round(node.width ?? node.measured?.width ?? node.style?.width ?? 0),
@@ -42,7 +77,8 @@ export function NodeAppearancePlugs({ node, onUpdateNode, onNodeCommand, textCon
   const asMenu = layout === "menu";
   // Rail plugs keep PlugPopover's icon trigger; menu plugs get a labelled row.
   const menuTrigger = (icon, label, active) => (asMenu ? <MenuRow icon={icon} label={label} active={active} chevron /> : undefined);
-  const appearanceActive = !!(a.borderWidth || a.radius != null || a.shadow || a.opacity < 1);
+  const shadowSet = !!a.shadow && a.shadow !== "default";
+  const appearanceActive = !!(a.borderWidth || a.radius != null || shadowSet || a.opacity < 1);
   const textActive = !!(a.fontFamily || a.fontSize || a.textColor);
 
   const setSize = (key, value) => {
@@ -60,21 +96,26 @@ export function NodeAppearancePlugs({ node, onUpdateNode, onNodeCommand, textCon
     <>
       <PlugPopover icon={Paintbrush} label="Appearance" active={appearanceActive} trigger={menuTrigger(Paintbrush, "Appearance", appearanceActive)}>
         <PlugSection label="Border">
-          <ChoiceGrid
-            options={[0, 1, 2, 4].map((v) => ({ value: v, label: v ? `${v}px` : "None" }))}
-            value={a.borderWidth || 0}
-            onChange={(borderWidth) => setA({ borderWidth })}
-            columns={4}
-          />
-          {a.borderWidth > 0 && (
-            <>
-              <ChoiceGrid
-                options={BORDER_STYLES.map((s) => ({ value: s, label: s[0].toUpperCase() + s.slice(1) }))}
+          <div className="flex gap-1.5">
+            <CycleChip
+              label="Border"
+              options={BORDER_WIDTH_OPTIONS}
+              value={a.borderWidth || 0}
+              onChange={(borderWidth) => setA({ borderWidth })}
+              className="min-w-0 flex-1"
+            />
+            {a.borderWidth > 0 && (
+              <CycleChip
+                label="Border style"
+                options={BORDER_STYLE_OPTIONS}
                 value={a.borderStyle || "solid"}
                 onChange={(borderStyle) => setA({ borderStyle })}
+                className="min-w-0 flex-1"
               />
-              <ColorRow value={a.borderColor} onChange={(borderColor) => setA({ borderColor })} placeholder="Foreground" />
-            </>
+            )}
+          </div>
+          {a.borderWidth > 0 && (
+            <ColorRow value={a.borderColor} onChange={(borderColor) => setA({ borderColor })} placeholder="Foreground" />
           )}
         </PlugSection>
         <PlugSection
@@ -89,12 +130,11 @@ export function NodeAppearancePlugs({ node, onUpdateNode, onNodeCommand, textCon
         >
           <SliderRow value={a.radius ?? 0} min={0} max={40} onChange={(radius) => setA({ radius })} format={(v) => `${v}px`} />
         </PlugSection>
-        <PlugSection label="Shadow">
-          <ChoiceGrid
-            options={[{ value: "default", label: "Style" }, ...Object.keys(SHADOWS).map((k) => ({ value: k, label: k === "sm" ? "Soft" : k === "md" ? "Medium" : k === "lg" ? "Deep" : k[0].toUpperCase() + k.slice(1) }))]}
-            value={a.shadow || "default"}
-            onChange={(shadow) => setA({ shadow })}
-          />
+        <PlugSection
+          label="Shadow"
+          aside={<ResetAside set={shadowSet} onReset={() => setA({ shadow: null })} resetLabel="Style default" unsetLabel="From style" />}
+        >
+          <StepSlider label="Shadow" options={SHADOW_STEPS} value={a.shadow} onChange={(shadow) => setA({ shadow })} />
         </PlugSection>
         <PlugSection label="Opacity">
           <SliderRow
@@ -118,13 +158,11 @@ export function NodeAppearancePlugs({ node, onUpdateNode, onNodeCommand, textCon
               render={(opt) => <span style={{ fontFamily: FONTS[opt.value] }}>{opt.label}</span>}
             />
           </PlugSection>
-          <PlugSection label="Size">
-            <ChoiceGrid
-              options={[{ value: "", label: "Auto" }, ...Object.keys(FONT_SIZES).map((k) => ({ value: k, label: k.toUpperCase() }))]}
-              value={a.fontSize || ""}
-              onChange={(fontSize) => setA({ fontSize })}
-              columns={5}
-            />
+          <PlugSection
+            label="Size"
+            aside={<ResetAside set={!!FONT_SIZES[a.fontSize]} onReset={() => setA({ fontSize: "" })} resetLabel="Use auto" unsetLabel="Auto" />}
+          >
+            <StepSlider label="Text size" options={TEXT_SIZE_STEPS} value={a.fontSize} onChange={(fontSize) => setA({ fontSize })} />
           </PlugSection>
           <PlugSection label="Colour">
             <ColorRow value={a.textColor} onChange={(textColor) => setA({ textColor })} />
@@ -188,18 +226,7 @@ export function NodeAppearancePlugs({ node, onUpdateNode, onNodeCommand, textCon
       )}
 
       <PlugPopover icon={SmilePlus} label="Add reaction" width="w-auto" trigger={menuTrigger(SmilePlus, "Add reaction")}>
-        <div className="grid grid-cols-5 gap-1">
-          {REACTIONS.map((emoji) => (
-            <button
-              key={emoji}
-              type="button"
-              onClick={() => addReaction(emoji)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-lg transition-transform hover:scale-110 hover:bg-surface-hover"
-            >
-              {emoji}
-            </button>
-          ))}
-        </div>
+        <ReactionPicker onPick={addReaction} />
       </PlugPopover>
     </>
   );

@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import { Hand, ShieldCheck, SmilePlus, Wand2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger, cn } from "@geiger/ui";
 import { canModerate, sessionMembers } from "@/lib/collab/session";
-import { SESSION_REACTIONS } from "@/lib/collab/hooks/useSessionControls";
+import ReactionPicker from "@/components/internal/ui/ReactionPicker";
 import MemberActionsMenu from "./MemberActionsMenu";
 import HostControlsMenu from "./HostControlsMenu";
 
@@ -151,19 +151,8 @@ export default function SessionToolbar({
                 <SmilePlus className="h-4 w-4" />
               </button>
             </PopoverTrigger>
-            <PopoverContent align="end" sideOffset={8} className="w-auto p-1.5">
-              <div className="flex gap-1">
-                {SESSION_REACTIONS.map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => sendReaction(emoji)}
-                    className="flex h-9 w-9 items-center justify-center rounded-md text-lg transition-transform hover:scale-110 hover:bg-surface-hover"
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
+            <PopoverContent align="end" sideOffset={8} className="w-auto p-3">
+              <ReactionPicker onPick={sendReaction} />
             </PopoverContent>
           </Popover>
         </>

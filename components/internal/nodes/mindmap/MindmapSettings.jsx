@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ChevronsDownUp, ChevronsUpDown, GitFork, ListTree } from "lucide-react";
-import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
 import ColorPicker from "@/components/internal/edges/ColorePicker";
 import { MINDMAP_ROOT_COLOR, requestMindmapAction } from "./MindmapNode";
 
@@ -14,7 +14,7 @@ export default function MindmapSettings({ node }) {
 
   return (
     <>
-      <ColorPicker value={color} onChange={(next) => requestMindmapAction(id, "color", next)}>
+      <ColorPicker value={color} onChange={(next) => requestMindmapAction(id, "color", next)} {...RAIL_POPOVER}>
         <div>
           <SidebarButton
             label="Branch color"

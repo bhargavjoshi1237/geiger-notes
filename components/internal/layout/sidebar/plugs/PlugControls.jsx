@@ -3,20 +3,23 @@
 import React from "react";
 import { ChevronRight } from "lucide-react";
 import { Label, Popover, PopoverContent, PopoverTrigger, Slider } from "@geiger/ui";
-import { SidebarButton } from "../SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "../SidebarPrimitives";
 import ColorPicker from "../../../edges/ColorePicker";
+import { NESTED_POPOVER, useNestedAnchor } from "@/components/internal/ui/nested-popover";
 
 // Rail button that opens a settings popover to its right, matching the existing plugs.
 export function PlugPopover({ icon, label, active, width = "w-64", children, trigger }) {
+  // A row inside an overflow menu opens beside that menu, centred on it, rather than off the rail.
+  const nested = trigger?.type === MenuRow;
+  const { triggerRef, anchor } = useNestedAnchor();
   return (
     <Popover>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild ref={nested ? triggerRef : undefined}>
         {trigger || <SidebarButton icon={icon} label={label} active={active} title={label} aria-label={label} />}
       </PopoverTrigger>
+      {nested && anchor}
       <PopoverContent
-        side="right"
-        align="start"
-        sideOffset={8}
+        {...(nested ? NESTED_POPOVER : RAIL_POPOVER)}
         className={`${width} bg-surface-dialog border-border p-3 shadow-xl rounded-xl`}
       >
         <div className="flex flex-col gap-3">{children}</div>
@@ -97,11 +100,64 @@ export function SliderRow({ value, min, max, step = 1, onChange, format = (v) =>
   );
 }
 
+// Snapping slider over a short ordered scale; ticks mark each stop and the labels underneath jump straight to it.
+export function StepSlider({ options, value, onChange, label }) {
+  const index = options.findIndex((opt) => opt.value === value);
+  const last = options.length - 1;
+  // Radix keeps the 16px thumb inside the track, so stop i sits at 8px + i/last of the remaining width.
+  const at = (i) => `calc(8px + (100% - 16px) * ${i / last})`;
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="relative">
+        <Slider
+          value={[Math.max(index, 0)]}
+          min={0}
+          max={last}
+          step={1}
+          onValueChange={([i]) => onChange(options[i].value)}
+          aria-label={label}
+          aria-valuetext={options[index]?.label}
+          className={`step-slider ${index < 0 ? "[&_[data-slot=slider-thumb]]:opacity-40" : ""}`}
+        />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          {options.map((opt, i) =>
+            i === index ? null : (
+              <span
+                key={String(opt.value)}
+                className={`absolute top-1/2 size-1 -translate-x-1/2 -translate-y-1/2 rounded-full transition-colors ${
+                  i < index ? "bg-primary-foreground/70" : "bg-foreground/30"
+                }`}
+                style={{ left: at(i) }}
+              />
+            ),
+          )}
+        </div>
+      </div>
+      <div className="relative h-4">
+        {options.map((opt, i) => (
+          <button
+            key={String(opt.value)}
+            type="button"
+            tabIndex={-1}
+            onClick={() => onChange(opt.value)}
+            className={`absolute top-0 text-[10px] leading-4 transition-colors ${
+              i === index ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+            style={i === 0 ? { left: 0 } : i === last ? { right: 0 } : { left: at(i), transform: "translateX(-50%)" }}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Inline colour swatch row that opens the shared ColorPicker; `allowClear` adds a reset-to-theme chip.
 export function ColorRow({ value, onChange, placeholder = "Theme", allowClear = true }) {
   return (
     <div className="flex items-center gap-2">
-      <ColorPicker value={value} onChange={onChange} side="right" align="start">
+      <ColorPicker value={value} onChange={onChange} nested>
         <button
           type="button"
           className="flex h-8 flex-1 items-center gap-2 rounded-lg border border-border bg-surface-card px-2 text-xs hover:border-ring"

@@ -3,7 +3,13 @@
 import React from "react";
 import { Download, Film, Music, Repeat, Replace } from "lucide-react";
 import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { CycleButton } from "@/components/internal/ui/CycleButton";
 import { EMPTY_MEDIA, MEDIA_SIZES } from "./MediaNode";
+
+const KINDS = [
+  { value: "audio", label: "Audio", icon: Music },
+  { value: "video", label: "Video", icon: Film },
+];
 
 // Media node rail: swap the source, toggle audio/video for URL sources, loop, download.
 export default function MediaSettings({ node, updateData, updateNode }) {
@@ -39,12 +45,11 @@ export default function MediaSettings({ node, updateData, updateNode }) {
         }}
       />
       {isUrl && (
-        <SidebarButton
-          icon={kind === "audio" ? Film : Music}
-          label={kind === "audio" ? "Play as video" : "Play as audio"}
-          title={kind === "audio" ? "Play as video" : "Play as audio"}
-          onClick={() => {
-            const next = kind === "audio" ? "video" : "audio";
+        <CycleButton
+          label="Play as"
+          options={KINDS}
+          value={kind}
+          onChange={(next) => {
             updateData({ kind: next });
             setSize(MEDIA_SIZES[next]);
           }}

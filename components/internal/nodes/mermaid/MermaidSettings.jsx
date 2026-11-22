@@ -4,7 +4,7 @@ import React from "react";
 import { LayoutTemplate } from "lucide-react";
 import { toast } from "sonner";
 import { Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
-import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
 import { MERMAID_TEMPLATES } from "./templates";
 import { MERMAID_VIEWS } from "./MermaidNode";
 
@@ -37,7 +37,7 @@ export default function MermaidSettings({ node, updateData }) {
         <PopoverTrigger asChild>
           <SidebarButton icon={LayoutTemplate} label="Templates" title="Templates" />
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" sideOffset={8} className="w-56 bg-surface-dialog border-border p-1 shadow-xl rounded-xl">
+        <PopoverContent {...RAIL_POPOVER} className="w-56 bg-surface-dialog border-border p-1 shadow-xl rounded-xl">
           <div className="flex flex-col gap-0.5">
             <SectionLabel>Starter templates</SectionLabel>
             {MERMAID_TEMPLATES.map((t) => (
@@ -53,7 +53,7 @@ export default function MermaidSettings({ node, updateData }) {
         <PopoverTrigger asChild>
           <SidebarButton icon={ViewIcon} label="Editor layout" title="Editor layout" />
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" sideOffset={8} className="w-44 bg-surface-dialog border-border p-1 shadow-xl rounded-xl">
+        <PopoverContent {...RAIL_POPOVER} className="w-44 bg-surface-dialog border-border p-1 shadow-xl rounded-xl">
           <div className="flex flex-col gap-0.5">
             <SectionLabel>When selected</SectionLabel>
             {MERMAID_VIEWS.map(({ value, label, icon: Icon }) => (

@@ -1,29 +1,30 @@
 "use client";
 
 import React from "react";
-import { Sparkles, RotateCcw, Boxes } from "lucide-react";
+import { Sparkles, RotateCcw, Boxes, Hand, Move, MousePointer2, ZoomIn } from "lucide-react";
 import {
   Button,
-  SegmentedTabs,
   SettingRow,
   SettingsList,
   Switch,
 } from "@geiger/ui";
 import { GroupLabel } from "./SettingsPrimitives";
+import { CycleChip } from "@/components/internal/ui/CycleButton";
+import { SELECTION_GLYPHS } from "@/components/internal/ui/cycle-glyphs";
 
 const SCROLL_MODES = [
-  { label: "Pan", value: "pan" },
-  { label: "Zoom", value: "zoom" },
+  { label: "Pan", value: "pan", icon: Move },
+  { label: "Zoom", value: "zoom", icon: ZoomIn },
 ];
 
 const DRAG_MODES = [
-  { label: "Select", value: "select" },
-  { label: "Hand", value: "pan" },
+  { label: "Select", value: "select", icon: MousePointer2 },
+  { label: "Hand", value: "pan", icon: Hand },
 ];
 
 const SELECTION_MODES = [
-  { label: "Touch", value: "partial" },
-  { label: "Inside", value: "full" },
+  { label: "Touch", value: "partial", icon: SELECTION_GLYPHS.partial },
+  { label: "Inside", value: "full", icon: SELECTION_GLYPHS.full },
 ];
 
 export default function GeneralSettings({
@@ -92,8 +93,9 @@ export default function GeneralSettings({
             title="Default drag tool"
             description="What dragging on empty canvas does when a board opens."
             control={
-              <SegmentedTabs
-                tabs={DRAG_MODES}
+              <CycleChip
+                label="Default drag tool"
+                options={DRAG_MODES}
                 value={settings.dragMode || "select"}
                 onChange={(v) => set("dragMode", v)}
               />
@@ -103,8 +105,9 @@ export default function GeneralSettings({
             title="Box selection"
             description="Select nodes the box touches, or only ones fully inside."
             control={
-              <SegmentedTabs
-                tabs={SELECTION_MODES}
+              <CycleChip
+                label="Box selection"
+                options={SELECTION_MODES}
                 value={settings.selectionMode || "partial"}
                 onChange={(v) => set("selectionMode", v)}
               />
@@ -114,8 +117,9 @@ export default function GeneralSettings({
             title="Scroll wheel"
             description="Pan the canvas or zoom it when scrolling."
             control={
-              <SegmentedTabs
-                tabs={SCROLL_MODES}
+              <CycleChip
+                label="Scroll wheel"
+                options={SCROLL_MODES}
                 value={settings.scrollMode || "pan"}
                 onChange={(v) => set("scrollMode", v)}
               />

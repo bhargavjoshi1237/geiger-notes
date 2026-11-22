@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Input, Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
+import { NESTED_POPOVER, useNestedAnchor } from "@/components/internal/ui/nested-popover";
 
 export const COLORS = [
   "#e2e2e2",
@@ -21,23 +22,27 @@ export const COLORS = [
   "#8b5cf6",
 ];
 
+// `nested` opens it beside the popover its trigger sits in (centred on it) instead of beside the trigger.
 export default function ColorPicker({
   value,
   onChange,
   children,
   side = "right",
   align = "start",
+  sideOffset = 8,
+  collisionPadding,
+  nested = false,
   className,
 }) {
+  const { triggerRef, anchor } = useNestedAnchor();
+  const placement = nested ? NESTED_POPOVER : { side, align, sideOffset, collisionPadding };
   return (
     <Popover>
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent
-        side={side}
-        align={align}
-        sideOffset={8}
-        className={`w-64 border-border p-3 shadow-2xl rounded-xl ${className || ""}`}
-      >
+      <PopoverTrigger asChild ref={nested ? triggerRef : undefined}>
+        {children}
+      </PopoverTrigger>
+      {nested && anchor}
+      <PopoverContent {...placement} className={`w-64 border-border p-3 shadow-2xl rounded-xl ${className || ""}`}>
         <div className="grid grid-cols-5 gap-2 mb-3">
           {COLORS.map((color) => (
             <button

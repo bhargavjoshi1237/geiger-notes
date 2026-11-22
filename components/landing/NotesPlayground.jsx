@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
 import ProjectWorkspacePage from "@/app/project/[projectId]/page";
 import ProjectScope from "@/app/project/[projectId]/project-scope";
 import WorkspaceShell from "@/components/internal/canvas/WorkspaceShell";
@@ -18,8 +18,27 @@ const MODE_OPTIONS = { routes: playgroundRoutes, basePath: BASE_PATH };
 // Studio's seeded boards, served by an in-memory database (lib/playground). The
 // open board/sketch/document live in this iframe's own query string, so the
 // landing page's URL never changes. Edits last for the tab; a reload resets.
+// Keeps canvas gestures inside the iframe: no scroll chaining to the landing page, and no
+// middle-click autoscroll (middle-drag still pans the canvas).
+function useContainGestures() {
+  useEffect(() => {
+    const root = document.documentElement;
+    const previous = root.style.overscrollBehavior;
+    root.style.overscrollBehavior = "none";
+    const stopAutoscroll = (event) => {
+      if (event.button === 1) event.preventDefault();
+    };
+    window.addEventListener("mousedown", stopAutoscroll, true);
+    return () => {
+      root.style.overscrollBehavior = previous;
+      window.removeEventListener("mousedown", stopAutoscroll, true);
+    };
+  }, []);
+}
+
 export default function NotesPlayground() {
   usePlaygroundMode(playgroundHandlers, MODE_OPTIONS);
+  useContainGestures();
 
   return (
     <Suspense fallback={<WorkspaceShell />}>

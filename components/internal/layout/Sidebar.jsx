@@ -51,6 +51,8 @@ export default function Sidebar({
   const shellBlurClass = debugBgLayers ? "" : "backdrop-blur-md";
 
   const edgeToRender = selectedEdge || cachedSelectedEdge;
+  // Panels stay mounted to slide out; remounting one when it loses its selection closes any popover it opened.
+  const panelKey = (panel, id) => (activePanel === panel ? `${panel}-${id}` : `${panel}-idle`);
   const nodeToRender = selectedNode || cachedSelectedNode;
 
   return (
@@ -71,6 +73,7 @@ export default function Sidebar({
       >
         {edgeToRender && (
           <EdgeSettingsSidebar
+            key={panelKey("edge", edgeToRender.id)}
             selectedEdge={edgeToRender}
             onUpdateEdge={onUpdateEdge}
             onBack={onDeselect}
@@ -84,6 +87,7 @@ export default function Sidebar({
       >
         {nodeToRender && (
           <NodeSettingsSidebar
+            key={panelKey("node", nodeToRender.id)}
             selectedNode={nodeToRender}
             onUpdateNode={onUpdateNode}
             onBack={onDeselectNode}
@@ -99,6 +103,7 @@ export default function Sidebar({
       >
         {nodeToRender && (
           <ImageSettingsSidebar
+            key={panelKey("image", nodeToRender.id)}
             selectedNode={nodeToRender}
             onUpdateNode={onUpdateNode}
             onBack={onDeselectNode}
@@ -114,6 +119,7 @@ export default function Sidebar({
       >
         {nodeToRender && (
           <FileSettingsSidebar
+            key={panelKey("file", nodeToRender.id)}
             selectedNode={nodeToRender}
             onUpdateNode={onUpdateNode}
             onBack={onDeselectNode}
@@ -128,6 +134,7 @@ export default function Sidebar({
       >
         {nodeToRender && (
           <CalendarSettingsSidebar
+            key={panelKey("calendar", nodeToRender.id)}
             selectedNode={nodeToRender}
             onUpdateNode={onUpdateNode}
             onBack={onDeselectNode}

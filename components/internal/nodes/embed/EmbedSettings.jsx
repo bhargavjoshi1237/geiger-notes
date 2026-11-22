@@ -4,7 +4,7 @@ import React from "react";
 import { ExternalLink, Link2, Ratio, Unlink } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Input, Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
-import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
 import { resolveEmbed } from "./embed-providers";
 
 const POPOVER_CLASS = "w-64 bg-surface-dialog border-border p-3 shadow-xl rounded-xl";
@@ -41,7 +41,7 @@ export default function EmbedSettings({ node, updateData, updateNode }) {
         <PopoverTrigger asChild>
           <SidebarButton icon={Link2} label="Embed link" title="Embed link" active={open} />
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" sideOffset={8} className={POPOVER_CLASS}>
+        <PopoverContent {...RAIL_POPOVER} className={POPOVER_CLASS}>
           <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Embed link</Label>
           <Input
             value={draft}

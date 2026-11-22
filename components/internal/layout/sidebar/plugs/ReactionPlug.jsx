@@ -1,66 +1,19 @@
 "use client";
 
 import React from "react";
-import {
-  SmilePlus,
-  ThumbsUp,
-  Heart,
-  Laugh,
-  ScanEye,
-  Frown,
-  Angry,
-  PartyPopper,
-  Flame,
-} from "lucide-react";
+import { SmilePlus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
-import { SidebarButton } from "../SidebarPrimitives";
+import ReactionPicker from "@/components/internal/ui/ReactionPicker";
+import { RAIL_POPOVER, SidebarButton } from "../SidebarPrimitives";
 
-const defaultReactions = [
-  { icon: ThumbsUp, label: "Like"},
-  { icon: Heart, label: "Love"},
-  { icon: Laugh, label: "Laugh"},
-  { icon: ScanEye, label: "Wow"},
-  { icon: Frown, label: "Sad"},
-  { icon: Angry, label: "Angry"},
-  { icon: PartyPopper, label: "Celebrate"},
-  { icon: Flame, label: "Fire"},
-];
-
-export const ReactionPlug = ({ onReaction, emojis, reactions }) => {
-  const items = reactions || defaultReactions;
-
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <SidebarButton icon={SmilePlus} label="Add reaction" />
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-auto p-1.5 bg-muted/95 backdrop-blur-xl border border-border shadow-2xl rounded-2xl"
-        side="right"
-        align="start"
-        sideOffset={12}
-      >
-        <div className="flex flex-wrap gap-0.5 p-0.5 max-w-[180px]">
-          {items.map(({ icon: Icon, label, color }) => (
-            <button
-              key={label}
-              title={label}
-              className="
-                group relative p-2 rounded-xl
-                transition-all duration-150
-                hover:bg-surface-hover/80
-                active:scale-90 flex items-center justify-center
-              "
-              onClick={() => onReaction(label)}
-            >
-              <Icon
-                className={`w-[18px] h-[18px] ${color} transition-transform duration-150 group-hover:scale-110`}
-                strokeWidth={1.8}
-              />
-            </button>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-};
+// Rail button that opens the searchable Lucide reaction picker; `onReaction` gets the icon name.
+export const ReactionPlug = ({ onReaction }) => (
+  <Popover>
+    <PopoverTrigger asChild>
+      <SidebarButton icon={SmilePlus} label="Add reaction" title="Add reaction" aria-label="Add reaction" />
+    </PopoverTrigger>
+    <PopoverContent {...RAIL_POPOVER} className="w-auto bg-surface-dialog border-border p-3 shadow-xl rounded-xl">
+      <ReactionPicker onPick={onReaction} />
+    </PopoverContent>
+  </Popover>
+);

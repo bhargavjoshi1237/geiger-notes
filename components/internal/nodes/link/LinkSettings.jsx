@@ -3,10 +3,15 @@
 import React from "react";
 import { ExternalLink, Maximize2, Minimize2, RefreshCw } from "lucide-react";
 import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { CycleButton } from "@/components/internal/ui/CycleButton";
 import { normalizeLinkUrl } from "../LinkNode";
 
 const COMPACT_HEIGHT = 68;
 const EXPANDED_HEIGHT = 300;
+const DISPLAYS = [
+  { value: "expanded", label: "Expanded card", icon: Maximize2 },
+  { value: "compact", label: "Compact row", icon: Minimize2 },
+];
 
 // Link node rail: refetch the cached preview, switch compact/expanded, open the URL.
 export default function LinkSettings({ node, updateData, updateNode }) {
@@ -39,11 +44,11 @@ export default function LinkSettings({ node, updateData, updateNode }) {
         onClick={() => href && updateData({ preview: null })}
         className={href ? "" : "opacity-40 pointer-events-none"}
       />
-      <SidebarButton
-        icon={compact ? Maximize2 : Minimize2}
-        label={compact ? "Expanded card" : "Compact row"}
-        title={compact ? "Show expanded card" : "Show compact row"}
-        onClick={toggleDisplay}
+      <CycleButton
+        label="Display"
+        options={DISPLAYS}
+        value={compact ? "compact" : "expanded"}
+        onChange={(next) => next !== (compact ? "compact" : "expanded") && toggleDisplay()}
       />
       {href && (
         <SidebarButton

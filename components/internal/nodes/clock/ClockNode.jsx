@@ -93,11 +93,14 @@ const ClockNode = ({ id, data, selected, dragging }) => {
   const minuteDeg = (minutes + seconds / 60) * 6;
   const hourDeg = ((hours % 12) + minutes / 60) * 30;
 
-  const formattedTime = time.toLocaleTimeString([], {
+  const digitalTime = time.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
+    ...(digitalShowSeconds ? { second: "2-digit" } : {}),
   });
+  // Sized to the node, not the screen: ~0.66em per glyph fills the width without wrapping.
+  const digitalScale = { small: 0.75, medium: 0.88, large: 1 }[digitalFontSize] ?? 0.88;
+  const digitalFontFit = `min(${((100 / (digitalTime.length * 0.66)) * digitalScale).toFixed(2)}cqw, ${(digitalShowDate ? 55 : 75) * digitalScale}cqh)`;
 
   const hourMarkers = data.hourMarkers || "none";
   const numbers = data.numbers || "none";
@@ -272,6 +275,7 @@ const ClockNode = ({ id, data, selected, dragging }) => {
           ) : (
             <div
               className={`relative flex flex-col items-center justify-center text-center w-full h-full ${circularSeconds ? "p-4" : ""}`}
+              style={{ containerType: "size" }}
             >
               {circularSeconds && (
                 <>
@@ -300,20 +304,10 @@ const ClockNode = ({ id, data, selected, dragging }) => {
                 </>
               )}
               <div
-                className={`font-black tracking-wider drop-shadow-lg tabular-nums ${
-                  digitalFontSize === "small"
-                    ? "text-3xl md:text-4xl lg:text-5xl"
-                    : digitalFontSize === "large"
-                      ? "text-5xl md:text-6xl lg:text-7xl"
-                      : "text-4xl md:text-5xl lg:text-6xl"
-                }`}
-                style={{ color: digitalTextColor }}
+                className="font-black tracking-wider drop-shadow-lg tabular-nums whitespace-nowrap leading-none"
+                style={{ color: digitalTextColor, fontSize: digitalFontFit }}
               >
-                {time.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  ...(digitalShowSeconds ? { second: "2-digit" } : {}),
-                })}
+                {digitalTime}
               </div>
               {digitalShowDate && (
                 <div

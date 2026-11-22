@@ -1,17 +1,11 @@
 "use client";
 
 import React from "react";
-import { SidebarButton } from "../SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "../SidebarPrimitives";
 import ColorPicker from "../../../edges/ColorePicker";
 
-export const ColorPlug = ({
-  value,
-  onChange,
-  label = "Color",
-  side = "right",
-  align = "start",
-}) => (
-  <ColorPicker value={value} onChange={onChange} side={side} align={align}>
+export const ColorPlug = ({ value, onChange, label = "Color" }) => (
+  <ColorPicker value={value} onChange={onChange} {...RAIL_POPOVER}>
     <div>
       <SidebarButton
         label={label}

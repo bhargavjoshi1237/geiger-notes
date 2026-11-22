@@ -3,7 +3,7 @@
 import React from "react";
 import { Copy, Download, Languages, ListOrdered, WrapText } from "lucide-react";
 import { Label, Popover, PopoverContent, PopoverTrigger } from "@geiger/ui";
-import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
 import { LANGUAGES } from "./highlight";
 import { copyCode } from "./CodeNode";
 
@@ -31,9 +31,7 @@ export default function CodeSettings({ node, updateData }) {
           <SidebarButton icon={Languages} label="Language" title="Language" />
         </PopoverTrigger>
         <PopoverContent
-          side="right"
-          align="start"
-          sideOffset={8}
+          {...RAIL_POPOVER}
           className="w-48 bg-surface-dialog border-border p-1 shadow-xl rounded-xl"
         >
           <Label className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">

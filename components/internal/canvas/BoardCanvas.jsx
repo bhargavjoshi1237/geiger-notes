@@ -13,6 +13,7 @@ import {
 } from "@xyflow/react";
 import { useUserSettings } from "@/lib/settings/useUserSettings";
 import { useTheme } from "next-themes";
+import { DismissableLayer } from "radix-ui/internal";
 import { toast } from "sonner";
 import Sidebar from "@/components/internal/layout/Sidebar";
 import Topbar from "@/components/internal/layout/Topbar";
@@ -32,6 +33,10 @@ import { stackIndex } from "@/lib/canvas/node-appearance";
 import "@xyflow/react/dist/style.css";
 
 const EDGE_TYPES = { center: CenterEdge };
+// Fit-on-open leaves room to pan and clears the topbar and left tool rail that overlay the canvas.
+const FIT_VIEW_PADDING = { top: "14%", right: "12%", bottom: "12%", left: "16%" };
+// Top-left anchoring: a 40px gap past the 64px rail and the 56px topbar.
+const FIT_ANCHOR_GAP = { x: 104, y: 96 };
 
 export default function BoardCanvas({
   id,
@@ -43,6 +48,9 @@ export default function BoardCanvas({
   onBoardNameResolved,
 }) {
   const { resolvedTheme } = useTheme();
+  // Canvas presses close open popovers: React Flow's pan handler stops mousedown, which Radix
+  // otherwise reads as an intercepted click and keeps the popover open.
+  const canvasSurfaceRef = DismissableLayer.useDismissableLayerSurface();
 
   // Advisory access for the currently open board. Starts editable and tightens
   // once resolved; personal boards and the project home board stay editable.
@@ -88,6 +96,7 @@ export default function BoardCanvas({
     reset: resetSettings,
     isDirty: settingsDirty,
     isSaving: settingsSaving,
+    isLoading: settingsLoading,
   } = useUserSettings();
 
   const onConnect = React.useCallback(
@@ -417,15 +426,23 @@ export default function BoardCanvas({
   const hasAnimated = React.useRef(false);
 
   React.useEffect(() => {
-    if (isInitialized && rfInstance && !hasAnimated.current && viewport) {
-      if (settings.fitViewOnOpen && nodesRef.current.length) {
-        rfInstance.fitView({ padding: 0.15, duration: 1200 });
+    // Waits for the saved settings so fit-on-open isn't skipped when the board loads first.
+    if (isInitialized && rfInstance && !settingsLoading && !hasAnimated.current && viewport) {
+      if (settings.fitViewOnOpen && nodesRef.current.length && settings.fitViewAnchor === "top-left") {
+        // Fit for the zoom, then pin the board's top-left corner just inside the rail and topbar.
+        rfInstance.fitView({ padding: FIT_VIEW_PADDING, maxZoom: 1 }).then(() => {
+          const { zoom } = rfInstance.getViewport();
+          const bounds = rfInstance.getNodesBounds(rfInstance.getNodes());
+          rfInstance.setViewport({ x: FIT_ANCHOR_GAP.x - bounds.x * zoom, y: FIT_ANCHOR_GAP.y - bounds.y * zoom, zoom });
+        });
+      } else if (settings.fitViewOnOpen && nodesRef.current.length) {
+        rfInstance.fitView({ padding: FIT_VIEW_PADDING, maxZoom: 1, duration: 1200 });
       } else {
         rfInstance.setViewport(viewport, { duration: 1600 });
       }
       hasAnimated.current = true;
     }
-  }, [isInitialized, rfInstance, viewport, settings.fitViewOnOpen]);
+  }, [isInitialized, rfInstance, viewport, settingsLoading, settings.fitViewOnOpen, settings.fitViewAnchor]);
 
   const handleMerge = React.useCallback(
     (newNodes, newEdges) => {
@@ -516,6 +533,7 @@ export default function BoardCanvas({
       </div>
 
       <div
+        ref={canvasSurfaceRef}
         data-node-style={settings.nodeStyle || "classic"}
         className={`absolute inset-0 transition-opacity duration-1000 ${themeClass ? `${themeClass} bg-background text-foreground` : ""} ${!isInitialized || isLoading ? "opacity-0 pointer-events-none" : "opacity-100"}`}
       >

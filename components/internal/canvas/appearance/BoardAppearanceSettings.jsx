@@ -18,6 +18,24 @@ import {
   youtubeThumb,
 } from "@/lib/canvas/appearance";
 import { MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, uploadBackdrop } from "@/lib/canvas/upload-backdrop";
+import { CycleChip, withIcons } from "@/components/internal/ui/CycleButton";
+import { GRADIENT_KIND_GLYPHS, IMAGE_FIT_GLYPHS } from "@/components/internal/ui/cycle-glyphs";
+
+const GRADIENT_KINDS = withIcons(
+  [
+    { value: "linear", label: "Linear" },
+    { value: "radial", label: "Radial" },
+  ],
+  GRADIENT_KIND_GLYPHS,
+);
+const IMAGE_FITS = withIcons(
+  [
+    { value: "cover", label: "Cover" },
+    { value: "contain", label: "Contain" },
+    { value: "tile", label: "Tile" },
+  ],
+  IMAGE_FIT_GLYPHS,
+);
 
 const CANVAS_COLORS = ["#fafaf9", "#f1f5f9", "#fef3c7", "#ecfccb", "#e0f2fe", "#18181b", "#0f172a", "#1c1917", "#14532d", "#3b0764"];
 
@@ -235,11 +253,12 @@ function BackgroundControls({ bg, setBg, setBgPart, boardKey }) {
               <ColorRow value={g.to} onChange={(to) => setBgPart("gradient", { to })} allowClear={false} />
             </Field>
             <Field label="Shape">
-              <SegmentedTabs
-                tabs={[{ value: "linear", label: "Linear" }, { value: "radial", label: "Radial" }]}
+              <CycleChip
+                label="Gradient shape"
+                options={GRADIENT_KINDS}
                 value={g.kind}
                 onChange={(kind) => setBgPart("gradient", { kind })}
-                fullWidth
+                className="h-9 w-full"
               />
             </Field>
             {g.kind !== "radial" && (
@@ -281,11 +300,7 @@ function BackgroundControls({ bg, setBg, setBgPart, boardKey }) {
           <SettingRow
             title="Fit"
             control={
-              <SegmentedTabs
-                tabs={[{ value: "cover", label: "Cover" }, { value: "contain", label: "Contain" }, { value: "tile", label: "Tile" }]}
-                value={img.fit}
-                onChange={(fit) => setBgPart("image", { fit })}
-              />
+              <CycleChip label="Image fit" options={IMAGE_FITS} value={img.fit} onChange={(fit) => setBgPart("image", { fit })} />
             }
           />
           <SettingRow

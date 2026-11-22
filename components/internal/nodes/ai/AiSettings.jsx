@@ -3,7 +3,7 @@
 import React from "react";
 import { Eraser, MessageSquareText, Wand2 } from "lucide-react";
 import { Label, Popover, PopoverContent, PopoverTrigger, Textarea } from "@geiger/ui";
-import { SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
+import { RAIL_POPOVER, SidebarButton } from "@/components/internal/layout/sidebar/SidebarPrimitives";
 import { AI_ACTIONS } from "./AiNode";
 
 const POPOVER_CLASS = "bg-surface-dialog border-border shadow-xl rounded-xl";
@@ -19,7 +19,7 @@ export default function AiSettings({ node, updateData }) {
         <PopoverTrigger asChild>
           <SidebarButton icon={Wand2} label="Action" title="Action" />
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" sideOffset={8} className={`w-48 p-1 ${POPOVER_CLASS}`}>
+        <PopoverContent {...RAIL_POPOVER} className={`w-48 p-1 ${POPOVER_CLASS}`}>
           <div className="flex flex-col gap-0.5">
             <Label className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               Action
@@ -46,7 +46,7 @@ export default function AiSettings({ node, updateData }) {
         <PopoverTrigger asChild>
           <SidebarButton icon={MessageSquareText} label="Custom prompt" title="Custom prompt" />
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" sideOffset={8} className={`w-64 p-3 ${POPOVER_CLASS}`}>
+        <PopoverContent {...RAIL_POPOVER} className={`w-64 p-3 ${POPOVER_CLASS}`}>
           <Label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             Custom prompt
           </Label>
